@@ -19,8 +19,8 @@ from threading import Thread
 from PyQt4.QtCore import Qt, QString
 from PyQt4.QtGui  import *
 
-from ui_newplot    import Ui_NewPlot
-from ui_mainwindow import Ui_MainWindow
+from newplot_ui    import Ui_NewPlot
+from mainwindow_ui import Ui_MainWindow
 
 
 class MainUi(QMainWindow, Ui_MainWindow):

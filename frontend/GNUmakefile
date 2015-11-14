@@ -1,5 +1,6 @@
-all : ui
+UIFILES=mainwindow_ui.py newplot_ui.py
 
-ui:
-	pyuic4 designer/newplot.ui    > ui_newplot.py
-	pyuic4 designer/mainwindow.ui > ui_mainwindow.py
+%_ui.py: designer/%.ui
+	pyuic4 $< > $@
+
+all: $(UIFILES)
