@@ -1,0 +1,15 @@
+*~
+*.swp
+
+# backend specific
+*.o
+*.hi
+csvbackend/dist
+csvbackend/cabal.sandbox.config
+csvbackend/.cabal-sandbox
+
+# frontend specific
+*.pyc
+*.egg-info
+*_ui.py
+frontend/dist

@@ -1,3 +1,3 @@
 all:
 	@cabal sandbox init
-	@cabal install --enable-shared
+	@cabal install

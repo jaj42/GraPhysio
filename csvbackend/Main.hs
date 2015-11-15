@@ -31,7 +31,7 @@ genReply cmd = (msg, action)
 --  fileexists <- doesFileExist (fileName c)
     action = case cmd of
                CloseConnection -> \sock -> close sock
-               _               -> \_ -> return ()
+               _               -> \_    -> return ()
     msg    = case cmd of
                c@(ReadVector{}) -> serialize `fmap` processCsv c
                CloseConnection  -> return $ serialize ("Closing Connection" :: C.ByteString)
