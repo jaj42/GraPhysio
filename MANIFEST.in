@@ -1,0 +1,2 @@
+include frontend/designer/mainwindow.ui
+include frontend/designer/newplot.ui

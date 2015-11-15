@@ -5,7 +5,7 @@
 
 import sys
 from PyQt4 import QtGui, QtCore
-from uiInit import MainUi
+from ui_init import MainUi
 
 qApp = QtGui.QApplication(sys.argv)
 
