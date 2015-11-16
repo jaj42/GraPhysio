@@ -6,6 +6,8 @@ from matplotlib.backends.backend_qt4 import NavigationToolbar2QT as NavigationTo
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+import pyqtgraph as pg
+
 class PlotWidget(QWidget):
     def __init__(self, parent=None):
         super(PlotWidget, self).__init__()
@@ -13,20 +15,20 @@ class PlotWidget(QWidget):
         tablayout = QVBoxLayout(self)
         self.setLayout(tablayout)
 
-        self.plotcanvas = PlotCanvas(parent=parent)
-        tablayout.addWidget(self.plotcanvas);
-
-        self.toolbar = PlotToolbar(self.plotcanvas)
-        tablayout.addWidget(self.toolbar);
+        self.plotarea = PlotArea(parent=parent)
+        tablayout.addWidget(self.plotarea);
 
     def plot(self):
         if not self.query: return
         data = util.runQuery(self.query)
-        self.plotcanvas.axes.plot(data)
-        self.plotcanvas.draw()
+        #self.plotarea.plot(x=x,y=printdata)
 
     def attachQuery(self, query):
         self.query = query
+
+class PlotArea(pg.PlotWidget):
+    def __init__(self, parent=None):
+        super(PlotArea, self).__init__()
 
 class PlotCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
