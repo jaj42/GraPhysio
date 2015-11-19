@@ -10,7 +10,6 @@
 import util,plotwidget
 
 import csv
-from threading import Thread
 
 #import sip
 #sip.setapi('QVariant', 2)
@@ -42,8 +41,7 @@ class MainUi(QMainWindow, Ui_MainWindow):
         plot.attachQuery(query)
         tabindex = self.tabWidget.addTab(plot, query.samplename)
         self.tabWidget.setCurrentIndex(tabindex)
-        plotThread = Thread(target=plot.plot)
-        plotThread.start()
+        plot.plot()
 
     def fileQuit(self):
         self.close()
