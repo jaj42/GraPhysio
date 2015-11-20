@@ -15,6 +15,7 @@ class CSVQuery:
 
     def __init__(self, filename, seperator, xfields, yfields, notnull, linerange, skiplines):
         self.__query     = ""
+        self.__filelines = None
 
         self.__ipcstream = DataStream()
         self.__filename  = str(filename)
@@ -53,9 +54,15 @@ class CSVQuery:
             return None
         jsdata = json.load(self.__ipcstream)
         tabledat = np.array(jsdata, dtype=np.float)
+        veclen = len(tabledat)
+        if self.__filelines is None:
+            # After the first query we know how many lines the file really has
+            # except for lines seen as null by the backend, which are ignored
+            self.__filelines = veclen * self.skiplines
 
-        # XXX xvecs are not implemented yet
+        #tabledat has X and Y vectors stacked horizontally
         xnum = len(self.__xfields)
+        # XXX xvecs are not implemented yet
         #xvecs = tabledat[:,:xnum]
         yvecs = tabledat[:,xnum:]
 

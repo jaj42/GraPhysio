@@ -28,9 +28,6 @@ class MainUi(QMainWindow, Ui_MainWindow):
         query = dlgNewplot.result
         if not query: return
 
-        print query.xfields
-        print query.yfields
-        print query.rawquery
         plot = plotwidget.PlotWidget()
         plot.attachQuery(query)
         tabindex = self.tabWidget.addTab(plot, query.samplename)
@@ -123,6 +120,7 @@ class DlgNewPlot(QDialog, Ui_NewPlot):
     def __estimateSkiplines(self, filename):
         # 50 caracters per line is the magic number here
         charperline = 50
+        # Request max 100k lines
         maxlines    = 100000
         fsize = os.path.getsize(filename)
         nlines = fsize / charperline
