@@ -1,0 +1,5 @@
+#widget_item.setData(0, Qt.UserRole, instance_item)
+#widget_item.data(0, Qt.UserRole)  # original python object
+
+#custom context menu
+#https://riverbankcomputing.com/pipermail/pyqt/2008-February/018667.html

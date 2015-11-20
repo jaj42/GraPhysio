@@ -13,16 +13,17 @@ class CSVQuery:
                              'notnull = [$notnull], '
                              'skiplines = $skiplines}')
 
-    def __init__(self, filename, seperator, fields, notnull, linerange, skiplines, xrownum):
+    def __init__(self, filename, seperator, xfields, yfields, notnull, linerange, skiplines):
         self.__query     = ""
 
         self.__ipcstream = DataStream()
         self.__filename  = str(filename)
-        self.__fields    = fields
         self.__notnull   = notnull
         self.__seperator = seperator
         self.__skiplines = skiplines
-        self.__xrownum   = xrownum
+        self.__xfields   = xfields
+        self.__yfields   = yfields
+        self.__fields    = self.__xfields + self.__yfields
 
         self.__updateRange(linerange)
 
@@ -54,8 +55,9 @@ class CSVQuery:
         tabledat = np.array(jsdata, dtype=np.float)
 
         # XXX xvecs are not implemented yet
-        #xvecs = tabledat[:,:self.__xrownum]
-        yvecs = tabledat[:,self.__xrownum:]
+        xnum = len(self.__xfields)
+        #xvecs = tabledat[:,:xnum]
+        yvecs = tabledat[:,xnum:]
 
         # Pyqtgraph needs: numpy array with shape (N, 2) where x=data[:,0] and y=data[:,1]
         # This constructs an ndarray with shape (N, 2, M) where M is the number of datasets
@@ -89,16 +91,16 @@ class CSVQuery:
         return self.__seperator
 
     @property
-    def fields(self):
-        return self.__fields
+    def xfields(self):
+        return self.__xfields
+
+    @property
+    def yfields(self):
+        return self.__yfields
 
     @property
     def notnull(self):
         return self.__notnull
-
-    @property
-    def hasxrow(self):
-        return self.__hasxrow
 
     @property
     def linerange(self):

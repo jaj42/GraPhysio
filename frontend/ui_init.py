@@ -1,15 +1,7 @@
-#plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
-#plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-
-#widget_item.setData(0, Qt.UserRole, instance_item)
-#widget_item.data(0, Qt.UserRole)  # original python object
-
-#custom context menu
-#https://riverbankcomputing.com/pipermail/pyqt/2008-February/018667.html
-
 import rpc,plotwidget
 
 import csv
+import os # To get file size
 
 #import sip
 #sip.setapi('QVariant', 2)
@@ -36,6 +28,9 @@ class MainUi(QMainWindow, Ui_MainWindow):
         query = dlgNewplot.result
         if not query: return
 
+        print query.xfields
+        print query.yfields
+        print query.rawquery
         plot = plotwidget.PlotWidget()
         plot.attachQuery(query)
         tabindex = self.tabWidget.addTab(plot, query.samplename)
@@ -48,6 +43,8 @@ class MainUi(QMainWindow, Ui_MainWindow):
 class DlgNewPlot(QDialog, Ui_NewPlot):
     def __init__(self, parent=None):
         super(DlgNewPlot, self).__init__(parent)
+        self.__csvquery = None
+
         self.setupUi(self)
 
         self.txtSep.addItem(',')
@@ -79,6 +76,7 @@ class DlgNewPlot(QDialog, Ui_NewPlot):
     def loadCsvFields(self):
         sep = str(self.txtSep.currentText())
         filename = self.txtFile.text()
+        self.txtEvery.setValue(self.__estimateSkiplines(filename))
         fields = []
         # Use the csv module to retrieve csv fields
         with open(filename, 'rb') as csvfile:
@@ -108,20 +106,30 @@ class DlgNewPlot(QDialog, Ui_NewPlot):
     def loadPlot(self):
         xRows = [i.text() for i in self.listX.findItems("", Qt.MatchContains)]
         yRows = [i.text() for i in self.listY.findItems("", Qt.MatchContains)]
-        rows = xRows + yRows
-        fields = map(str, rows)
+        xfields = map(str, xRows)
+        yfields = map(str, yRows)
         skiplines = self.txtEvery.value()
         filename = self.txtFile.text()
         sep = str(self.txtSep.currentText())
-        self.csvquery = rpc.CSVQuery(filename  = filename,
-                                     seperator = sep,
-                                     fields    = fields,
-                                     notnull   = fields,
-                                     linerange = None,
-                                     skiplines = skiplines,
-                                     xrownum   = len(xRows))
+        self.__csvquery = rpc.CSVQuery(filename  = filename,
+                                       seperator = sep,
+                                       xfields   = xfields,
+                                       yfields   = yfields,
+                                       notnull   = xfields + yfields,
+                                       linerange = None,
+                                       skiplines = skiplines)
         self.accept()
+
+    def __estimateSkiplines(self, filename):
+        # 50 caracters per line is the magic number here
+        charperline = 50
+        maxlines    = 100000
+        fsize = os.path.getsize(filename)
+        nlines = fsize / charperline
+        slines = nlines / maxlines
+        if slines < 1: slines = 1
+        return int(slines)
 
     @property
     def result(self):
-        return self.csvquery
+        return self.__csvquery
