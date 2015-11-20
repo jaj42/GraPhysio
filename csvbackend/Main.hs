@@ -24,18 +24,27 @@ parseCommands cmdStr = parsedCmd
                   Just cmd -> cmd
                   Nothing  -> ErrSyntax
 
+-- | Generate Status message
+genStatus :: String -> C.ByteString
+genStatus s = C.snoc (C.pack s) '\n'
+
 -- | Generate a reply for the given request
-genReply :: Command -> (IO C.ByteString, Socket -> IO ())
-genReply cmd = (msg, action)
+genReply :: Command -> (Socket -> IO (), IO C.ByteString, Socket -> IO ())
+genReply cmd = (preaction, msg, postaction)
   where
 --  fileexists <- doesFileExist (fileName c)
-    action = case cmd of
+    preaction = case cmd of
+               c@(ReadVector{}) -> \sock -> sendAll sock (genStatus "Ok")
+               _                -> \_    -> return ()
+
+    postaction = case cmd of
                CloseConnection -> \sock -> close sock
                _               -> \_    -> return ()
+
     msg    = case cmd of
                c@(ReadVector{}) -> serialize `fmap` processCsv c
-               CloseConnection  -> return $ serialize ("Closing Connection" :: C.ByteString)
-               ErrSyntax        -> return $ serialize ("Syntax Error" :: C.ByteString)
+               CloseConnection  -> return $ genStatus "Closing Connection"
+               ErrSyntax        -> return $ genStatus "Syntax Error"
 
 main :: IO ()
 main = forever mainLoop
@@ -56,7 +65,8 @@ serve :: Socket -> IO ()
 serve sock = do
   cmd <- recv sock 1024
   let ret = parseCommands (C.unpack cmd)
-  let (msg, action) = genReply ret
+  let (preaction, msg, postaction) = genReply ret
   lemsg <- msg
+  do (preaction sock)
   sendAll sock lemsg
-  do (action sock)
+  do (postaction sock)

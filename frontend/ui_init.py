@@ -7,7 +7,7 @@
 #custom context menu
 #https://riverbankcomputing.com/pipermail/pyqt/2008-February/018667.html
 
-import util,plotwidget
+import rpc,plotwidget
 
 import csv
 
@@ -20,7 +20,6 @@ from PyQt4.QtGui  import *
 
 from newplot_ui    import Ui_NewPlot
 from mainwindow_ui import Ui_MainWindow
-
 
 class MainUi(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
@@ -41,7 +40,7 @@ class MainUi(QMainWindow, Ui_MainWindow):
         plot.attachQuery(query)
         tabindex = self.tabWidget.addTab(plot, query.samplename)
         self.tabWidget.setCurrentIndex(tabindex)
-        plot.plot()
+        plot.doPlot()
 
     def fileQuit(self):
         self.close()
@@ -64,11 +63,11 @@ class DlgNewPlot(QDialog, Ui_NewPlot):
         self.btnCancel.clicked.connect(self.reject)
 
         # Hack since you cannot pass arguments to Qt's signal connect()
-        def moveToX():   return self.moveFromTo(self.listAll, self.listX)
+        #def moveToX():   return self.moveFromTo(self.listAll, self.listX)
         def moveToY():   return self.moveFromTo(self.listAll, self.listY)
         def moveFromX(): return self.moveFromTo(self.listX,   self.listAll)
         def moveFromY(): return self.moveFromTo(self.listY,   self.listAll)
-        self.btnToX.clicked.connect(moveToX)
+        self.btnToX.clicked.connect(self.moveToX)
         self.btnToY.clicked.connect(moveToY)
         self.btnRemoveX.clicked.connect(moveFromX)
         self.btnRemoveY.clicked.connect(moveFromY)
@@ -92,19 +91,35 @@ class DlgNewPlot(QDialog, Ui_NewPlot):
             self.listAll.addItem(field)
 
     def moveFromTo(self, fromList, toList):
-        rows = [index.row() for index in fromList.selectedIndexes()]
-        for row in rows:
+        while True:
+            rowindexes = fromList.selectedIndexes()
+            if len(rowindexes) < 1: break
+            row = rowindexes[0].row()
             toList.addItem(fromList.takeItem(row))
+
+    def moveToX(self):
+        # Only allow one element in X for now.
+        if self.listX.count() > 0: return
+        rows = [index.row() for index in self.listAll.selectedIndexes()]
+        for row in rows:
+            self.listX.addItem(self.listAll.takeItem(row))
+            break
 
     def loadPlot(self):
         xRows = [i.text() for i in self.listX.findItems("", Qt.MatchContains)]
         yRows = [i.text() for i in self.listY.findItems("", Qt.MatchContains)]
-        rows = set(xRows) | set(yRows)
+        rows = xRows + yRows
         fields = map(str, rows)
-        every = self.txtEvery.value()
+        skiplines = self.txtEvery.value()
         filename = self.txtFile.text()
         sep = str(self.txtSep.currentText())
-        self.csvquery = util.CSVQuery(filename, sep, fields, fields, "All", every)
+        self.csvquery = rpc.CSVQuery(filename  = filename,
+                                     seperator = sep,
+                                     fields    = fields,
+                                     notnull   = fields,
+                                     linerange = None,
+                                     skiplines = skiplines,
+                                     xrownum   = len(xRows))
         self.accept()
 
     @property
