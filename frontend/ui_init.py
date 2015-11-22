@@ -7,16 +7,18 @@ import os # To get file size
 #sip.setapi('QVariant', 2)
 #sip.setapi('QString', 2)
 
-from PyQt4.QtCore import Qt, QString
-from PyQt4.QtGui  import *
+from PyQt4 import QtGui
+from PyQt4.QtCore import Qt
 
 from newplot_ui    import Ui_NewPlot
 from mainwindow_ui import Ui_MainWindow
 
-class MainUi(QMainWindow, Ui_MainWindow):
+class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
-        super(MainUi, self).__init__(parent)
+        super(MainUi, self).__init__(parent=parent)
         self.setupUi(self)
+
+        self.tabWidget.tabCloseRequested.connect(self.closeTab)
 
         self.menuFile.addAction('&New Plot', self.newPlot, Qt.CTRL + Qt.Key_N)
         self.menuFile.addSeparator()
@@ -28,7 +30,7 @@ class MainUi(QMainWindow, Ui_MainWindow):
         query = dlgNewplot.result
         if not query: return
 
-        plot = plotwidget.PlotWidget()
+        plot = plotwidget.PlotWidget(parent=self)
         plot.attachQuery(query)
         tabindex = self.tabWidget.addTab(plot, query.samplename)
         self.tabWidget.setCurrentIndex(tabindex)
@@ -37,9 +39,25 @@ class MainUi(QMainWindow, Ui_MainWindow):
     def fileQuit(self):
         self.close()
 
-class DlgNewPlot(QDialog, Ui_NewPlot):
+    def closeTab(self, i):
+        w = self.tabWidget.widget(i)
+        self.tabWidget.removeTab(i)
+        w.destroy()
+
+    @property
+    def statusmessage(self):
+        return self.statusBar.currentMessage()
+
+    @statusmessage.setter
+    def statusmessage(self, m):
+        if m is None:
+            self.statusBar.clearMessage()
+        else:
+            self.statusBar.showMessage(m)
+
+class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
     def __init__(self, parent=None):
-        super(DlgNewPlot, self).__init__(parent)
+        super(DlgNewPlot, self).__init__(parent=parent)
         self.__csvquery = None
 
         self.setupUi(self)
@@ -68,7 +86,7 @@ class DlgNewPlot(QDialog, Ui_NewPlot):
 
     # Methods
     def selectFile(self):
-        self.txtFile.setText(QFileDialog.getOpenFileName())
+        self.txtFile.setText(QtGui.QFileDialog.getOpenFileName())
 
     def loadCsvFields(self):
         sep = str(self.txtSep.currentText())

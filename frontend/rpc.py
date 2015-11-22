@@ -4,7 +4,6 @@ import socket, json, os
 import numpy as np
 from string import Template
 
-
 class CSVQuery:
     querytemplate = Template('ReadVector {fileName = "$filename", '
                              'seperator = \'$sep\', '
@@ -14,8 +13,8 @@ class CSVQuery:
                              'skiplines = $skiplines}')
 
     def __init__(self, filename, seperator, xfields, yfields, notnull, linerange, skiplines):
-        self.__query     = ""
         self.__filelines = None
+        self.__linerange = ""
 
         self.__ipcstream = DataStream()
         self.__filename  = str(filename)
@@ -25,30 +24,21 @@ class CSVQuery:
         self.__xfields   = xfields
         self.__yfields   = yfields
         self.__fields    = self.__xfields + self.__yfields
-
         self.__updateRange(linerange)
 
-    def __updateQuery(self):
+    def __genQuery(self):
+        self.__updateRange(linerange)
         strfields  = ', '.join('"' + str(x) + '"' for x in self.__fields)
         strnotnull = ', '.join('"' + str(x) + '"' for x in self.__notnull)
-        self.__query = self.querytemplate.substitute(filename  = self.__filename,
-                                                     sep       = self.__seperator,
-                                                     fields    = strfields,
-                                                     notnull   = strnotnull,
-                                                     range     = self.__linerange,
-                                                     skiplines = self.__skiplines)
-
-    def __updateRange(self, rangetuple):
-        if rangetuple is None:
-            rangetxt = "All"
-        elif len(rangetuple) < 2:
-            rangetxt = "All"
-        else:
-            rangetxt = "Subset {} {}".format(rangetuple[0], rangetuple[1])
-        self.__linerange = rangetxt
+        return self.querytemplate.substitute(filename  = self.__filename,
+                                             sep       = self.__seperator,
+                                             fields    = strfields,
+                                             notnull   = strnotnull,
+                                             range     = self.__linerange,
+                                             skiplines = self.skiplines)
 
     def execute(self):
-        self.__ipcstream.sendRequest(self.rawquery)
+        self.__ipcstream.sendRequest(self.__genQuery())
         if self.__ipcstream.failed:
             print "IPC error: {}.".format(self.__ipcstream.errmsg)
             return None
@@ -78,6 +68,15 @@ class CSVQuery:
         plotdata = np.dstack(plotarrays)
         return plotdata
 
+    def __updateRange(self, rangetuple):
+        if rangetuple is None:
+            rangetxt = "All"
+        elif len(rangetuple) < 2:
+            rangetxt = "All"
+        else:
+            rangetxt = "Subset {} {}".format(rangetuple[0], rangetuple[1])
+        self.__linerange = rangetxt
+
     @property
     def samplename(self):
         base = os.path.basename(self.__filename)
@@ -86,8 +85,8 @@ class CSVQuery:
 
     @property
     def rawquery(self):
-        self.__updateQuery()
-        return self.__query
+        query = self.__genQuery()
+        return query
 
     @property
     def filename(self):
