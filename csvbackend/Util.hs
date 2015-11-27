@@ -22,9 +22,8 @@ subsetList :: (Int,Int) -> [a] -> [a]
 subsetList (start,stop) l = take (stop - start + 1) (drop (start - 1) l)
 
 every :: Int -> [a] -> [a]
-every n xs = case drop (n - 1) xs of
-    (y:ys) -> y : every n ys
-    []     -> []
+every n (x:xs) = x : every n (drop (n - 1) xs)
+every _ []     = []
 
 --instance MessagePack CSVField where
 --    toObject f@(CSVField{})   = toObject (csvFieldContent f)

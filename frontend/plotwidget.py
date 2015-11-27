@@ -7,6 +7,7 @@ import rpc
 class PlotWidget(pg.PlotWidget):
     def __init__(self, parent=None):
         super(PlotWidget, self).__init__(parent=parent)
+        self.__dynamicViewUpdate = False
         self.__childPlots = []
         self.__queryobj = None
         self.__qthread  = None
@@ -26,9 +27,8 @@ class PlotWidget(pg.PlotWidget):
         self.__qthread.start()
 
     def __draw(self, data):
-        self.__qthread.sigData.disconnect()
-        self.__qthread = None
         if data is None: return
+
         if len(self.__childPlots) > 0:
             # We're updating the plot.
             for childPlot in self.__childPlots:
@@ -39,22 +39,27 @@ class PlotWidget(pg.PlotWidget):
                 curve = DynPlot(data, n, name=self.__queryobj.yfields[n])
                 self.__childPlots.append(curve)
                 self.addItem(curve)
-        # Recurse if we skipped lines
-        #this is to skip this step for now
-        self.__queryobj.skiplines = 1
-        #this is to skip this step for now
-        if self.__queryobj.skiplines > 1:
-            self.__queryobj.skiplines = 1
-            self.__qthread = QueryThread(self.__queryobj)
-            self.__qthread.sigData.connect(self.__draw)
-            self.__qthread.start()
-        else:
-            self.__parent.statusmessage = None
+
+        self.__parent.statusmessage = None
+
+        # Attach the view update function
+        #self.__dynamicViewUpdate = True
 
     # XXX implement this
     def viewRangeChanged(self):
-        pass
-        #print "PlotWidget viewRangeChanged"
+        if not self.__dynamicViewUpdate: return
+        plotrange = self.__vb.viewRange()[0]
+        print "New range: {}".format(plotrange)
+        return
+        # Disable updating 
+        self.__dynamicViewUpdate = False
+        self.__parent.statusmessage = "Busy"
+
+        self.__qthread.terminate()
+        self.__qthread.wait()
+        #self.__qthread = QueryThread(self.__queryobj)
+        #self.__qthread.sigData.connect(self.__draw)
+        self.__qthread.start()
 
 class DynPlot(pg.PlotCurveItem):
     colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'w']
@@ -66,12 +71,13 @@ class DynPlot(pg.PlotCurveItem):
         else:
             color = self.colors[plotnumber]
 
-        super(DynPlot, self).__init__(x   = plotdata[:,0,plotnumber],
-                                      y   = plotdata[:,1,plotnumber],
+        super(DynPlot, self).__init__(x   = plotdata[:, 0, plotnumber],
+                                      y   = plotdata[:, 1, plotnumber],
                                       pen = color,
                                       *args, **kwds)
 
     def plotUpdate(self, plotdata):
+        #x,y = plotdata[:, :, self.plotnumber]
         self.setData(x = plotdata[:, 0, self.plotnumber],
                      y = plotdata[:, 1, self.plotnumber])
 

@@ -1,7 +1,8 @@
 #!/usr/local/bin/python2.7
 
 import socket, json, os
-import numpy as np
+import numpy    as np
+import numpy.ma as ma
 from string import Template
 
 class CSVQuery:
@@ -12,70 +13,104 @@ class CSVQuery:
                              'notnull = [$notnull], '
                              'skiplines = $skiplines}')
 
-    def __init__(self, filename, seperator, xfields, yfields, notnull, linerange, skiplines):
-        self.__filelines = None
-        self.__linerange = ""
+    def __init__(self, filename, seperator, xfields, yfields, notnull, linerange = None, skiplines = 1):
+        self.__dataset   = None
 
         self.__ipcstream = DataStream()
         self.__filename  = str(filename)
         self.__notnull   = notnull
         self.__seperator = seperator
-        self.__skiplines = skiplines
         self.__xfields   = xfields
         self.__yfields   = yfields
         self.__fields    = self.__xfields + self.__yfields
-        self.__updateRange(linerange)
+        self.setRange(linerange)
+        self.setSkiplines(skiplines)
 
     def __genQuery(self):
-        self.__updateRange(linerange)
         strfields  = ', '.join('"' + str(x) + '"' for x in self.__fields)
         strnotnull = ', '.join('"' + str(x) + '"' for x in self.__notnull)
         return self.querytemplate.substitute(filename  = self.__filename,
                                              sep       = self.__seperator,
                                              fields    = strfields,
                                              notnull   = strnotnull,
-                                             range     = self.__linerange,
-                                             skiplines = self.skiplines)
+                                             range     = self.getRange(),
+                                             skiplines = self.getSkiplines())
 
     def execute(self):
+        """
+        The backend drops every other line to get a partial result when
+        asked to do so with the 'skiplines' parameter.
+        We create a masked array buffer with the partial results like so:
+        backend implementation: skiplines n full      = partial
+                                skiplines 3 range(10) = [1, 4, 7, 10]
+        len(partial) = ceiling(len(full) / n)
+        n*(len(partial) - 1) < len(full) <= n*len(partial)
+        -> set len(buffer) to n*len(partial)
+        """
+        #print self.__genQuery()
         self.__ipcstream.sendRequest(self.__genQuery())
         if self.__ipcstream.failed:
             print "IPC error: {}.".format(self.__ipcstream.errmsg)
             return None
-        jsdata = json.load(self.__ipcstream)
-        tabledat = np.array(jsdata, dtype=np.float)
-        veclen = len(tabledat)
-        if self.__filelines is None:
-            # After the first query we know how many lines the file really has
-            # except for lines seen as null by the backend, which are ignored
-            self.__filelines = veclen * self.skiplines
+        # This is where the actual communication with the backend happens
+        rawarray = json.load(self.__ipcstream)
+        if len(rawarray == 0):
+            print "Got empty result"
+            return None
 
-        #tabledat has X and Y vectors stacked horizontally
+        # tabledat has shape (m, n) where n is the number of channels
+        # and m the vector length of the channel.
+        tabledat = np.array(rawarray)
+        # XXX xdat not used yet
         xnum = len(self.__xfields)
-        # XXX xvecs are not implemented yet
-        #xvecs = tabledat[:,:xnum]
-        yvecs = tabledat[:,xnum:]
+        #xdat = tabledat[:,:xnum]
+        ydat = tabledat[:,xnum:]
 
-        # Pyqtgraph needs: numpy array with shape (N, 2) where x=data[:,0] and y=data[:,1]
-        # This constructs an ndarray with shape (N, 2, M) where M is the number of datasets
-        # XXX This should probably be optimized at some point
-        veclen = len(yvecs)
-        xarr = np.arange(veclen)
-        plotarrays = []
-        for vector in yvecs.T:
-            dataset = np.vstack([xarr, vector]).T
-            plotarrays.append(dataset)
-        plotdata = np.dstack(plotarrays)
-        return plotdata
+        nSl     = self.getSkiplines()
+        lenPart = ydat.shape[0]
+        nCh     = ydat.shape[1]
 
-    def __updateRange(self, rangetuple):
+        # Pyqtgraph needs an ndarray with shape (N, 2) per channel
+        # Construct a masked ndarray with shape (N, 2, M) 
+        # N is the vector length, M is the number of channels, 2 is for X and Y axis
+        if self.__dataset is None:
+            tmpVect = np.zeros(lenPart * nSl * 2 * nCh).reshape(lenPart * nSl, 2, nCh)
+            tmpMask = np.ones (lenPart * nSl * 2 * nCh).reshape(lenPart * nSl, 2, nCh)
+            self.__dataset = ma.masked_array(tmpVect.copy(), mask = tmpMask.copy())
+
+        for i in range(lenPart):
+            # XXX X axis set to the index, implement xdat in the future
+            self.__dataset[i * nSl, 0, :] = i * nSl
+            self.__dataset[i * nSl, 1, :] = ydat[i, :]
+            self.__dataset.mask[i * nSl, :, :] = False
+
+        # We have the masked array, however we only return the valid data
+        # We have to put it in shape
+        retData = self.__dataset[~self.__dataset.mask]
+        retLen = len(retData) / nCh / 2
+        retShape = (retLen, 2, nCh)
+        return retData.reshape(retShape)
+
+    def __genRange(self, rangetuple):
         if rangetuple is None:
             rangetxt = "All"
         elif len(rangetuple) < 2:
             rangetxt = "All"
         else:
             rangetxt = "Subset {} {}".format(rangetuple[0], rangetuple[1])
-        self.__linerange = rangetxt
+        return rangetxt
+
+    def getRange(self):
+        return self.__linerange
+
+    def setRange(self, x):
+        self.__linerange = self.__genRange(x)
+
+    def getSkiplines(self):
+        return self.__skiplines
+
+    def setSkiplines(self, x):
+        self.__skiplines = x
 
     @property
     def samplename(self):
@@ -107,20 +142,6 @@ class CSVQuery:
     @property
     def notnull(self):
         return self.__notnull
-
-    @property
-    def linerange(self):
-        return self.__linerange
-    @linerange.setter
-    def linerange(self, x):
-        self.__updateRange(x)
-
-    @property
-    def skiplines(self):
-        return self.__skiplines
-    @skiplines.setter
-    def skiplines(self, x):
-        self.__skiplines = x
 
 class DataStream:
     def __init__(self):
