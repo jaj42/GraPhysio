@@ -33,7 +33,7 @@ class CSVQuery:
                                              sep       = self.__seperator,
                                              fields    = strfields,
                                              notnull   = strnotnull,
-                                             range     = self.getRange(),
+                                             range     = self.__genRangeForQuery(),
                                              skiplines = self.getSkiplines())
 
     def execute(self):
@@ -47,14 +47,21 @@ class CSVQuery:
         n*(len(partial) - 1) < len(full) <= n*len(partial)
         -> set len(buffer) to n*len(partial)
         """
-        #print self.__genQuery()
+        # Do we already have the data, or do we need a new request?
+#        if self.__dataset is not None and self.__rangetuple is not None:
+#            subMask = self.__dataset.mask[self.__rangetuple[0]:self.__rangetuple[1], :, 0]
+#            if not 1 in subMask:
+#                # There are some values that we do not have.
+#                return
+
+
         self.__ipcstream.sendRequest(self.__genQuery())
         if self.__ipcstream.failed:
             print "IPC error: {}.".format(self.__ipcstream.errmsg)
             return None
         # This is where the actual communication with the backend happens
         rawarray = json.load(self.__ipcstream)
-        if len(rawarray == 0):
+        if len(rawarray) == 0:
             print "Got empty result"
             return None
 
@@ -63,12 +70,17 @@ class CSVQuery:
         tabledat = np.array(rawarray)
         # XXX xdat not used yet
         xnum = len(self.__xfields)
-        #xdat = tabledat[:,:xnum]
         ydat = tabledat[:,xnum:]
 
         nSl     = self.getSkiplines()
         lenPart = ydat.shape[0]
         nCh     = ydat.shape[1]
+
+        if xnum > 0:
+            xdat = tabledat[:,:xnum]
+        else:
+            # No X axis defined, generate X axis as index of Y axis.
+            xdat = np.tile(np.arange(lenPart) * nSl, nCh).reshape(nCh, lenPart).T
 
         # Pyqtgraph needs an ndarray with shape (N, 2) per channel
         # Construct a masked ndarray with shape (N, 2, M) 
@@ -78,11 +90,10 @@ class CSVQuery:
             tmpMask = np.ones (lenPart * nSl * 2 * nCh).reshape(lenPart * nSl, 2, nCh)
             self.__dataset = ma.masked_array(tmpVect.copy(), mask = tmpMask.copy())
 
-        for i in range(lenPart):
-            # XXX X axis set to the index, implement xdat in the future
-            self.__dataset[i * nSl, 0, :] = i * nSl
-            self.__dataset[i * nSl, 1, :] = ydat[i, :]
-            self.__dataset.mask[i * nSl, :, :] = False
+        arrIndex = np.arange(lenPart) * nSl
+        self.__dataset[arrIndex, 0, :] = xdat
+        self.__dataset[arrIndex, 1, :] = ydat
+        self.__dataset.mask[arrIndex, :, :] = False
 
         # We have the masked array, however we only return the valid data
         # We have to put it in shape
@@ -91,20 +102,20 @@ class CSVQuery:
         retShape = (retLen, 2, nCh)
         return retData.reshape(retShape)
 
-    def __genRange(self, rangetuple):
-        if rangetuple is None:
+    def __genRangeForQuery(self):
+        if self.__rangetuple is None:
             rangetxt = "All"
-        elif len(rangetuple) < 2:
+        elif len(self.__rangetuple) < 2:
             rangetxt = "All"
         else:
-            rangetxt = "Subset {} {}".format(rangetuple[0], rangetuple[1])
+            rangetxt = "Subset {} {}".format(self.__rangetuple[0], self.__rangetuple[1])
         return rangetxt
 
     def getRange(self):
-        return self.__linerange
+        return self.__rangetuple
 
     def setRange(self, x):
-        self.__linerange = self.__genRange(x)
+        self.__rangetuple = x
 
     def getSkiplines(self):
         return self.__skiplines

@@ -49,20 +49,22 @@ class PlotWidget(pg.PlotWidget):
     def viewRangeChanged(self):
         if not self.__dynamicViewUpdate: return
         plotrange = self.__vb.viewRange()[0]
+
         print "New range: {}".format(plotrange)
         return
-        # Disable updating 
+        # Disable updating while we draw
         self.__dynamicViewUpdate = False
         self.__parent.statusmessage = "Busy"
+
 
         self.__qthread.terminate()
         self.__qthread.wait()
         #self.__qthread = QueryThread(self.__queryobj)
-        #self.__qthread.sigData.connect(self.__draw)
+        #self.__qthread.sigData.connect(self.__update)
         self.__qthread.start()
 
 class DynPlot(pg.PlotCurveItem):
-    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'w']
+    colors = ['r', 'b', 'g', 'c', 'm', 'y', 'k', 'w']
 
     def __init__(self, plotdata, plotnumber, *args, **kwds):
         self.plotnumber = plotnumber
