@@ -18,7 +18,7 @@ cabal-version:       >=1.10
 
 executable csvbackend
   main-is:             Main.hs
-  build-depends:       base         >=4.8 && <4.9
+  build-depends:       base         >=4.7 && <4.9
                       ,lazy-csv     >= 0.5.1
                       ,stringsearch >= 0.3.6.6
                       ,bytestring   >= 0.10.6.0
