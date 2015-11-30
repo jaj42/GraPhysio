@@ -79,7 +79,7 @@ class PlotWidget(pg.PlotWidget):
         self.__qthread.start()
 
     def slotPreIPC(self):
-        self.__dynamicUpdate = False
+        #self.__dynamicUpdate = False
         self.__parent.statusmessage = "Busy"
         self.__oldcursor = self.cursor()
         self.setCursor(QtCore.Qt.BusyCursor)
