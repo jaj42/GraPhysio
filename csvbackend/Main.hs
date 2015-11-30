@@ -47,7 +47,7 @@ genReply cmd = (preaction, msg, postaction)
                ErrSyntax        -> return $ genStatus "Syntax Error"
 
 main :: IO ()
-main = forever mainLoop
+main = withSocketsDo $ forever mainLoop
  
 mainLoop :: IO ()
 mainLoop = do
