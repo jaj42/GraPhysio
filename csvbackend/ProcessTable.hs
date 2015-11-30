@@ -21,20 +21,21 @@ data Command   = ErrSyntax
                             , skiplines :: Int }
   deriving (Read,Show)
  
+-- | Process: first select fields, then filter header, then filter null, then subset, then skip lines
 processCsv :: Command -> IO CSVTable
 processCsv c = do
   csvcontent <- C.readFile (fileName c)
   let csvresult = parseDSV False (seperator c) csvcontent
   let notnullpos = getElemPos c
-  fieldlist <- case selectFields (fields c) (csvTableFull csvresult) of
-                    Left   _        -> return $ take 1 $ mkEmptyColumn "MissingField"
-                    Right selection -> return selection
-  let fieldlistNoHeader = drop 1 fieldlist
-  let resulttmp = case (range c) of
-       All               -> fieldlistNoHeader
-       Subset start stop -> subsetList (start,stop) fieldlistNoHeader
-  let result = filter (areFieldsNull notnullpos) resulttmp
-  return (every (skiplines c) result)
+  rows <- case selectFields (fields c) (csvTableFull csvresult) of
+               Left   _        -> return $ take 1 $ mkEmptyColumn "MissingField"
+               Right selection -> return selection
+  let rowsNoHeader = drop 1 rows
+  let rFiltered = filter (areFieldsNull notnullpos) rowsNoHeader
+  let rSubset   = case (range c) of
+       All               -> rFiltered
+       Subset start stop -> subsetList (start,stop) rFiltered
+  return (every (skiplines c) rSubset)
 
 -- | Gets the positions of the fields that cannot be null.
 getElemPos :: Command -> [Int]

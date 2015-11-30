@@ -4,8 +4,19 @@ import socket, json, os
 import numpy    as np
 import numpy.ma as ma
 from string import Template
+from PyQt4 import QtCore, QtGui
 
-class CSVQuery:
+# 50 caracters per line is the magic number here
+# obtained by doing some statistics
+CHARPERLINE = 50
+# Show max 100k lines
+MAXLINES    = 100000
+
+class CSVQuery(QtCore.QObject):
+    sigFinished = QtCore.pyqtSignal(bool)
+    sigNewData  = QtCore.pyqtSignal()
+    sigUpdated  = QtCore.pyqtSignal()
+
     querytemplate = Template('ReadVector {fileName = "$filename", '
                              'seperator = \'$sep\', '
                              'fields = [$fields], '
@@ -14,8 +25,11 @@ class CSVQuery:
                              'skiplines = $skiplines}')
 
     def __init__(self, filename, seperator, xfields, yfields, notnull, linerange = None, skiplines = 1):
-        self.__dataset   = None
+        super(CSVQuery, self).__init__()
+        self.requestedrange = None
 
+        self.__dataset   = None
+        self.__error     = ""
         self.__ipcstream = DataStream()
         self.__filename  = str(filename)
         self.__notnull   = notnull
@@ -38,6 +52,34 @@ class CSVQuery:
 
     def execute(self):
         """
+        Get the needed data. Return True on Success, False on Error
+        """
+        if self.__dataset is None:
+            ret = self.__createOverviewData()
+            if ret: self.sigNewData.emit()
+        else:
+            ret = self.__updateData()
+            if ret: self.sigUpdated.emit()
+
+        self.sigFinished.emit(ret)
+
+    def __doRPC(self):
+        # we should probably do pandas.read_json or something like that
+        self.__ipcstream.sendRequest(self.__genQuery())
+        if self.__ipcstream.failed:
+            self.__error = "IPC error: {}.".format(self.__ipcstream.errmsg)
+            return None
+
+        # This is where the actual communication with the backend happens
+        rawarray = json.load(self.__ipcstream)
+        if len(rawarray) == 0:
+            self.__error = "Got an empty dataset\n(probably one or more selected field(s) is/are always null)"
+            return None
+
+        return np.array(rawarray)
+
+    def __createOverviewData(self):
+        """
         The backend drops every other line to get a partial result when
         asked to do so with the 'skiplines' parameter.
         We create a masked array buffer with the partial results like so:
@@ -46,29 +88,13 @@ class CSVQuery:
         len(partial) = ceiling(len(full) / n)
         n*(len(partial) - 1) < len(full) <= n*len(partial)
         -> set len(buffer) to n*len(partial)
+        Return True upon success, otherwise False
         """
-        # Do we already have the data, or do we need a new request?
-#        if self.__dataset is not None and self.__rangetuple is not None:
-#            subMask = self.__dataset.mask[self.__rangetuple[0]:self.__rangetuple[1], :, 0]
-#            if not 1 in subMask:
-#                # There are some values that we do not have.
-#                return
-
-
-        self.__ipcstream.sendRequest(self.__genQuery())
-        if self.__ipcstream.failed:
-            print "IPC error: {}.".format(self.__ipcstream.errmsg)
-            return None
-        # This is where the actual communication with the backend happens
-        rawarray = json.load(self.__ipcstream)
-        if len(rawarray) == 0:
-            print "Got empty result"
-            return None
+        tabledat = self.__doRPC()
+        if tabledat is None: return False
 
         # tabledat has shape (m, n) where n is the number of channels
         # and m the vector length of the channel.
-        tabledat = np.array(rawarray)
-        # XXX xdat not used yet
         xnum = len(self.__xfields)
         ydat = tabledat[:,xnum:]
 
@@ -76,31 +102,79 @@ class CSVQuery:
         lenPart = ydat.shape[0]
         nCh     = ydat.shape[1]
 
+        # Pyqtgraph needs an ndarray with shape (N, 2) per channel
+        # Construct a masked ndarray with shape (N, 2, M) 
+        # N is the vector length, M is the number of channels, 2 is for X and Y axis
+        tmpVect = np.zeros(lenPart * nSl * 2 * nCh).reshape(lenPart * nSl, 2, nCh)
+        tmpMask = np.ones (lenPart * nSl * 2 * nCh).reshape(lenPart * nSl, 2, nCh)
+        self.__dataset = ma.masked_array(tmpVect.copy(), mask = tmpMask.copy())
+
+        arrIndex = np.arange(lenPart) * nSl
+
         if xnum > 0:
             xdat = tabledat[:,:xnum]
         else:
             # No X axis defined, generate X axis as index of Y axis.
-            xdat = np.tile(np.arange(lenPart) * nSl, nCh).reshape(nCh, lenPart).T
+            xdat = np.repeat(arrIndex, nCh).reshape(lenPart, nCh)
 
-        # Pyqtgraph needs an ndarray with shape (N, 2) per channel
-        # Construct a masked ndarray with shape (N, 2, M) 
-        # N is the vector length, M is the number of channels, 2 is for X and Y axis
-        if self.__dataset is None:
-            tmpVect = np.zeros(lenPart * nSl * 2 * nCh).reshape(lenPart * nSl, 2, nCh)
-            tmpMask = np.ones (lenPart * nSl * 2 * nCh).reshape(lenPart * nSl, 2, nCh)
-            self.__dataset = ma.masked_array(tmpVect.copy(), mask = tmpMask.copy())
-
-        arrIndex = np.arange(lenPart) * nSl
         self.__dataset[arrIndex, 0, :] = xdat
         self.__dataset[arrIndex, 1, :] = ydat
         self.__dataset.mask[arrIndex, :, :] = False
 
-        # We have the masked array, however we only return the valid data
-        # We have to put it in shape
-        retData = self.__dataset[~self.__dataset.mask]
-        retLen = len(retData) / nCh / 2
-        retShape = (retLen, 2, nCh)
-        return retData.reshape(retShape)
+        return True
+
+    def __updateData(self):
+        """
+        Update an existing dataset.
+        Return True upon success, otherwise False.
+        """
+        if self.requestedrange is None or len(self.requestedrange) < 2:
+            self.__error = "Called update without providing a range."
+            return False
+        # Find out if we need to request more data.
+        rangetuple = self.requestedrange
+        fullLen = self.__dataset.shape[0]
+        start = int(max(rangetuple[0], 0))
+        stop  = int(min(rangetuple[1], fullLen))
+        rangeLen = stop - start
+        maskSubset = self.__dataset.mask[start:stop, 0, 0]
+        nNonZero = np.count_nonzero(maskSubset)  # non zero means masked, means we don't have that value
+        oSl = np.rint(nNonZero / (rangeLen - nNonZero)) + 1
+        nSl = max(1, np.ceil((stop - start) / MAXLINES))
+        hasMissing = (nSl < oSl)
+
+        if not hasMissing:
+            # No need to request more data. We're done.
+            return True
+        
+        # We need to request more data
+        self.setRange((start, stop))
+        self.setSkiplines(nSl)
+        tabledat = self.__doRPC()
+        if tabledat is None: return False
+
+        xnum = len(self.__xfields)
+        ydat = tabledat[:,xnum:]
+
+        nSl     = self.getSkiplines()
+        lenPart = ydat.shape[0]
+        nCh     = ydat.shape[1]
+
+        arrIndex = np.arange(start = start,
+                             stop  = start + lenPart * nSl,
+                             step  = nSl)
+
+        if xnum > 0:
+            xdat = tabledat[:,:xnum]
+        else:
+            # No X axis defined, generate X axis as index of Y axis.
+            xdat = np.repeat(arrIndex, nCh).reshape(lenPart, nCh)
+
+        self.__dataset[arrIndex, 0, :] = xdat
+        self.__dataset[arrIndex, 1, :] = ydat
+        self.__dataset.mask[arrIndex, :, :] = False
+
+        return True
 
     def __genRangeForQuery(self):
         if self.__rangetuple is None:
@@ -115,13 +189,27 @@ class CSVQuery:
         return self.__rangetuple
 
     def setRange(self, x):
-        self.__rangetuple = x
+        if x is None:
+            self.__rangetuple = None
+        else:
+            self.__rangetuple = map(int, x)
 
     def getSkiplines(self):
         return self.__skiplines
 
     def setSkiplines(self, x):
-        self.__skiplines = x
+        self.__skiplines = int(x)
+
+    @property
+    def data(self):
+        # We have the masked array, however we only return the valid data
+        # We have to put it in shape: (vector len, 2 (x and y), number of channels)
+        oShape = self.__dataset.shape
+        nCh = oShape[2]
+        retData = self.__dataset[~self.__dataset.mask]
+        nLen = len(retData) / nCh / 2
+        nShape = (nLen, 2, nCh)
+        return retData.reshape(nShape)
 
     @property
     def samplename(self):
@@ -133,6 +221,10 @@ class CSVQuery:
     def rawquery(self):
         query = self.__genQuery()
         return query
+
+    @property
+    def error(self):
+        return self.__error
 
     @property
     def filename(self):
@@ -158,7 +250,13 @@ class DataStream:
     def __init__(self):
         self.__clearStatus()
         self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__sock.connect(("localhost", 4242))
+        err = self.__sock.connect_ex(("127.0.0.1", 4242))
+        if err:
+            self.__errmsg = err
+            self.__canread = False
+            self.__iserror = True
+            return
+
         self.__fd = self.__sock.makefile('rw')
 
     def sendRequest(self, querymsg):

@@ -30,11 +30,9 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         query = dlgNewplot.result
         if not query: return
 
-        plot = plotwidget.PlotWidget(parent=self)
-        plot.attachQuery(query)
+        plot = plotwidget.PlotWidget(parent=self, rpcobj=query)
         tabindex = self.tabWidget.addTab(plot, query.samplename)
         self.tabWidget.setCurrentIndex(tabindex)
-        plot.doPlot()
 
     def fileQuit(self):
         self.close()
@@ -136,13 +134,9 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.accept()
 
     def __estimateSkiplines(self, filename):
-        # 50 caracters per line is the magic number here
-        charperline = 50
-        # Request max 100k lines
-        maxlines    = 100000
         fsize = os.path.getsize(filename)
-        nlines = fsize / charperline
-        slines = nlines / maxlines
+        nlines = fsize / rpc.CHARPERLINE
+        slines = nlines / rpc.MAXLINES
         if slines < 1: slines = 1
         return int(slines)
 
