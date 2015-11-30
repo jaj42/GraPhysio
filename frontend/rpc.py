@@ -1,5 +1,3 @@
-#!/usr/local/bin/python2.7
-
 import socket, json, os
 import numpy    as np
 import numpy.ma as ma
