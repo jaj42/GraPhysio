@@ -1,14 +1,10 @@
-import rpc,plotwidget
-
 import csv
-import os # To get file size
-
-#import sip
-#sip.setapi('QVariant', 2)
-#sip.setapi('QString', 2)
+import sys
 
 from PyQt4 import QtGui
 from PyQt4.QtCore import Qt
+
+import plotwidget
 
 from newplot_ui    import Ui_NewPlot
 from mainwindow_ui import Ui_MainWindow
@@ -143,3 +139,12 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
     @property
     def result(self):
         return self.__csvquery
+
+
+if __name__ == '__main__':
+    qApp = QtGui.QApplication(sys.argv)
+
+    wMain = MainUi()
+    wMain.show()
+
+    sys.exit(qApp.exec_())
