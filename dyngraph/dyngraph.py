@@ -1,7 +1,10 @@
-import csv
-import sys
+from __future__ import print_function
 
-from PyQt4 import QtGui
+import sys,csv
+
+import pandas
+
+from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
 import plotwidget
@@ -14,20 +17,30 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         super(MainUi, self).__init__(parent=parent)
         self.setupUi(self)
 
+        self.__workers = []
+
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
 
-        self.menuFile.addAction('&New Plot', self.newPlot, Qt.CTRL + Qt.Key_N)
+        self.menuFile.addAction('&New Plot', self.requestNewPlot, Qt.CTRL + Qt.Key_N)
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
 
-    def newPlot(self):
+    def requestNewPlot(self):
         dlgNewplot = DlgNewPlot()
         if not dlgNewplot.exec_(): return
-        query = dlgNewplot.result
-        if not query: return
 
-        plot = plotwidget.PlotWidget(parent=self, rpcobj=query)
-        tabindex = self.tabWidget.addTab(plot, query.samplename)
+        workerthread = QtCore.QThread()
+        csvreader = dlgNewplot.result
+        self.__workers.append((workerthread, csvreader))
+
+        csvreader.sigData.connect(self.createNewPlotWithData)
+        csvreader.moveToThread(workerthread)
+        workerthread.started.connect(csvreader.start)
+        workerthread.start()
+
+    def createNewPlotWithData(self, data):
+        plot = plotwidget.PlotWidget(parent=self, plotdata=data)
+        tabindex = self.tabWidget.addTab(plot, "test")
         self.tabWidget.setCurrentIndex(tabindex)
 
     def fileQuit(self):
@@ -49,12 +62,33 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.statusBar.showMessage(m)
 
+
+class Reader(QtCore.QObject):
+    sigData = QtCore.pyqtSignal(object)
+
+    def __init__(self, filename, seperator, fields):
+        super(Reader, self).__init__()
+        self.filename  = filename
+        self.seperator = seperator
+        self.fields    = fields
+
+    def start(self):
+        data = pandas.read_csv(self.filename,
+                               sep     = self.seperator,
+                               usecols = self.fields,
+                               engine  = 'c')
+        self.sigData.emit(data)
+
+
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
     def __init__(self, parent=None):
         super(DlgNewPlot, self).__init__(parent=parent)
-        self.__csvquery = None
-
         self.setupUi(self)
+
+        self.xfields = []
+        self.yfields = []
+        self.filename = ""
+        self.sep = ""
 
         self.txtSep.addItem(',')
         self.txtSep.addItem(';')
@@ -85,7 +119,6 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
     def loadCsvFields(self):
         sep = str(self.txtSep.currentText())
         filename = self.txtFile.text()
-        self.txtEvery.setValue(self.__estimateSkiplines(filename))
         fields = []
         # Use the csv module to retrieve csv fields
         with open(filename, 'rb') as csvfile:
@@ -115,30 +148,15 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
     def loadPlot(self):
         xRows = [i.text() for i in self.listX.findItems("", Qt.MatchContains)]
         yRows = [i.text() for i in self.listY.findItems("", Qt.MatchContains)]
-        xfields = map(str, xRows)
-        yfields = map(str, yRows)
-        skiplines = self.txtEvery.value()
-        filename = self.txtFile.text()
-        sep = str(self.txtSep.currentText())
-        self.__csvquery = rpc.CSVQuery(filename  = filename,
-                                       seperator = sep,
-                                       xfields   = xfields,
-                                       yfields   = yfields,
-                                       notnull   = xfields + yfields,
-                                       linerange = None,
-                                       skiplines = skiplines)
+        self.xfields = map(str, xRows)
+        self.yfields = map(str, yRows)
+        self.filename = str(self.txtFile.text())
+        self.sep = str(self.txtSep.currentText())
         self.accept()
-
-    def __estimateSkiplines(self, filename):
-        fsize = os.path.getsize(filename)
-        nlines = fsize / rpc.CHARPERLINE
-        slines = nlines / rpc.MAXLINES
-        if slines < 1: slines = 1
-        return int(slines)
 
     @property
     def result(self):
-        return self.__csvquery
+        return Reader(self.filename, self.sep, self.xfields + self.yfields)
 
 
 if __name__ == '__main__':
