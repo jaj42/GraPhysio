@@ -27,13 +27,13 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
 
     def requestNewPlot(self):
-        dlgNewplot = DlgNewPlot()
+        dlgNewplot = DlgNewPlot(parent = self)
         if not dlgNewplot.exec_(): return
 
         workerthread = QtCore.QThread()
         plotinfo = dlgNewplot.result
-        csvreader = Reader(plotinfo)
-        self.__workers.append((workerthread, csvreader))
+        csvreader = Reader(workerthread, plotinfo)
+        #self.__workers.append(workerthread)
         self.statusBar.showMessage("Loading... {}...".format(plotinfo.plotname))
         csvreader.sigData.connect(self.createNewPlotWithData)
         csvreader.moveToThread(workerthread)
@@ -51,16 +51,17 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
     def closeTab(self, i):
         w = self.tabWidget.widget(i)
+        w.deleteLater()
         self.tabWidget.removeTab(i)
-        w.destroy()
 
 
 class Reader(QtCore.QObject):
     sigData = QtCore.pyqtSignal(object)
 
-    def __init__(self, plotinfo):
+    def __init__(self, thread, plotinfo):
         super(Reader, self).__init__()
         self.plotinfo = plotinfo
+        self.thread = thread
 
     def start(self):
         if self.plotinfo.xisdate:
@@ -77,6 +78,7 @@ class Reader(QtCore.QObject):
                                engine  = 'c')
         self.plotinfo.plotdata = data
         self.sigData.emit(self.plotinfo)
+        self.thread.quit()
 
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
@@ -117,7 +119,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         filename = self.txtFile.text()
         fields = []
         # Use the csv module to retrieve csv fields
-        with open(filename, 'rb') as csvfile:
+        with open(filename, 'r') as csvfile:
             for row in csv.DictReader(csvfile, delimiter=sep):
                 fields = row.keys()
                 break
