@@ -10,5 +10,6 @@ setup(name='dyngraph',
       packages=['dyngraph'],
       install_requires=[
           'pyqtgraph',
+          'pandas'
       ],
       zip_safe=False)
