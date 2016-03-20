@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>501</width>
-    <height>546</height>
+    <width>512</width>
+    <height>556</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -117,19 +117,6 @@
    <property name="frameShadow">
     <enum>QFrame::Raised</enum>
    </property>
-   <widget class="QListWidget" name="listY">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>211</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="selectionMode">
-     <enum>QAbstractItemView::MultiSelection</enum>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btnRemoveY">
     <property name="geometry">
      <rect>
@@ -156,6 +143,23 @@
      <string>Elements on Y axis</string>
     </property>
    </widget>
+   <widget class="QListView" name="lstVY">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>211</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::MultiSelection</enum>
+    </property>
+   </widget>
+   <zorder>btnRemoveY</zorder>
+   <zorder>label_5</zorder>
+   <zorder>frame_4</zorder>
+   <zorder>lstVY</zorder>
   </widget>
   <widget class="QFrame" name="frame_2">
    <property name="geometry">
@@ -172,19 +176,6 @@
    <property name="frameShadow">
     <enum>QFrame::Raised</enum>
    </property>
-   <widget class="QListWidget" name="listX">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>221</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="selectionMode">
-     <enum>QAbstractItemView::MultiSelection</enum>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btnRemoveX">
     <property name="geometry">
      <rect>
@@ -211,6 +202,19 @@
      <string>Elements on X axis</string>
     </property>
    </widget>
+   <widget class="QListView" name="lstVX">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>211</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::MultiSelection</enum>
+    </property>
+   </widget>
   </widget>
   <widget class="QFrame" name="frame_4">
    <property name="geometry">
@@ -227,19 +231,6 @@
    <property name="frameShadow">
     <enum>QFrame::Raised</enum>
    </property>
-   <widget class="QListWidget" name="listAll">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>211</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="selectionMode">
-     <enum>QAbstractItemView::MultiSelection</enum>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
@@ -279,17 +270,17 @@
      <string>Move to X</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="btnNotNull">
+   <widget class="QListView" name="lstVAll">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>10</y>
-      <width>79</width>
-      <height>21</height>
+      <x>10</x>
+      <y>30</y>
+      <width>211</width>
+      <height>121</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Not Null</string>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::MultiSelection</enum>
     </property>
    </widget>
   </widget>
@@ -297,7 +288,7 @@
    <property name="geometry">
     <rect>
      <x>80</x>
-     <y>210</y>
+     <y>250</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -309,13 +300,30 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>38</x>
-     <y>110</y>
-     <width>171</width>
-     <height>71</height>
+     <x>20</x>
+     <y>90</y>
+     <width>211</width>
+     <height>61</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="1">
+     <widget class="QComboBox" name="txtDecimal">
+      <property name="editable">
+       <bool>true</bool>
+      </property>
+      <item>
+       <property name="text">
+        <string>.</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>,</string>
+       </property>
+      </item>
+     </widget>
+    </item>
     <item row="0" column="0">
      <widget class="QLabel" name="label_2">
       <property name="frameShape">
@@ -325,7 +333,14 @@
        <enum>QFrame::Plain</enum>
       </property>
       <property name="text">
-       <string>Seperator</string>
+       <string>Field Seperator</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Decimal seperator</string>
       </property>
      </widget>
     </item>
@@ -334,22 +349,53 @@
       <property name="editable">
        <bool>true</bool>
       </property>
+      <item>
+       <property name="text">
+        <string>,</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>;</string>
+       </property>
+      </item>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QSpinBox" name="txtEvery">
-      <property name="wrapping">
-       <bool>false</bool>
-      </property>
-      <property name="buttonSymbols">
-       <enum>QAbstractSpinBox::PlusMinus</enum>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>160</y>
+     <width>231</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="2" column="0">
+     <widget class="QCheckBox" name="chkUnixTime">
+      <property name="text">
+       <string>Unix Timestamp</string>
       </property>
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QLabel" name="label">
+     <widget class="QComboBox" name="txtDateTime">
+      <property name="editable">
+       <bool>true</bool>
+      </property>
+      <item>
+       <property name="text">
+        <string>%Y-%m-%d %H:%M:%S,%f</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_7">
       <property name="text">
-       <string>Every n line</string>
+       <string>Date/Time Format</string>
       </property>
      </widget>
     </item>
@@ -363,6 +409,8 @@
   <zorder>frame_2</zorder>
   <zorder>frame_4</zorder>
   <zorder>btnLoad</zorder>
+  <zorder>gridLayoutWidget</zorder>
+  <zorder>label_7</zorder>
  </widget>
  <resources/>
  <connections/>
