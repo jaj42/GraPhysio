@@ -1,2 +1,2 @@
-include frontend/designer/mainwindow.ui
-include frontend/designer/newplot.ui
+include dyngraph/designer/mainwindow.ui
+include dyngraph/designer/newplot.ui
