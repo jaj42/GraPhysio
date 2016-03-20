@@ -45,7 +45,13 @@
      <string>File</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuExport">
+    <property name="title">
+     <string>Export</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuExport"/>
   </widget>
   <action name="actNewplot">
    <property name="text">

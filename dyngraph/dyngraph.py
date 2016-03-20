@@ -25,6 +25,8 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
 
+        self.menuExport.addAction('&CSV', self.exportCsv)
+
 
     def requestNewPlot(self):
         dlgNewplot = DlgNewPlot(parent = self)
@@ -32,22 +34,34 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         plotinfo = dlgNewplot.result
         self.statusBar.showMessage("Loading... {}...".format(plotinfo.plotname))
 
+
+        print(self.thread().currentThreadId())
         thread = QtCore.QThread()
         self.__workers.append(thread)
-        reader = Reader(thread, plotinfo)
+        reader = Reader(plotinfo)
         reader.moveToThread(thread)
-        reader.data.connect(self.createNewPlotWithData)
+        reader.hasdata.connect(self.createNewPlotWithData)
         thread.started.connect(reader.process)
-        reader.finished.connect(thread.quit)
-        reader.finished.connect(reader.deleteLater)
-        thread.finished.connect(thread.deleteLater)
+        #reader.finished.connect(thread.quit)
+        #reader.finished.connect(reader.deleteLater)
+        #thread.finished.connect(thread.deleteLater)
         thread.start()
 
     def createNewPlotWithData(self, plotinfo):
         plot = plotwidget.PlotWidget(parent=self, plotinfo=plotinfo)
         tabindex = self.tabWidget.addTab(plot, plotinfo.plotname)
         self.tabWidget.setCurrentIndex(tabindex)
-        self.statusBar.showMessage("Loading... done".format(plotinfo.plotname))
+        self.statusBar.showMessage("Loading... done")
+
+    def exportCsv(self):
+        i = self.tabWidget.currentIndex()
+        if i < 0: return
+        plotwidget = self.tabWidget.widget(i)
+        filename = QtGui.QFileDialog.getSaveFileName(parent  = self,
+                                                     caption = "Export to",
+                                                     filter  = "CSV files (*.csv *.dat)")
+        plotwidget.exporter.tocsv(filename)
+
 
     def fileQuit(self):
         self.close()
@@ -59,16 +73,16 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
 
 class Reader(QtCore.QObject):
-    data     = QtCore.pyqtSignal(object)
+    hasdata  = QtCore.pyqtSignal(object)
     finished = QtCore.pyqtSignal()
 
-    def __init__(self, thread, plotinfo):
+    def __init__(self, plotinfo):
         super(Reader, self).__init__()
         self.plotinfo = plotinfo
-        self.thread = thread
 
-    @pyqtSlot()
+    @QtCore.pyqtSlot()
     def process(self):
+        print(self.thread().currentThreadId())
         if self.plotinfo.xisdate:
             datefield = self.plotinfo.xfields
         else:
@@ -82,7 +96,7 @@ class Reader(QtCore.QObject):
                                index_col = False,
                                engine  = 'c')
         self.plotinfo.plotdata = data
-        self.data.emit(self.plotinfo)
+        self.hasdata.emit(self.plotinfo)
         #self.finished.emit()
 
 
@@ -117,7 +131,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.txtDateTime.setEnabled(not self.chkUnixTime.isChecked())
 
     def selectFile(self):
-        self.txtFile.setText(QtGui.QFileDialog.getOpenFileName())
+        self.txtFile.setText(QtGui.QFileDialog.getOpenFileName(parent = self))
 
     def loadCsvFields(self):
         sep = str(self.txtSep.currentText())
