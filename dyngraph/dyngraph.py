@@ -29,16 +29,19 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def requestNewPlot(self):
         dlgNewplot = DlgNewPlot(parent = self)
         if not dlgNewplot.exec_(): return
-
-        workerthread = QtCore.QThread()
         plotinfo = dlgNewplot.result
-        csvreader = Reader(workerthread, plotinfo)
-        #self.__workers.append(workerthread)
         self.statusBar.showMessage("Loading... {}...".format(plotinfo.plotname))
-        csvreader.sigData.connect(self.createNewPlotWithData)
-        csvreader.moveToThread(workerthread)
-        workerthread.started.connect(csvreader.start)
-        workerthread.start()
+
+        thread = QtCore.QThread()
+        self.__workers.append(thread)
+        reader = Reader(thread, plotinfo)
+        reader.moveToThread(thread)
+        reader.data.connect(self.createNewPlotWithData)
+        thread.started.connect(reader.process)
+        reader.finished.connect(thread.quit)
+        reader.finished.connect(reader.deleteLater)
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
 
     def createNewPlotWithData(self, plotinfo):
         plot = plotwidget.PlotWidget(parent=self, plotinfo=plotinfo)
@@ -56,14 +59,16 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
 
 class Reader(QtCore.QObject):
-    sigData = QtCore.pyqtSignal(object)
+    data     = QtCore.pyqtSignal(object)
+    finished = QtCore.pyqtSignal()
 
     def __init__(self, thread, plotinfo):
         super(Reader, self).__init__()
         self.plotinfo = plotinfo
         self.thread = thread
 
-    def start(self):
+    @pyqtSlot()
+    def process(self):
         if self.plotinfo.xisdate:
             datefield = self.plotinfo.xfields
         else:
@@ -77,8 +82,8 @@ class Reader(QtCore.QObject):
                                index_col = False,
                                engine  = 'c')
         self.plotinfo.plotdata = data
-        self.sigData.emit(self.plotinfo)
-        self.thread.quit()
+        self.data.emit(self.plotinfo)
+        #self.finished.emit()
 
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
@@ -123,7 +128,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
             for row in csv.DictReader(csvfile, delimiter=sep):
                 fields = row.keys()
                 break
-        # Clear all lsts, then add new fields
+        # Clear all lists, then add new fields
         map(lambda lst: lst.clear(), [self.lstAll, self.lstX, self.lstY])
         for field in fields:
             if field is None: continue
