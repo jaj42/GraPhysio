@@ -4,6 +4,10 @@ import sys,csv
 
 import pandas
 
+# Hack for Python 2 compat
+import sip
+sip.setapi('QVariant', 1)
+
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
@@ -13,11 +17,11 @@ from newplot_ui    import Ui_NewPlot
 from mainwindow_ui import Ui_MainWindow
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
+    hasdata  = QtCore.pyqtSignal(object)
+
     def __init__(self, parent=None):
         super(MainUi, self).__init__(parent=parent)
         self.setupUi(self)
-
-        self.__workers = []
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
 
@@ -27,6 +31,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
         self.menuExport.addAction('&CSV', self.exportCsv)
 
+        self.hasdata.connect(self.createNewPlotWithData)
 
     def requestNewPlot(self):
         dlgNewplot = DlgNewPlot(parent = self)
@@ -34,21 +39,12 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         plotinfo = dlgNewplot.result
         self.statusBar.showMessage("Loading... {}...".format(plotinfo.plotname))
 
-
-        print(self.thread().currentThreadId())
-        thread = QtCore.QThread()
-        self.__workers.append(thread)
-        reader = Reader(plotinfo)
-        reader.moveToThread(thread)
-        reader.hasdata.connect(self.createNewPlotWithData)
-        thread.started.connect(reader.process)
-        #reader.finished.connect(thread.quit)
-        #reader.finished.connect(reader.deleteLater)
-        #thread.finished.connect(thread.deleteLater)
-        thread.start()
+        reader = Reader(self, plotinfo)
+        QtCore.QThreadPool.globalInstance().start(reader)
 
     def createNewPlotWithData(self, plotinfo):
-        plot = plotwidget.PlotWidget(parent=self, plotinfo=plotinfo)
+        plot = plotwidget.PlotWidget(plotinfo=plotinfo)
+        #plot.setAttribute(Qt.WA_DeleteOnClose)
         tabindex = self.tabWidget.addTab(plot, plotinfo.plotname)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
@@ -68,36 +64,33 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
     def closeTab(self, i):
         w = self.tabWidget.widget(i)
-        w.deleteLater()
         self.tabWidget.removeTab(i)
+        w.close()
+        w.deleteLater()
 
 
-class Reader(QtCore.QObject):
-    hasdata  = QtCore.pyqtSignal(object)
-    finished = QtCore.pyqtSignal()
-
-    def __init__(self, plotinfo):
+class Reader(QtCore.QRunnable):
+    def __init__(self, parent, _plotinfo):
         super(Reader, self).__init__()
-        self.plotinfo = plotinfo
+        self._parent = parent
+        self._plotinfo = _plotinfo
 
-    @QtCore.pyqtSlot()
-    def process(self):
-        print(self.thread().currentThreadId())
-        if self.plotinfo.xisdate:
-            datefield = self.plotinfo.xfields
+    def run(self):
+        if self._plotinfo.xisdate:
+            datefield = self._plotinfo.xfields
         else:
             datefield = False
-        data = pandas.read_csv(self.plotinfo.filename,
-                               sep     = self.plotinfo.seperator,
-                               usecols = self.plotinfo.fields,
-                               decimal = self.plotinfo.decimal,
+        data = pandas.read_csv(self._plotinfo.filename,
+                               sep     = self._plotinfo.seperator,
+                               usecols = self._plotinfo.fields,
+                               decimal = self._plotinfo.decimal,
                                parse_dates = datefield,
-                               date_parser = self.plotinfo.datetime_parser,
+                               date_parser = self._plotinfo.datetime_parser,
                                index_col = False,
+                               encoding = 'latin1',
                                engine  = 'c')
-        self.plotinfo.plotdata = data
-        self.hasdata.emit(self.plotinfo)
-        #self.finished.emit()
+        self._plotinfo.plotdata = data
+        self._parent.hasdata.emit(self._plotinfo)
 
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
