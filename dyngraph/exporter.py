@@ -16,4 +16,5 @@ class Exporter():
     def tocsv(self, filename):
         self.updaterange()
         data = self.plotinfo.plotdata.iloc[self.xmin : self.xmax]
-        data.to_csv(filename, index = False)
+        datanona = data.dropna(how = 'all', subset = self.plotinfo.yfields)
+        datanona.to_csv(filename, index = False)
