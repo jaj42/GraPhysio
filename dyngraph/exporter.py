@@ -6,7 +6,7 @@ class Exporter():
         self.viewbox = viewbox
 
     def updaterange(self):
-        datalen = self.plotinfo.plotdata.shape[0]
+        datalen = self.plotinfo.plotdata.shape[0] - 1
         vbrange = self.viewbox.viewRange()
         xmin,xmax = vbrange[0]
         if xmin <= 0: xmin = 0
