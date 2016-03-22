@@ -180,14 +180,14 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
             self.lstAll.appendRow(self.lstY.takeRow(row))
 
     def loadPlot(self):
-        yRows = [i.text() for i in self.lstY.findItems("", Qt.MatchContains)]
-        xRows = [i.text() for i in self.lstX.findItems("", Qt.MatchContains)]
+        yRows = [str(i.text()) for i in self.lstY.findItems("", Qt.MatchContains)]
+        xRows = [str(i.text()) for i in self.lstX.findItems("", Qt.MatchContains)]
         xState = [i.checkState() for i in self.lstX.findItems("", Qt.MatchContains)]
         for s in xState:
             self.plotinfo.xisdate = s > Qt.Unchecked
             break
-        self.plotinfo.xfields = set(map(str, xRows))
-        self.plotinfo.yfields = set(map(str, yRows))
+        self.plotinfo.xfields = xRows
+        self.plotinfo.yfields = yRows
         self.plotinfo.filename = str(self.txtFile.text())
         self.plotinfo.seperator = str(self.txtSep.currentText())
         self.plotinfo.decimal = str(self.txtDecimal.currentText())

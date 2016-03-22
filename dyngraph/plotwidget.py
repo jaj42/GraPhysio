@@ -12,10 +12,13 @@ class PlotWidget(pg.PlotWidget):
 
     def __init__(self, plotinfo, parent=None):
         if plotinfo.xisdate:
-            super(PlotWidget, self).__init__(parent=parent,
-                                             axisItems={'bottom': TimeAxisItem(orientation='bottom')})
+            xvalues = plotinfo.xvalues.apply(lambda x: x.timestamp())
+            axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         else:
-            super(PlotWidget, self).__init__(parent=parent)
+            xvalues = plotinfo.xvalues
+            axisItems = None
+
+        super(PlotWidget, self).__init__(parent=parent, axisItems=axisItems)
 
         vb = self.getViewBox()
         vb.setMouseMode(vb.RectMode)
@@ -30,15 +33,17 @@ class PlotWidget(pg.PlotWidget):
             else:
                 color = self.colors[n]
             colname, series = column
-            curve = pg.PlotDataItem(x   = plotinfo.xvalues,
-                                    y   = series.values,
-                                    pen = color)
+            curve = pg.PlotDataItem(x    = xvalues.values,
+                                    y    = series.values,
+                                    name = series.name,
+                                    pen  = color)
             self.addItem(curve)
 
 
 class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
-        return map(lambda x: datetime.strftime("%H:%M:%S.%f", x), values)
+        dates = map(datetime.fromtimestamp, values)
+        return [datetime.strftime(date, "%H:%M:%S.%f") for date in dates]
 
 class PlotInfo():
     def __init__(self, filename  = "",
@@ -52,8 +57,8 @@ class PlotInfo():
         self.filename = str(filename)
         self.seperator = str(seperator)
         self.decimal = str(decimal)
-        self.xfields = set(xfields)
-        self.yfields = set(yfields)
+        self.xfields = xfields
+        self.yfields = yfields
         self.datetime_format = str(datetime_format)
         self.xisdate = xisdate
         self.isunixtime = isunixtime
@@ -61,18 +66,18 @@ class PlotInfo():
 
     @property
     def fields(self):
-        return self.xfields | self.yfields
+        return self.xfields + self.yfields
 
     @property
     def xvalues(self):
         if len(self.xfields) > 0:
-            return self.plotdata[list(self.xfields)]
+            return self.plotdata[self.xfields[0]]
         else:
-            return np.array(self.plotdata.index)
+            return self.plotdata.index
 
     @property
     def yvalues(self):
-        return self.plotdata[list(self.yfields)]
+        return self.plotdata[self.yfields]
 
     @property
     def datetime_parser(self):
