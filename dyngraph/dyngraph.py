@@ -84,8 +84,12 @@ class Reader(QtCore.QRunnable):
                                encoding = 'latin1',
                                engine  = 'c')
         if self._plotinfo.xisdate:
-            data['dt'] = pandas.to_datetime(data[self._plotinfo.datefield],
-                                            format = self._plotinfo.datetime_format)
+            if self.plotinfo.isunixtime
+                data['dt'] = pandas.to_datetime(data[self._plotinfo.datefield],
+                                                format = self._plotinfo.datetime_format)
+            else:
+                data['dt'] = pandas.to_datetime(data[self._plotinfo.datefield],
+                                                unit = 'ms')
             data = data.set_index('dt')
         self._plotinfo.plotdata = data
         self._parent.hasdata.emit(self._plotinfo)
