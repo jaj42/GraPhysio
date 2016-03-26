@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 
 from PyQt4 import QtCore, QtGui
+from PyQt4.QtCore import Qt
+
 import pyqtgraph as pg
 import numpy as np
 
@@ -12,10 +14,8 @@ class PlotWidget(pg.PlotWidget):
 
     def __init__(self, plotinfo, parent=None):
         if plotinfo.xisdate:
-            xvalues = plotinfo.xvalues.apply(lambda x: x.timestamp())
             axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         else:
-            xvalues = plotinfo.xvalues
             axisItems = None
 
         super(PlotWidget, self).__init__(parent=parent, axisItems=axisItems)
@@ -27,13 +27,13 @@ class PlotWidget(pg.PlotWidget):
 
         self.addLegend()
 
-        for n, column in enumerate(plotinfo.yvalues.iteritems()):
+        for n, column in enumerate(plotinfo.ycols.iteritems()):
             if n >= len(self.colors):
                 color = 'w'
             else:
                 color = self.colors[n]
             colname, series = column
-            curve = pg.PlotDataItem(x    = xvalues.values,
+            curve = pg.PlotDataItem(x    = plotinfo.xvalues,
                                     y    = series.values,
                                     name = series.name,
                                     pen  = color)
@@ -42,8 +42,14 @@ class PlotWidget(pg.PlotWidget):
 
 class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
-        dates = map(datetime.fromtimestamp, values)
-        return [datetime.strftime(date, "%H:%M:%S.%f") for date in dates]
+        ret = []
+        for value in values:
+            value = value / 1e6 # convert from ns to msec
+            date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
+            date = date.toTimeSpec(Qt.UTC)
+            datestr = date.toString("hh:mm:ss.zzz")
+            ret.append(datestr)
+        return ret
 
 class PlotInfo():
     def __init__(self, filename  = "",
@@ -69,14 +75,24 @@ class PlotInfo():
         return self.xfields + self.yfields
 
     @property
-    def xvalues(self):
+    def datefield(self):
+        if not self.xisdate: return False
         if len(self.xfields) > 0:
-            return self.plotdata[self.xfields[0]]
+            return self.xfields[0]
         else:
-            return self.plotdata.index
+            return False
 
     @property
-    def yvalues(self):
+    def xvalues(self):
+        if self.xisdate:
+            return self.plotdata.index.values.astype(np.int64)
+        elif len(self.xfields) > 0:
+            return self.plotdata[self.xfields[0]].values
+        else:
+            return self.plotdata.index.values
+
+    @property
+    def ycols(self):
         return self.plotdata[self.yfields]
 
     @property

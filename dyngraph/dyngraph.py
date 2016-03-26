@@ -76,19 +76,17 @@ class Reader(QtCore.QRunnable):
         self._plotinfo = _plotinfo
 
     def run(self):
-        if self._plotinfo.xisdate:
-            datefield = self._plotinfo.xfields
-        else:
-            datefield = False
         data = pandas.read_csv(self._plotinfo.filename,
                                sep     = self._plotinfo.seperator,
                                usecols = self._plotinfo.fields,
                                decimal = self._plotinfo.decimal,
-                               parse_dates = datefield,
-                               date_parser = self._plotinfo.datetime_parser,
                                index_col = False,
                                encoding = 'latin1',
                                engine  = 'c')
+        if self._plotinfo.xisdate:
+            data['dt'] = pandas.to_datetime(data[self._plotinfo.datefield],
+                                            format = self._plotinfo.datetime_format)
+            data = data.set_index('dt')
         self._plotinfo.plotdata = data
         self._parent.hasdata.emit(self._plotinfo)
 
