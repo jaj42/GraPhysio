@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import sys,csv
 
-import pandas
+import pandas as pd
 
 # Hack for Python 2 compat
 import sip
@@ -76,20 +76,20 @@ class Reader(QtCore.QRunnable):
         self._plotinfo = _plotinfo
 
     def run(self):
-        data = pandas.read_csv(self._plotinfo.filename,
-                               sep     = self._plotinfo.seperator,
-                               usecols = self._plotinfo.fields,
-                               decimal = self._plotinfo.decimal,
-                               index_col = False,
-                               encoding = 'latin1',
-                               engine  = 'c')
+        data = pd.read_csv(self._plotinfo.filename,
+                           sep     = self._plotinfo.seperator,
+                           usecols = self._plotinfo.fields,
+                           decimal = self._plotinfo.decimal,
+                           index_col = False,
+                           encoding = 'latin1',
+                           engine  = 'c')
         if self._plotinfo.xisdate:
-            if self.plotinfo.isunixtime
-                data['dt'] = pandas.to_datetime(data[self._plotinfo.datefield],
-                                                format = self._plotinfo.datetime_format)
+            if self._plotinfo.isunixtime:
+                data['dt'] = pd.to_datetime(data[self._plotinfo.datefield],
+                                            format = self._plotinfo.datetime_format)
             else:
-                data['dt'] = pandas.to_datetime(data[self._plotinfo.datefield],
-                                                unit = 'ms')
+                data['dt'] = pd.to_datetime(data[self._plotinfo.datefield],
+                                            unit = 'ms')
             data = data.set_index('dt')
         self._plotinfo.plotdata = data
         self._parent.hasdata.emit(self._plotinfo)
@@ -138,7 +138,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
                 fields = row.keys()
                 break
         # Clear all lists, then add new fields
-        map(lambda lst: lst.clear(), [self.lstAll, self.lstX, self.lstY])
+        for lst in [self.lstAll, self.lstX, self.lstY]: lst.clear()
         for field in fields:
             if field is None: continue
             item = QtGui.QStandardItem(field)
