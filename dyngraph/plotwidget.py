@@ -34,7 +34,7 @@ class PlotWidget(pg.PlotWidget):
                 color = self.colors[n]
             colname, series = column
             curve = pg.PlotDataItem(x    = plotinfo.xvalues,
-                                    y    = series.values,
+                                    y    = series.values.astype(np.float),
                                     name = series.name,
                                     pen  = color)
             self.addItem(curve)
