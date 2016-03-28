@@ -6,7 +6,8 @@ import pandas as pd
 
 # Hack for Python 2 compat
 import sip
-sip.setapi('QVariant', 1)
+sip.setapi('QVariant', 2)
+sip.setapi('QString', 2)
 
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
@@ -129,7 +130,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.txtFile.setText(QtGui.QFileDialog.getOpenFileName(parent = self))
 
     def loadCsvFields(self):
-        sep = str(self.txtSep.currentText())
+        sep = self.txtSep.currentText()
         filename = self.txtFile.text()
         fields = []
         # Use the csv module to retrieve csv fields
@@ -152,7 +153,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
             rowItems = self.lstAll.takeRow(row)
             item = rowItems[0]
             item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
-            item.setData(QtCore.QVariant(Qt.Unchecked), Qt.CheckStateRole)
+            item.setData(Qt.Unchecked, Qt.CheckStateRole)
             self.lstX.appendRow(item)
             break
 
@@ -171,7 +172,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
             rowItems = self.lstX.takeRow(row)
             item = rowItems[0]
             item.setFlags(item.flags() ^ QtCore.Qt.ItemIsUserCheckable)
-            item.setData(QtCore.QVariant(), Qt.CheckStateRole)
+            item.setData(None, Qt.CheckStateRole)
             self.lstAll.appendRow(item)
 
     def delFromY(self):
@@ -182,18 +183,21 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
             self.lstAll.appendRow(self.lstY.takeRow(row))
 
     def loadPlot(self):
-        yRows = [str(i.text()) for i in self.lstY.findItems("", Qt.MatchContains)]
-        xRows = [str(i.text()) for i in self.lstX.findItems("", Qt.MatchContains)]
+        yRows = [i.text() for i in self.lstY.findItems("", Qt.MatchContains)]
+        xRows = [i.text() for i in self.lstX.findItems("", Qt.MatchContains)]
         xState = [i.checkState() for i in self.lstX.findItems("", Qt.MatchContains)]
         for s in xState:
             self.plotinfo.xisdate = s > Qt.Unchecked
             break
-        self.plotinfo.xfields = xRows
+        if len(xRows) > 0:
+            self.plotinfo.xfield = xRows[0]
+        else:
+            self.plotinfo.xfield = None
         self.plotinfo.yfields = yRows
-        self.plotinfo.filename = str(self.txtFile.text())
-        self.plotinfo.seperator = str(self.txtSep.currentText())
-        self.plotinfo.decimal = str(self.txtDecimal.currentText())
-        self.plotinfo.datetime_format = str(self.txtDateTime.currentText())
+        self.plotinfo.filename = self.txtFile.text()
+        self.plotinfo.seperator = self.txtSep.currentText()
+        self.plotinfo.decimal = self.txtDecimal.currentText()
+        self.plotinfo.datetime_format = self.txtDateTime.currentText()
         self.plotinfo.isunixtime = self.chkUnixTime.isChecked()
         self.accept()
 

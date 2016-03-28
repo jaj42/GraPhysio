@@ -10,8 +10,8 @@ class Exporter():
         vbrange = self.viewbox.viewRange()
         xmin,xmax = vbrange[0]
         if self.plotinfo.xisdate:
-            self.xmin = pd.to_datetime(xmin)
-            self.xmax = pd.to_datetime(xmax)
+            self.xmin = pd.to_datetime(xmin, unit='ns')
+            self.xmax = pd.to_datetime(xmax, unit='ns')
         else:
             self.xmin, self.xmax = int(xmin), int(xmax)
 

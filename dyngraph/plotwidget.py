@@ -34,7 +34,7 @@ class PlotWidget(pg.PlotWidget):
                 color = self.colors[n]
             colname, series = column
             curve = pg.PlotDataItem(x    = plotinfo.xvalues,
-                                    y    = series.values.astype(np.float),
+                                    y    = series.values.astype(np.float64),
                                     name = series.name,
                                     pen  = color)
             self.addItem(curve)
@@ -55,7 +55,7 @@ class PlotInfo():
     def __init__(self, filename  = "",
                        seperator = ",",
                        decimal   = ".",
-                       xfields = [],
+                       xfield  = None,
                        yfields = [],
                        xisdate = False,
                        isunixtime = False,
@@ -63,7 +63,7 @@ class PlotInfo():
         self.filename = str(filename)
         self.seperator = str(seperator)
         self.decimal = str(decimal)
-        self.xfields = xfields
+        self.xfield  = xfield
         self.yfields = yfields
         self.datetime_format = str(datetime_format)
         self.xisdate = xisdate
@@ -72,13 +72,14 @@ class PlotInfo():
 
     @property
     def fields(self):
-        return self.xfields + self.yfields
+        xfields = [] if self.xfield is None else [self.xfield]
+        return xfields + self.yfields
 
     @property
     def datefield(self):
         if not self.xisdate: return False
-        if len(self.xfields) > 0:
-            return self.xfields[0]
+        if self.xfield is not None:
+            return self.xfield
         else:
             return False
 
@@ -86,8 +87,8 @@ class PlotInfo():
     def xvalues(self):
         if self.xisdate:
             return self.plotdata.index.values.astype(np.int64)
-        elif len(self.xfields) > 0:
-            return self.plotdata[self.xfields[0]].values
+        elif self.xfield is not None:
+            return self.plotdata[self.xfield].values.astype(np.float64)
         else:
             return self.plotdata.index.values
 
