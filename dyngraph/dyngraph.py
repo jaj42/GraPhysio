@@ -37,16 +37,16 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def requestNewPlot(self):
         dlgNewplot = DlgNewPlot(parent = self)
         if not dlgNewplot.exec_(): return
-        plotinfo = dlgNewplot.result
-        self.statusBar.showMessage("Loading... {}...".format(plotinfo.plotname))
+        plotdescr = dlgNewplot.result
+        self.statusBar.showMessage("Loading... {}...".format(plotdescr.name))
 
-        reader = Reader(self, plotinfo)
+        reader = Reader(self, plotdescr)
         QtCore.QThreadPool.globalInstance().start(reader)
 
-    def createNewPlotWithData(self, plotinfo):
-        plot = plotwidget.PlotWidget(plotinfo=plotinfo)
+    def createNewPlotWithData(self, plotdescr):
+        plot = plotwidget.PlotWidget(plotdescr=plotdescr)
         #plot.setAttribute(Qt.WA_DeleteOnClose)
-        tabindex = self.tabWidget.addTab(plot, plotinfo.plotname)
+        tabindex = self.tabWidget.addTab(plot, plotdescr.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
 
@@ -71,29 +71,29 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
 
 class Reader(QtCore.QRunnable):
-    def __init__(self, parent, _plotinfo):
+    def __init__(self, parent, plotdescr):
         super(Reader, self).__init__()
         self._parent = parent
-        self._plotinfo = _plotinfo
+        self._plotdescr = plotdescr
 
     def run(self):
-        data = pd.read_csv(self._plotinfo.filename,
-                           sep     = self._plotinfo.seperator,
-                           usecols = self._plotinfo.fields,
-                           decimal = self._plotinfo.decimal,
+        data = pd.read_csv(self._plotdescr.filename,
+                           sep     = self._plotdescr.seperator,
+                           usecols = self._plotdescr.fields,
+                           decimal = self._plotdescr.decimal,
                            index_col = False,
                            encoding = 'latin1',
                            engine  = 'c')
-        if self._plotinfo.xisdate:
-            if self._plotinfo.isunixtime:
-                data['dt'] = pd.to_datetime(data[self._plotinfo.datefield],
-                                            format = self._plotinfo.datetime_format)
+        if self._plotdescr.xisdate:
+            if self._plotdescr.isunixtime:
+                data['ixdatetime'] = pd.to_datetime(data[self._plotdescr.datefield],
+                                                    unit = 'ms')
             else:
-                data['dt'] = pd.to_datetime(data[self._plotinfo.datefield],
-                                            unit = 'ms')
-            data = data.set_index('dt')
-        self._plotinfo.plotdata = data
-        self._parent.hasdata.emit(self._plotinfo)
+                data['ixdatetime'] = pd.to_datetime(data[self._plotdescr.datefield],
+                                                    format = self._plotdescr.datetime_format)
+            data = data.set_index('ixdatetime')
+        self._plotdescr.data = data
+        self._parent.hasdata.emit(self._plotdescr)
 
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
@@ -101,7 +101,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         super(DlgNewPlot, self).__init__(parent=parent)
         self.setupUi(self)
 
-        self.plotinfo = plotwidget.PlotInfo()
+        self.plotdescr = plotwidget.PlotDescription()
 
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()
@@ -187,23 +187,23 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         xRows = [i.text() for i in self.lstX.findItems("", Qt.MatchContains)]
         xState = [i.checkState() for i in self.lstX.findItems("", Qt.MatchContains)]
         for s in xState:
-            self.plotinfo.xisdate = s > Qt.Unchecked
+            self.plotdescr.xisdate = s > Qt.Unchecked
             break
         if len(xRows) > 0:
-            self.plotinfo.xfield = xRows[0]
+            self.plotdescr.xfield = xRows[0]
         else:
-            self.plotinfo.xfield = None
-        self.plotinfo.yfields = yRows
-        self.plotinfo.filename = self.txtFile.text()
-        self.plotinfo.seperator = self.txtSep.currentText()
-        self.plotinfo.decimal = self.txtDecimal.currentText()
-        self.plotinfo.datetime_format = self.txtDateTime.currentText()
-        self.plotinfo.isunixtime = self.chkUnixTime.isChecked()
+            self.plotdescr.xfield = None
+        self.plotdescr.yfields = yRows
+        self.plotdescr.filename = self.txtFile.text()
+        self.plotdescr.seperator = self.txtSep.currentText()
+        self.plotdescr.decimal = self.txtDecimal.currentText()
+        self.plotdescr.datetime_format = self.txtDateTime.currentText()
+        self.plotdescr.isunixtime = self.chkUnixTime.isChecked()
         self.accept()
 
     @property
     def result(self):
-        return self.plotinfo
+        return self.plotdescr
 
 
 if __name__ == '__main__':

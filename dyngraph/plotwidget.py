@@ -12,8 +12,8 @@ import exporter
 class PlotWidget(pg.PlotWidget):
     colors = ['r', 'g', 'b', 'c', 'm', 'y', 'w']
 
-    def __init__(self, plotinfo, parent=None):
-        if plotinfo.xisdate:
+    def __init__(self, plotdescr, parent=None):
+        if plotdescr.xisdate:
             axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         else:
             axisItems = None
@@ -23,17 +23,17 @@ class PlotWidget(pg.PlotWidget):
         vb = self.getViewBox()
         vb.setMouseMode(vb.RectMode)
         #vb.menu = None
-        self.exporter = exporter.Exporter(plotinfo, vb)
+        self.exporter = exporter.Exporter(plotdescr, vb)
 
         self.addLegend()
 
-        for n, column in enumerate(plotinfo.ycols.iteritems()):
+        for n, column in enumerate(plotdescr.ycols.iteritems()):
             if n >= len(self.colors):
                 color = 'w'
             else:
                 color = self.colors[n]
             colname, series = column
-            curve = pg.PlotDataItem(x    = plotinfo.xvalues,
+            curve = pg.PlotDataItem(x    = plotdescr.xvalues,
                                     y    = series.values.astype(np.float64),
                                     name = series.name,
                                     pen  = color)
@@ -44,14 +44,14 @@ class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         ret = []
         for value in values:
-            value = value / 1e6 # convert from ns to msec
+            value = value / 1e6 # convert from ns to ms
             date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
             date = date.toTimeSpec(Qt.UTC)
             datestr = date.toString("hh:mm:ss.zzz")
             ret.append(datestr)
         return ret
 
-class PlotInfo():
+class PlotDescription():
     def __init__(self, filename  = "",
                        seperator = ",",
                        decimal   = ".",
@@ -68,7 +68,7 @@ class PlotInfo():
         self.datetime_format = str(datetime_format)
         self.xisdate = xisdate
         self.isunixtime = isunixtime
-        self.plotdata = None
+        self.data = None
 
     @property
     def fields(self):
@@ -86,15 +86,18 @@ class PlotInfo():
     @property
     def xvalues(self):
         if self.xisdate:
-            return self.plotdata.index.values.astype(np.int64)
+            # Return timestamp of the datetime in ns
+            values = self.data.index.values
+            return values.astype(np.int64)
         elif self.xfield is not None:
-            return self.plotdata[self.xfield].values.astype(np.float64)
+            values = self.data[self.xfield].values
+            return values.astype(np.float64)
         else:
-            return self.plotdata.index.values
+            return self.data.index.values
 
     @property
     def ycols(self):
-        return self.plotdata[self.yfields]
+        return self.data[self.yfields]
 
     @property
     def datetime_parser(self):
@@ -103,6 +106,6 @@ class PlotInfo():
         return conv_datetime
 
     @property
-    def plotname(self):
-        plotname, ext = os.path.splitext(os.path.basename(self.filename))
-        return plotname
+    def name(self):
+        name, ext = os.path.splitext(os.path.basename(self.filename))
+        return name
