@@ -30,6 +30,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
 
+        self.menuExport.addAction('&Period CSV', self.exportPeriod)
         self.menuExport.addAction('&CSV', self.exportCsv)
 
         self.hasdata.connect(self.createNewPlotWithData)
@@ -54,11 +55,13 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         i = self.tabWidget.currentIndex()
         if i < 0: return
         plotwidget = self.tabWidget.widget(i)
-        filename = QtGui.QFileDialog.getSaveFileName(parent  = self,
-                                                     caption = "Export to",
-                                                     filter  = "CSV files (*.csv *.dat)")
-        plotwidget.exporter.tocsv(filename)
+        plotwidget.exporter.tocsv()
 
+    def exportCsv(self):
+        i = self.tabWidget.currentIndex()
+        if i < 0: return
+        plotwidget = self.tabWidget.widget(i)
+        plotwidget.exporter.toperiodcsv()
 
     def fileQuit(self):
         self.close()
