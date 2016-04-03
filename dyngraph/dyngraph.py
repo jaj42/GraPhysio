@@ -57,7 +57,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         plotwidget = self.tabWidget.widget(i)
         plotwidget.exporter.tocsv()
 
-    def exportCsv(self):
+    def exportPeriod(self):
         i = self.tabWidget.currentIndex()
         if i < 0: return
         plotwidget = self.tabWidget.widget(i)

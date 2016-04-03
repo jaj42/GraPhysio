@@ -2,6 +2,8 @@ from __future__ import print_function
 import os, csv
 import pandas as pd
 
+from PyQt4 import QtGui
+
 from periodexport_ui import Ui_PeriodExport
 
 class Exporter():
@@ -31,10 +33,10 @@ class Exporter():
 
     def toperiodcsv(self):
         self.updaterange()
-        dlg = DlgNewPlot(begin   = self.xmin,
-                         end     = self.xmax,
-                         patient = self.plotdescr.name)
-        if not dlgNewplot.exec_(): return
+        dlg = DlgPeriodExport(begin   = self.xmin,
+                              end     = self.xmax,
+                              patient = self.plotdescr.name)
+        if not dlg.exec_(): return
 
         if os.path.exists(dlg.filename):
             fileappend = True
@@ -50,7 +52,7 @@ class Exporter():
                              'periodid' : dlg.periodname,
                              'comment'  : dlg.comment})
 
-class DlgPeriodExport(QtGui.QDialog, Ui_ExportPeriod):
+class DlgPeriodExport(QtGui.QDialog, Ui_PeriodExport):
     def __init__(self, begin, end, patient="", parent=None):
         super(DlgPeriodExport, self).__init__(parent=parent)
         self.setupUi(self)
@@ -83,4 +85,3 @@ class DlgPeriodExport(QtGui.QDialog, Ui_ExportPeriod):
     @property
     def periodname(self):
         return self.txtPeriod.currentText()
-
