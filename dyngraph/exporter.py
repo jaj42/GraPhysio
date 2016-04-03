@@ -38,13 +38,13 @@ class Exporter():
                               patient = self.plotdescr.name)
         if not dlg.exec_(): return
 
-        if os.path.exists(dlg.filename):
+        if os.path.exists(dlg.filepath):
             fileappend = True
         else:
             fileappend = False
 
-        with open(dlg.filename, 'a') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=periodfields, quoting=csv.QUOTE_MINIMAL)
+        with open(dlg.filepath, 'a') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL)
             if not fileappend: writer.writeheader()
             writer.writerow({'patient'  : dlg.patient,
                              'begin'    : self.xmin,
@@ -67,21 +67,22 @@ class DlgPeriodExport(QtGui.QDialog, Ui_PeriodExport):
 
     def selectFile(self):
         filename = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
-                                                     filter  = "CSV files (*.csv *.dat)")
+                                                     filter  = "CSV files (*.csv *.dat)",
+                                                     options = QtGui.QFileDialog.DontConfirmOverwrite)
         if filename: self.txtFile.setText(filename)
 
     @property
-    def filename(self):
-        return self.txtFile.currentText()
-
-    @property
     def patient(self):
-        return self.txtPatient.currentText()
+        return self.txtPatient.text()
 
     @property
     def comment(self):
-        return self.txtComment.currentText()
+        return self.txtComment.text()
 
     @property
     def periodname(self):
         return self.txtPeriod.currentText()
+
+    @property
+    def filepath(self):
+        return self.txtFile.text()
