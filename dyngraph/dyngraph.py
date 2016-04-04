@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-import sys,csv
+import sys,csv,os
 
 import pandas as pd
 
@@ -68,7 +68,9 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def closeTab(self, i):
         w = self.tabWidget.widget(i)
         self.tabWidget.removeTab(i)
+        w.close()
         w.deleteLater()
+        del w
 
 
 class Reader(QtCore.QRunnable):
@@ -80,7 +82,7 @@ class Reader(QtCore.QRunnable):
     def run(self):
         data = pd.read_csv(self._plotdescr.filename,
                            sep     = self._plotdescr.seperator,
-                           usecols = self._plotdescr.fields,
+                           #usecols = self._plotdescr.fields,
                            decimal = self._plotdescr.decimal,
                            index_col = False,
                            encoding = 'latin1',
@@ -103,6 +105,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.setupUi(self)
 
         self.plotdescr = plotwidget.PlotDescription()
+        self.dircache = ""
 
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()
@@ -128,7 +131,12 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.txtDateTime.setEnabled(not self.chkUnixTime.isChecked())
 
     def selectFile(self):
-        self.txtFile.setText(QtGui.QFileDialog.getOpenFileName(parent = self))
+        filepath = QtGui.QFileDialog.getOpenFileName(parent = self,
+                                                     caption = "Open CSV file",
+                                                     directory = self.dircache)
+        if not filepath: return
+        self.dircache = os.path.dirname(filepath)
+        self.txtFile.setText(filepath)
 
     def loadCsvFields(self):
         sep = self.txtSep.currentText()
