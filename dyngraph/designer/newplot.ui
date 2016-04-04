@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>512</width>
-    <height>556</height>
+    <width>578</width>
+    <height>763</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,401 +16,251 @@
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
-  <widget class="QPushButton" name="btnCancel">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>510</y>
-     <width>91</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Cancel</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btnOk">
-   <property name="geometry">
-    <rect>
-     <x>150</x>
-     <y>510</y>
-     <width>91</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>OK</string>
-   </property>
-  </widget>
-  <widget class="QFrame" name="frame">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>481</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Box</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Plain</enum>
-   </property>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>58</width>
-      <height>14</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="text">
-     <string>Open File</string>
-    </property>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>27</y>
-      <width>461</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLineEdit" name="txtFile"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnBrowse">
+  <layout class="QVBoxLayout" name="verticalLayout_4">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Open File</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLineEdit" name="txtFile"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnBrowse">
+        <property name="text">
+         <string>Browse</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="formLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
        <property name="text">
-        <string>Browse</string>
+        <string>Field Seperator</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="txtSep">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string>;</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>,</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Decimal seperator</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="txtDecimal">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string>,</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>.</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Date/Time Format</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="txtDateTime">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string>%Y-%m-%d %H:%M:%S,%f</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>%Y-%m-%d %H:%M:%S.%f</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QCheckBox" name="chkUnixTime">
+       <property name="text">
+        <string>Unix Timestamp</string>
        </property>
       </widget>
      </item>
     </layout>
-   </widget>
-  </widget>
-  <widget class="QFrame" name="frame_3">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>300</y>
-     <width>231</width>
-     <height>191</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
-   </property>
-   <widget class="QPushButton" name="btnRemoveY">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>160</y>
-      <width>79</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Remove</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>131</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Elements on Y axis</string>
-    </property>
-   </widget>
-   <widget class="QListView" name="lstVY">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>211</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="selectionMode">
-     <enum>QAbstractItemView::MultiSelection</enum>
-    </property>
-   </widget>
-   <zorder>btnRemoveY</zorder>
-   <zorder>label_5</zorder>
-   <zorder>frame_4</zorder>
-   <zorder>lstVY</zorder>
-  </widget>
-  <widget class="QFrame" name="frame_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>300</y>
-     <width>241</width>
-     <height>191</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
-   </property>
-   <widget class="QPushButton" name="btnRemoveX">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>160</y>
-      <width>79</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Remove</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>141</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Elements on X axis</string>
-    </property>
-   </widget>
-   <widget class="QListView" name="lstVX">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>211</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="selectionMode">
-     <enum>QAbstractItemView::MultiSelection</enum>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QFrame" name="frame_4">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>90</y>
-     <width>231</width>
-     <height>191</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
-   </property>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>91</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Loaded Fields</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnToY">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>160</y>
-      <width>79</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Move to Y</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnToX">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>160</y>
-      <width>79</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Move to X</string>
-    </property>
-   </widget>
-   <widget class="QListView" name="lstVAll">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>211</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="selectionMode">
-     <enum>QAbstractItemView::MultiSelection</enum>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QPushButton" name="btnLoad">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>250</y>
-     <width>91</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Load</string>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>90</y>
-     <width>211</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="1">
-     <widget class="QComboBox" name="txtDecimal">
-      <property name="editable">
-       <bool>true</bool>
-      </property>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnLoad">
+     <property name="text">
+      <string>Load</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Loaded Fields</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <property name="text">
-        <string>.</string>
-       </property>
+       <widget class="QTableView" name="lstVAll">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::MultiSelection</enum>
+        </property>
+       </widget>
       </item>
       <item>
-       <property name="text">
-        <string>,</string>
-       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="btnToX">
+          <property name="text">
+           <string>Move to X</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnToY">
+          <property name="text">
+           <string>Move to Y</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
-      </property>
-      <property name="text">
-       <string>Field Seperator</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Decimal seperator</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QComboBox" name="txtSep">
-      <property name="editable">
-       <bool>true</bool>
-      </property>
-      <item>
-       <property name="text">
-        <string>,</string>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="1">
+      <widget class="QGroupBox" name="groupBox_3">
+       <property name="title">
+        <string>Data on Y axis</string>
        </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>;</string>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QListView" name="lstVY">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::MultiSelection</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QGroupBox" name="groupBox_4">
+       <property name="title">
+        <string>Data on X axis</string>
        </property>
-      </item>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="gridLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>160</y>
-     <width>231</width>
-     <height>81</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_2">
-    <item row="2" column="0">
-     <widget class="QCheckBox" name="chkUnixTime">
-      <property name="text">
-       <string>Unix Timestamp</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QComboBox" name="txtDateTime">
-      <property name="editable">
-       <bool>true</bool>
-      </property>
-      <item>
-       <property name="text">
-        <string>%Y-%m-%d %H:%M:%S,%f</string>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <widget class="QListView" name="lstVX">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::MultiSelection</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>(Check to interpret as Date/Time)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnRemoveX">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Remove</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="1" alignment="Qt::AlignRight">
+      <widget class="QPushButton" name="btnRemoveY">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-      </item>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_7">
-      <property name="text">
-       <string>Date/Time Format</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <zorder>layoutWidget</zorder>
-  <zorder>btnCancel</zorder>
-  <zorder>btnOk</zorder>
-  <zorder>frame</zorder>
-  <zorder>frame_3</zorder>
-  <zorder>frame_2</zorder>
-  <zorder>frame_4</zorder>
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QPushButton" name="btnOk">
+       <property name="text">
+        <string>OK</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+  <zorder>groupBox</zorder>
+  <zorder>groupBox_2</zorder>
   <zorder>btnLoad</zorder>
-  <zorder>gridLayoutWidget</zorder>
-  <zorder>label_7</zorder>
  </widget>
  <resources/>
  <connections/>
