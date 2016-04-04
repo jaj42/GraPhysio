@@ -45,8 +45,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def createNewPlotWithData(self, plotdescr):
-        plot = plotwidget.PlotWidget(plotdescr=plotdescr)
-        #plot.setAttribute(Qt.WA_DeleteOnClose)
+        plot = plotwidget.PlotWidget(parent=self, plotdescr=plotdescr)
         tabindex = self.tabWidget.addTab(plot, plotdescr.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
@@ -69,7 +68,6 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def closeTab(self, i):
         w = self.tabWidget.widget(i)
         self.tabWidget.removeTab(i)
-        w.close()
         w.deleteLater()
 
 

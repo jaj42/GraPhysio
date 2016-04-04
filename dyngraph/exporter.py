@@ -43,7 +43,7 @@ class Exporter():
         else:
             fileappend = False
 
-        with open(dlg.filepath, 'a') as csvfile:
+        with open(dlg.filepath, 'a', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL)
             if not fileappend: writer.writeheader()
             writer.writerow({'patient'  : dlg.patient,
