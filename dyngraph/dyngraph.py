@@ -120,6 +120,10 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.lstVY.setModel(self.lstY)
         self.lstVAll.setModel(self.lstAll)
 
+        # Setup Field Table
+        self.lstVAll.verticalHeader().hide()
+        self.lstVAll.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+
         # Connect callbacks
         self.btnBrowse.clicked.connect(self.selectFile)
         self.btnLoad.clicked.connect(self.loadCsvFields)
