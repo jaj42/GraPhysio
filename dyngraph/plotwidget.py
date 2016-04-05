@@ -59,12 +59,14 @@ class PlotDescription():
                        yfields = [],
                        xisdate = False,
                        isunixtime = False,
+                       loadall = False,
                        datetime_format = "%Y-%m-%d %H:%M:%S,%f"):
         self.filename = str(filename)
         self.seperator = str(seperator)
         self.decimal = str(decimal)
         self.xfield  = xfield
         self.yfields = yfields
+        self.loadall = loadall
         self.datetime_format = str(datetime_format)
         self.xisdate = xisdate
         self.isunixtime = isunixtime

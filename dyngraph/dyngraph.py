@@ -80,9 +80,14 @@ class Reader(QtCore.QRunnable):
         self._plotdescr = plotdescr
 
     def run(self):
+        if self._plotdescr.loadall:
+            # usecols = None loads all columns
+            usecols = None
+        else:
+            usecols = self._plotdescr.fields
         data = pd.read_csv(self._plotdescr.filename,
                            sep     = self._plotdescr.seperator,
-                           #usecols = self._plotdescr.fields,
+                           usecols = usecols,
                            decimal = self._plotdescr.decimal,
                            index_col = False,
                            encoding = 'latin1',
@@ -143,16 +148,15 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         filename = self.txtFile.text()
         fields = []
         # Use the csv module to retrieve csv fields
+        for lst in [self.lstAll, self.lstX, self.lstY]: lst.clear()
         with open(filename, 'r') as csvfile:
             for row in csv.DictReader(csvfile, delimiter=sep):
-                fields = row.keys()
+                for key, value in row.items():
+                    if key is None: continue
+                    keyitem = QtGui.QStandardItem(key)
+                    valueitem = QtGui.QStandardItem(value)
+                    self.lstAll.appendRow([keyitem, valueitem])
                 break
-        # Clear all lists, then add new fields
-        for lst in [self.lstAll, self.lstX, self.lstY]: lst.clear()
-        for field in fields:
-            if field is None: continue
-            item = QtGui.QStandardItem(field)
-            self.lstAll.appendRow(item)
 
     def moveToX(self):
         # Only allow one element in X for now.
@@ -208,6 +212,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.plotdescr.decimal = self.txtDecimal.currentText()
         self.plotdescr.datetime_format = self.txtDateTime.currentText()
         self.plotdescr.isunixtime = self.chkUnixTime.isChecked()
+        self.plotdescr.loadall = self.chkLoadAll.isChecked()
         self.accept()
 
     @property

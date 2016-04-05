@@ -12,6 +12,8 @@ class Exporter():
     def __init__(self, plotdescr, viewbox):
         self.plotdescr = plotdescr
         self.viewbox = viewbox
+        self.dircache = ""
+        self.patientcache = ""
 
     def updaterange(self):
         vbrange = self.viewbox.viewRange()
@@ -23,20 +25,27 @@ class Exporter():
             self.xmin, self.xmax = int(xmin), int(xmax)
 
     def tocsv(self):
-        filename = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
-                                                     filter  = "CSV files (*.csv *.dat)")
-        if not filename: return
+        filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
+                                                     filter  = "CSV files (*.csv *.dat)",
+                                                     directory = self.dircache)
+        if not filepath: return
+        self.dircache = os.path.dirname(filepath)
         self.updaterange()
         data = self.plotdescr.data.ix[self.xmin : self.xmax]
         datanona = data.dropna(how = 'all', subset = self.plotdescr.yfields)
-        datanona.to_csv(filename, datetime_format = "%Y-%m-%d %H:%M:%S.%f")
+        datanona.to_csv(filepath, datetime_format = "%Y-%m-%d %H:%M:%S.%f")
 
     def toperiodcsv(self):
         self.updaterange()
+        if not self.patientcache:
+            self.patientcache = self.plotdescr.name
         dlg = DlgPeriodExport(begin   = self.xmin,
                               end     = self.xmax,
-                              patient = self.plotdescr.name)
+                              patient = self.patientcache,
+                              directory = self.dircache)
         if not dlg.exec_(): return
+        self.patientcache = dlg.patient
+        self.dircache = os.path.dirname(dlg.filepath)
 
         if os.path.exists(dlg.filepath):
             fileappend = True
@@ -53,9 +62,11 @@ class Exporter():
                              'comment'  : dlg.comment})
 
 class DlgPeriodExport(QtGui.QDialog, Ui_PeriodExport):
-    def __init__(self, begin, end, patient="", parent=None):
+    def __init__(self, begin, end, patient="", directory="", parent=None):
         super(DlgPeriodExport, self).__init__(parent=parent)
         self.setupUi(self)
+
+        self.dircache = directory
 
         self.lblPeriodStart.setText(str(begin))
         self.lblPeriodStop.setText(str(end))
@@ -68,7 +79,8 @@ class DlgPeriodExport(QtGui.QDialog, Ui_PeriodExport):
     def selectFile(self):
         filename = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
-                                                     options = QtGui.QFileDialog.DontConfirmOverwrite)
+                                                     options = QtGui.QFileDialog.DontConfirmOverwrite,
+                                                     directory = self.dircache)
         if filename: self.txtFile.setText(filename)
 
     @property
