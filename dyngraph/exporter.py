@@ -81,7 +81,9 @@ class DlgPeriodExport(QtGui.QDialog, Ui_PeriodExport):
                                                      filter  = "CSV files (*.csv *.dat)",
                                                      options = QtGui.QFileDialog.DontConfirmOverwrite,
                                                      directory = self.dircache)
-        if filename: self.txtFile.setText(filename)
+        if filename:
+            self.txtFile.setText(filename)
+            self.dircache = os.path.dirname(filename)
 
     @property
     def patient(self):

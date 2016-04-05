@@ -13,6 +13,8 @@ class PlotWidget(pg.PlotWidget):
     colors = ['r', 'g', 'b', 'c', 'm', 'y', 'w']
 
     def __init__(self, plotdescr, parent=None):
+        self._parent = parent
+
         if plotdescr.xisdate:
             axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         else:
@@ -27,17 +29,20 @@ class PlotWidget(pg.PlotWidget):
 
         self.addLegend()
 
-        for n, column in enumerate(plotdescr.ycols.iteritems()):
-            if n >= len(self.colors):
-                color = 'w'
-            else:
-                color = self.colors[n]
-            colname, series = column
-            curve = pg.PlotDataItem(x    = plotdescr.xvalues,
-                                    y    = series.values.astype(np.float64),
-                                    name = series.name,
-                                    pen  = color)
-            self.addItem(curve)
+        try:
+            for n, column in enumerate(plotdescr.ycols.iteritems()):
+                if n >= len(self.colors):
+                    color = 'w'
+                else:
+                    color = self.colors[n]
+                colname, series = column
+                curve = pg.PlotDataItem(x    = plotdescr.xvalues,
+                                        y    = series.values.astype(np.float64),
+                                        name = series.name,
+                                        pen  = color)
+                self.addItem(curve)
+        except ValueError as e:
+            self._parent.haserror.emit(str(e))
 
 
 class TimeAxisItem(pg.AxisItem):

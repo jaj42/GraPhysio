@@ -19,6 +19,7 @@ from mainwindow_ui import Ui_MainWindow
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     hasdata  = QtCore.pyqtSignal(object)
+    haserror = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(MainUi, self).__init__(parent=parent)
@@ -30,10 +31,11 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
 
-        self.menuExport.addAction('&Period CSV', self.exportPeriod)
-        self.menuExport.addAction('&CSV', self.exportCsv)
+        self.menuExport.addAction('&Series to CSV', self.exportCsv)
+        self.menuExport.addAction('&Time info to CSV', self.exportPeriod)
 
         self.hasdata.connect(self.createNewPlotWithData)
+        self.haserror.connect(self.displayError)
 
     def requestNewPlot(self):
         dlgNewplot = DlgNewPlot(parent = self)
@@ -72,6 +74,14 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         w.deleteLater()
         del w
 
+    def displayError(self, errmsg):
+        msgbox = QtGui.QMessageBox()
+        msgbox.setWindowTitle("Error creating plot")
+        msgbox.setText(errmsg)
+        msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+        msgbox.setIcon(QtGui.QMessageBox.Critical)
+        msgbox.exec_()
+
 
 class Reader(QtCore.QRunnable):
     def __init__(self, parent, plotdescr):
@@ -80,6 +90,15 @@ class Reader(QtCore.QRunnable):
         self._plotdescr = plotdescr
 
     def run(self):
+        try:
+            data = self.getdata()
+        except ValueError as e:
+            self._parent.haserror.emit(str(e))
+        else:
+            self._plotdescr.data = data
+            self._parent.hasdata.emit(self._plotdescr)
+
+    def getdata(self):
         if self._plotdescr.loadall:
             # usecols = None loads all columns
             usecols = None
@@ -100,8 +119,7 @@ class Reader(QtCore.QRunnable):
                 data['ixdatetime'] = pd.to_datetime(data[self._plotdescr.datefield],
                                                     format = self._plotdescr.datetime_format)
             data = data.set_index('ixdatetime')
-        self._plotdescr.data = data
-        self._parent.hasdata.emit(self._plotdescr)
+        return data
 
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
