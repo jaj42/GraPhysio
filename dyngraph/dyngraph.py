@@ -134,6 +134,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.lstX = QtGui.QStandardItemModel()
         self.lstY = QtGui.QStandardItemModel()
         self.lstAll = QtGui.QStandardItemModel()
+
         self.lstVX.setModel(self.lstX)
         self.lstVY.setModel(self.lstY)
         self.lstVAll.setModel(self.lstAll)
@@ -153,6 +154,10 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.btnRemoveY.clicked.connect(self.delFromY)
         self.chkUnixTime.stateChanged.connect(self.boolUnixtime)
 
+    @property
+    def result(self):
+        return self.plotdescr
+
     # Methods / Callbacks
     def boolUnixtime(self, state):
         self.txtDateTime.setEnabled(not self.chkUnixTime.isChecked())
@@ -171,44 +176,39 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         fields = []
         # Use the csv module to retrieve csv fields
         for lst in [self.lstAll, self.lstX, self.lstY]: lst.clear()
+        self.lstAll.setHorizontalHeaderLabels(["Field", "1st Value"])
         with open(filename, 'r') as csvfile:
-            for row in csv.DictReader(csvfile, delimiter=sep):
-                for key, value in row.items():
-                    if key is None: continue
-                    keyitem = QtGui.QStandardItem(key)
-                    valueitem = QtGui.QStandardItem(value)
-                    self.lstAll.appendRow([keyitem, valueitem])
-                break
+            csvreader = csv.DictReader(csvfile, delimiter=sep)
+            row = next(csvreader)
+            for key, value in row.items():
+                if key is None: continue
+                keyitem = QtGui.QStandardItem(key)
+                valueitem = QtGui.QStandardItem(value)
+                self.lstAll.appendRow([keyitem, valueitem])
 
     def moveToX(self):
-        # Only allow one element in X for now.
-        if self.lstX.rowCount() > 0: return
-        rows = [index.row() for index in self.lstVAll.selectedIndexes()]
-        for row in rows:
-            rowItems = self.lstAll.takeRow(row)
-            item = rowItems[0]
-            item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
-            item.setData(Qt.Unchecked, Qt.CheckStateRole)
-            self.lstX.appendRow(item)
-            break
+        if self.lstX.rowCount() > 0: return # Only allow one element allowed for X.
+        selection = self.lstVAll.selectedIndexes()
+        rowindex = selection[0].row()
+        row = self.lstAll.takeRow(rowindex)
+        self.itemCheckable(row, False)
+        self.lstX.appendRow(row)
 
     def moveToY(self):
         while True:
-            rowindexes = self.lstVAll.selectedIndexes()
-            if len(rowindexes) < 1: break
-            row = rowindexes[0].row()
-            self.lstY.appendRow(self.lstAll.takeRow(row))
+            selection = self.lstVAll.selectedIndexes()
+            if len(selection) < 1: break
+            rowindex = selection[0].row()
+            self.lstY.appendRow(self.lstAll.takeRow(rowindex))
 
     def delFromX(self):
         while True:
-            rowindexes = self.lstVX.selectedIndexes()
-            if len(rowindexes) < 1: break
-            row = rowindexes[0].row()
-            rowItems = self.lstX.takeRow(row)
-            item = rowItems[0]
-            item.setFlags(item.flags() ^ QtCore.Qt.ItemIsUserCheckable)
-            item.setData(None, Qt.CheckStateRole)
-            self.lstAll.appendRow(item)
+            selection = self.lstVX.selectedIndexes()
+            if len(selection) < 1: break
+            rowindex = selection[0].row()
+            row = self.lstX.takeRow(rowindex)
+            self.itemCheckable(row, False)
+            self.lstAll.appendRow(row)
 
     def delFromY(self):
         while True:
@@ -216,6 +216,15 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
             if len(rowindexes) < 1: break
             row = rowindexes[0].row()
             self.lstAll.appendRow(self.lstY.takeRow(row))
+
+    def itemCheckable(self, row, checkable):
+            field = row[0]
+            if checkable:
+                field.setFlags(field.flags() | QtCore.Qt.ItemIsUserCheckable)
+                field.setData(Qt.Checked, Qt.CheckStateRole)
+            else:
+                field.setFlags(field.flags() ^ QtCore.Qt.ItemIsUserCheckable)
+                field.setData(None, Qt.CheckStateRole)
 
     def loadPlot(self):
         yRows = [i.text() for i in self.lstY.findItems("", Qt.MatchContains)]
@@ -236,10 +245,6 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.plotdescr.isunixtime = self.chkUnixTime.isChecked()
         self.plotdescr.loadall = self.chkLoadAll.isChecked()
         self.accept()
-
-    @property
-    def result(self):
-        return self.plotdescr
 
 
 if __name__ == '__main__':
