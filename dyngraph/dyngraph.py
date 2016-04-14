@@ -4,11 +4,6 @@ import sys,csv,os
 
 import pandas as pd
 
-# Hack for Python 2 compat
-import sip
-sip.setapi('QVariant', 2)
-sip.setapi('QString', 2)
-
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
