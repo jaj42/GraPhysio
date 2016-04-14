@@ -191,7 +191,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         selection = self.lstVAll.selectedIndexes()
         rowindex = selection[0].row()
         row = self.lstAll.takeRow(rowindex)
-        self.itemCheckable(row, False)
+        self.itemCheckable(row, True)
         self.lstX.appendRow(row)
 
     def moveToY(self):
