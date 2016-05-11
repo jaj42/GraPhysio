@@ -164,6 +164,26 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         if not filepath: return
         self.dircache = os.path.dirname(filepath)
         self.txtFile.setText(filepath)
+        delims = self.estimateDelimiters(filepath)
+        self.txtSep.setEditText(delims[0])
+        self.txtDecimal.setEditText(delims[1])
+        self.txtDateTime.setEditText("%Y-%m-%d %H:%M:%S{}%f".format(delims[1]))
+
+    def estimateDelimiters(self, filepath):
+        with open(filepath, 'r') as csvfile:
+            line1 = next(csvfile)
+            line2 = next(csvfile)
+            semipos = line1.find(';')
+            if semipos == -1:
+                seperator = ','
+            else:
+                seperator = ';'
+            periodpos = line2.find('.')
+            if periodpos == -1:
+                decimal   = ','
+            else:
+                decimal   = '.'
+        return (seperator, decimal)
 
     def loadCsvFields(self):
         sep = self.txtSep.currentText()
@@ -171,7 +191,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         fields = []
         # Use the csv module to retrieve csv fields
         for lst in [self.lstAll, self.lstX, self.lstY]: lst.clear()
-        self.lstAll.setHorizontalHeaderLabels(["Field", "1st Value"])
+        self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
         with open(filename, 'r') as csvfile:
             csvreader = csv.DictReader(csvfile, delimiter=sep)
             row = next(csvreader)
@@ -180,6 +200,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
                 keyitem = QtGui.QStandardItem(key)
                 valueitem = QtGui.QStandardItem(value)
                 self.lstAll.appendRow([keyitem, valueitem])
+        self.lstAll.sort(0)
 
     def moveToX(self):
         if self.lstX.rowCount() > 0: return # Only allow one element allowed for X.
