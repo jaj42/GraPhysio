@@ -164,6 +164,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         if not filepath: return
         self.dircache = os.path.dirname(filepath)
         self.txtFile.setText(filepath)
+        # Guesstimate CSV field and decimal seperators
         delims = self.estimateDelimiters(filepath)
         self.txtSep.setEditText(delims[0])
         self.txtDecimal.setEditText(delims[1])
