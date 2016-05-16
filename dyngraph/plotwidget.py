@@ -49,6 +49,42 @@ class PlotWidget(pg.PlotWidget):
                 self._parent.haserror.emit(str(e))
             else:
                 self.addItem(curve)
+                #self.addItem(PulseFeetItem(series))
+
+class PulseFeetItem(pg.ScatterPlotItem):
+    def __init__(self, series):
+        feet = self.findPressureFeet(series)
+        super(PulseFeetItem, self).__init__(x    = feet.index.astype(np.int64),
+                                            y    = feet.values.astype(np.float64),
+                                            name = "{}-feet".format(series.name),
+                                            pen  = 'w')
+
+    def findPressureFeet(self, series):
+        sndderiv = series.diff().diff()
+        try:
+            threshold = np.percentile(sndderiv.dropna(), 98)
+        except IndexError:
+            return pd.Series()
+
+        peaks = np.diff((sndderiv > threshold).astype(int))
+        peakStarts = np.flatnonzero(peaks > 0)
+        peakStops  = np.flatnonzero(peaks < 0)
+
+        def locateMaxima():
+            try:
+                iterator = np.nditer((peakStarts, peakStops))
+            except ValueError as e:
+                print("nditer error: {}".format(e))
+                return
+            for start, stop in iterator:
+                idxstart = sndderiv.index.values[start]
+                idxstop  = sndderiv.index.values[stop]
+                maximum = sndderiv[idxstart:idxstop].idxmax()
+                # Shift by 2 to account for the fact that .diff() removes samples
+                maxloc = sndderiv.index.get_loc(maximum)
+                yield sndderiv.index.values[maxloc - 2]
+
+        return series[list(locateMaxima())]
 
 class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
@@ -121,28 +157,3 @@ class PlotDescription():
     def name(self):
         name, ext = os.path.splitext(os.path.basename(self.filename))
         return name
-
-
-def findPressureFeet(vec):
-    sndderiv = vec.diff().diff()
-    try:
-        threshold = np.percentile(sndderiv.dropna(), 98)
-    except IndexError:
-        return pd.Series()
-
-    peaks = np.diff((sndderiv > threshold).astype(int))
-    peakStarts = np.flatnonzero(peaks > 0)
-    peakStops  = np.flatnonzero(peaks < 0)
-
-    def getMaxima():
-        try:
-            iterator = np.nditer((peakStarts, peakStops))
-        except ValueError:
-            return
-        for start, stop in iterator:
-            idxstart = sndderiv.index[start]
-            idxstop  = sndderiv.index[stop]
-            maximum = sndderiv[idxstart:idxstop].idxmax()
-            yield maximum
-
-    return vec[list(getMaxima())]
