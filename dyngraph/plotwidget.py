@@ -10,7 +10,12 @@ import numpy as np
 import exporter
 
 class PlotWidget(pg.PlotWidget):
-    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'w']
+    #colors = ['r', 'g', 'b', 'c', 'm', 'y', 'w']
+    colors = [Qt.red, Qt.green, Qt.blue,
+              Qt.cyan, Qt.magenta, Qt.yellow,
+              Qt.darkRed, Qt.darkGreen, Qt.darkBlue,
+              Qt.darkCyan, Qt.darkMagenta, Qt.darkYellow]
+              #Qt.gray, Qt.darkGray, Qt.lightGray, Qt.white]
 
     def __init__(self, plotdescr, parent=None):
         self._parent = parent
@@ -29,21 +34,21 @@ class PlotWidget(pg.PlotWidget):
 
         self.addLegend()
 
-        try:
-            for n, column in enumerate(plotdescr.ycols.iteritems()):
-                if n >= len(self.colors):
-                    color = 'w'
-                else:
-                    color = self.colors[n]
-                colname, series = column
+        for n, column in enumerate(plotdescr.ycols.iteritems()):
+            _, series = column
+            if n >= len(self.colors):
+                color = Qt.white
+            else:
+                color = self.colors[n]
+            try:
                 curve = pg.PlotDataItem(x    = plotdescr.xvalues,
                                         y    = series.values.astype(np.float64),
                                         name = series.name,
-                                        pen  = color)
+                                        pen  = QtGui.QColor(color))
+            except ValueError as e:
+                self._parent.haserror.emit(str(e))
+            else:
                 self.addItem(curve)
-        except ValueError as e:
-            self._parent.haserror.emit(str(e))
-
 
 class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
@@ -66,13 +71,13 @@ class PlotDescription():
                        isunixtime = False,
                        loadall = False,
                        datetime_format = "%Y-%m-%d %H:%M:%S,%f"):
-        self.filename = str(filename)
-        self.seperator = str(seperator)
-        self.decimal = str(decimal)
+        self.filename = filename
+        self.seperator = seperator
+        self.decimal = decimal
         self.xfield  = xfield
         self.yfields = yfields
         self.loadall = loadall
-        self.datetime_format = str(datetime_format)
+        self.datetime_format = datetime_format
         self.xisdate = xisdate
         self.isunixtime = isunixtime
         self.data = None
