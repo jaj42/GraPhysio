@@ -121,3 +121,28 @@ class PlotDescription():
     def name(self):
         name, ext = os.path.splitext(os.path.basename(self.filename))
         return name
+
+
+def findPressureFeet(vec):
+    sndderiv = vec.diff().diff()
+    try:
+        threshold = np.percentile(sndderiv.dropna(), 98)
+    except IndexError:
+        return pd.Series()
+
+    peaks = np.diff((sndderiv > threshold).astype(int))
+    peakStarts = np.flatnonzero(peaks > 0)
+    peakStops  = np.flatnonzero(peaks < 0)
+
+    def getMaxima():
+        try:
+            iterator = np.nditer((peakStarts, peakStops))
+        except ValueError:
+            return
+        for start, stop in iterator:
+            idxstart = sndderiv.index[start]
+            idxstop  = sndderiv.index[stop]
+            maximum = sndderiv[idxstart:idxstop].idxmax()
+            yield maximum
+
+    return vec[list(getMaxima())]
