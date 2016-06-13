@@ -60,7 +60,7 @@ class PulseFeetItem(pg.ScatterPlotItem):
                                             pen  = 'w')
 
     def findPressureFeet(self, series):
-        sndderiv = series.diff().diff()
+        sndderiv = series.diff().diff().shift(-2)
         try:
             threshold = np.percentile(sndderiv.dropna(), 98)
         except IndexError:
@@ -74,15 +74,13 @@ class PulseFeetItem(pg.ScatterPlotItem):
             try:
                 iterator = np.nditer((peakStarts, peakStops))
             except ValueError as e:
-                print("nditer error: {}".format(e))
+                print("nditer error: {}".format(e), sys.stderr)
                 return
             for start, stop in iterator:
                 idxstart = sndderiv.index.values[start]
                 idxstop  = sndderiv.index.values[stop]
                 maximum = sndderiv[idxstart:idxstop].idxmax()
-                # Shift by 2 to account for the fact that .diff() removes samples
-                maxloc = sndderiv.index.get_loc(maximum)
-                yield sndderiv.index.values[maxloc - 2]
+                yield maximum
 
         return series[list(locateMaxima())]
 
