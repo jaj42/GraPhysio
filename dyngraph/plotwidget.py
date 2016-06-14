@@ -34,27 +34,42 @@ class PlotWidget(pg.PlotWidget):
 
         self.addLegend()
 
-        for n, column in enumerate(plotdescr.ycols.iteritems()):
-            _, series = column
+#        check = QtGui.QCheckBox("test")
+#        grid = QtGui.QGridLayout(self)
+#        grid.addWidget(check,0,0,0,0,Qt.AlignBottom | Qt.AlignLeft)
+
+#for i in self.listDataItems():
+#    print(i)
+
+        sers = (plotdescr.data[c] for c in plotdescr.yfields)
+        for n, series in enumerate(sers):
             if n >= len(self.colors):
                 color = Qt.white
             else:
                 color = self.colors[n]
             try:
-                curve = pg.PlotDataItem(x    = plotdescr.xvalues,
-                                        y    = series.values.astype(np.float64),
-                                        name = series.name,
-                                        pen  = QtGui.QColor(color))
+                curve = PlotDataItem(series  = series,
+                                     xvalues = plotdescr.xvalues,
+                                     pen     = QtGui.QColor(color))
             except ValueError as e:
                 self._parent.haserror.emit(str(e))
             else:
                 self.addItem(curve)
                 #self.addItem(PulseFeetItem(series))
 
+class PlotDataItem(pg.PlotDataItem):
+    def __init__(self, series, xvalues=None, *args, **kwargs):
+        if xvalues is None:
+            xvalues = series.index
+        super(PlotDataItem, self).__init__(x    = xvalues,
+                                           y    = series.values.astype(np.float64),
+                                           name = series.name,
+                                           *args, **kwargs)
+
 class PulseFeetItem(pg.ScatterPlotItem):
     def __init__(self, series):
         feet = self.findPressureFeet(series)
-        super(PulseFeetItem, self).__init__(x    = feet.index.astype(np.int64),
+        super(PulseFeetItem, self).__init__(x    = feet.index,
                                             y    = feet.values.astype(np.float64),
                                             name = "{}-feet".format(series.name),
                                             pen  = 'w')
@@ -63,7 +78,8 @@ class PulseFeetItem(pg.ScatterPlotItem):
         sndderiv = series.diff().diff().shift(-2)
         try:
             threshold = np.percentile(sndderiv.dropna(), 98)
-        except IndexError:
+        except IndexError as e:
+            print("percentile error: {}".format(e), sys.stderr)
             return pd.Series()
 
         peaks = np.diff((sndderiv > threshold).astype(int))
@@ -131,25 +147,11 @@ class PlotDescription():
 
     @property
     def xvalues(self):
-        if self.xisdate:
-            # Return timestamp of the datetime in ns
-            values = self.data.index.values
-            return values.astype(np.int64)
-        elif self.xfield is not None:
+        if not self.xisdate and self.xfield is not None:
             values = self.data[self.xfield].values
             return values.astype(np.float64)
         else:
-            return self.data.index.values
-
-    @property
-    def ycols(self):
-        return self.data[self.yfields]
-
-    @property
-    def datetime_parser(self):
-        def conv_datetime(datestr):
-            return datetime.strptime(datestr, self.datetime_format)
-        return conv_datetime
+            return None
 
     @property
     def name(self):

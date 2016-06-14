@@ -1,6 +1,7 @@
 import sys,csv,os
 
 import pandas as pd
+import numpy as np
 
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
@@ -105,12 +106,13 @@ class Reader(QtCore.QRunnable):
                            encoding = 'latin1',
                            engine  = 'c')
         if self._plotdescr.xisdate:
+            # Convert datetime to int64 so pyqtgraph can handle it.
             if self._plotdescr.isunixtime:
                 data['ixdatetime'] = pd.to_datetime(data[self._plotdescr.datefield],
-                                                    unit = 'ms')
+                                                    unit = 'ms').astype(np.int64)
             else:
                 data['ixdatetime'] = pd.to_datetime(data[self._plotdescr.datefield],
-                                                    format = self._plotdescr.datetime_format)
+                                                    format = self._plotdescr.datetime_format).astype(np.int64)
             data = data.set_index('ixdatetime')
         return data
 
