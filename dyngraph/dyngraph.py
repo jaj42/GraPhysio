@@ -41,8 +41,9 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def createNewPlotWithData(self, plotdescr):
-        plot = plotwidget.PlotWidget(parent=self, plotdescr=plotdescr)
-        tabindex = self.tabWidget.addTab(plot, plotdescr.name)
+        plotframe = plotwidget.PlotFrame(self)
+        plotframe.addPlot(plotdescr)
+        tabindex = self.tabWidget.addTab(plotframe, plotdescr.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
 
@@ -71,7 +72,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def displayError(self, errmsg):
         msgbox = QtGui.QMessageBox()
         msgbox.setWindowTitle("Error creating plot")
-        msgbox.setText(errmsg)
+        msgbox.setText(str(errmsg))
         msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
         msgbox.setIcon(QtGui.QMessageBox.Critical)
         msgbox.exec_()
@@ -265,9 +266,9 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
 
 
 if __name__ == '__main__':
-    qApp = QtGui.QApplication(sys.argv)
+    app = QtGui.QApplication(sys.argv)
 
-    wMain = MainUi()
-    wMain.show()
+    winmain = MainUi()
+    winmain.show()
 
-    sys.exit(qApp.exec_())
+    sys.exit(app.exec_())

@@ -4,22 +4,31 @@ from datetime import datetime
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 
-import pyqtgraph as pg
 import numpy as np
+import pyqtgraph as pg
 
 import exporter
 
+class PlotFrame(QtGui.QWidget):
+    layout = property(QtGui.QWidget.layout, QtGui.QWidget.setLayout)
+
+    def __init__(self, parent=None):
+        super(PlotFrame, self).__init__(parent=parent)
+        self.layout = QtGui.QHBoxLayout(self)
+
+    def addPlot(self, *args, **kwargs):
+        plot = PlotWidget(parent=self, *args, **kwargs)
+        self.layout.addWidget(plot)
+
+
 class PlotWidget(pg.PlotWidget):
-    #colors = ['r', 'g', 'b', 'c', 'm', 'y', 'w']
     colors = [Qt.red, Qt.green, Qt.blue,
               Qt.cyan, Qt.magenta, Qt.yellow,
               Qt.darkRed, Qt.darkGreen, Qt.darkBlue,
               Qt.darkCyan, Qt.darkMagenta, Qt.darkYellow]
-              #Qt.gray, Qt.darkGray, Qt.lightGray, Qt.white]
 
     def __init__(self, plotdescr, parent=None):
-        self._parent = parent
-
+        self.dataseries = {}
         if plotdescr.xisdate:
             axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         else:
@@ -29,17 +38,9 @@ class PlotWidget(pg.PlotWidget):
 
         vb = self.getViewBox()
         vb.setMouseMode(vb.RectMode)
-        #vb.menu = None
         self.exporter = exporter.Exporter(plotdescr, vb)
 
         self.addLegend()
-
-#        check = QtGui.QCheckBox("test")
-#        grid = QtGui.QGridLayout(self)
-#        grid.addWidget(check,0,0,0,0,Qt.AlignBottom | Qt.AlignLeft)
-
-#for i in self.listDataItems():
-#    print(i)
 
         sers = (plotdescr.data[c] for c in plotdescr.yfields)
         for n, series in enumerate(sers):
@@ -52,10 +53,11 @@ class PlotWidget(pg.PlotWidget):
                                      xvalues = plotdescr.xvalues,
                                      pen     = QtGui.QColor(color))
             except ValueError as e:
-                self._parent.haserror.emit(str(e))
+                self._parent.haserror.emit(e)
             else:
                 self.addItem(curve)
-                #self.addItem(PulseFeetItem(series))
+                self.dataseries[series.name] = curve
+
 
 class PlotDataItem(pg.PlotDataItem):
     def __init__(self, series, xvalues=None, *args, **kwargs):
@@ -140,10 +142,7 @@ class PlotDescription():
     @property
     def datefield(self):
         if not self.xisdate: return False
-        if self.xfield is not None:
-            return self.xfield
-        else:
-            return False
+        return self.xfield if self.xfield is not None else False
 
     @property
     def xvalues(self):
@@ -155,5 +154,5 @@ class PlotDescription():
 
     @property
     def name(self):
-        name, ext = os.path.splitext(os.path.basename(self.filename))
+        name, _ = os.path.splitext(os.path.basename(self.filename))
         return name
