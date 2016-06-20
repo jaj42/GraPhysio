@@ -15,10 +15,12 @@ class PlotFrame(QtGui.QWidget):
     def __init__(self, parent=None):
         super(PlotFrame, self).__init__(parent=parent)
         self.layout = QtGui.QHBoxLayout(self)
+        self.exporter = None
 
-    def addPlot(self, *args, **kwargs):
-        plot = PlotWidget(parent=self, *args, **kwargs)
+    def addPlot(self, plotdescr):
+        plot = PlotWidget(parent=self, plotdescr=plotdescr)
         self.layout.addWidget(plot)
+        self.exporter = exporter.Exporter(plotdescr, plot.getViewBox())
 
 
 class PlotWidget(pg.PlotWidget):
@@ -38,7 +40,6 @@ class PlotWidget(pg.PlotWidget):
 
         vb = self.getViewBox()
         vb.setMouseMode(vb.RectMode)
-        self.exporter = exporter.Exporter(plotdescr, vb)
 
         self.addLegend()
 
