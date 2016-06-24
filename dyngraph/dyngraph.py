@@ -41,8 +41,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def createNewPlotWithData(self, plotdescr):
-        plotframe = plotwidget.PlotFrame(self)
-        plotframe.addPlot(plotdescr)
+        plotframe = plotwidget.PlotFrame(plotdata=plotdescr, parent=self)
         tabindex = self.tabWidget.addTab(plotframe, plotdescr.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")

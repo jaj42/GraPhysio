@@ -11,69 +11,76 @@ import exporter
 
 class PlotFrame(QtGui.QWidget):
     layout = property(QtGui.QWidget.layout, QtGui.QWidget.setLayout)
-
-    def __init__(self, parent=None):
-        super(PlotFrame, self).__init__(parent=parent)
-        self.layout = QtGui.QHBoxLayout(self)
-        self.exporter = None
-
-    def addPlot(self, plotdescr):
-        plot = PlotWidget(parent=self, plotdescr=plotdescr)
-        self.layout.addWidget(plot)
-        self.exporter = exporter.Exporter(plotdescr, plot.getViewBox())
-
-
-class PlotWidget(pg.PlotWidget):
     colors = [Qt.red, Qt.green, Qt.blue,
               Qt.cyan, Qt.magenta, Qt.yellow,
               Qt.darkRed, Qt.darkGreen, Qt.darkBlue,
               Qt.darkCyan, Qt.darkMagenta, Qt.darkYellow]
 
-    def __init__(self, plotdescr, parent=None):
-        self.dataseries = {}
-        if plotdescr.xisdate:
+    def __init__(self, plotdata, parent=None):
+        super(PlotFrame, self).__init__(parent=parent)
+        self.curves = {}
+        self.parent = parent
+        self.plotdata = plotdata
+
+        self.layout = QtGui.QHBoxLayout(self)
+
+        if self.plotdata.xisdate:
             axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         else:
             axisItems = None
 
-        super(PlotWidget, self).__init__(parent=parent, axisItems=axisItems)
+        self.plotw = pg.PlotWidget(parent=self, axisItems=axisItems)
+        self.plotw.addLegend()
+        self.layout.addWidget(self.plotw)
 
-        vb = self.getViewBox()
-        vb.setMouseMode(vb.RectMode)
+        self.lst = QtGui.QListWidget(self)
+        self.lst.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.layout.addWidget(self.lst)
 
-        self.addLegend()
+        self.vb = self.plotw.getViewBox()
+        self.vb.setMouseMode(self.vb.RectMode)
+        self.exporter = exporter.Exporter(self.plotdata, self.vb)
 
-        sers = (plotdescr.data[c] for c in plotdescr.yfields)
-        for n, series in enumerate(sers):
-            if n >= len(self.colors):
-                color = Qt.white
-            else:
-                color = self.colors[n]
-            try:
-                curve = PlotDataItem(series  = series,
-                                     xvalues = plotdescr.xvalues,
-                                     pen     = QtGui.QColor(color))
-            except ValueError as e:
-                self._parent.haserror.emit(e)
-            else:
-                self.addItem(curve)
-                self.dataseries[series.name] = curve
+        self.addAllCurves()
+
+    def addAllCurves(self):
+        allSeries = (self.plotdata.data[c] for c in self.plotdata.yfields)
+        for series in allSeries:
+            self.addCurve(series)
+
+    def addCurve(self, series):
+        n = len(self.curves)
+        if n >= len(self.colors):
+            color = Qt.white
+        else:
+            color = self.colors[n]
+
+        try:
+            curve = PlotDataItem(series  = series,
+                                 pen     = QtGui.QColor(color))
+        except ValueError as e:
+            self.parent.haserror.emit(e)
+        else:
+            self.curves[series.name] = curve
+            self.plotw.addItem(curve)
+            self.lst.addItem(series.name)
+            #feet = PulseFeetItem(series)
+            #feet.sigClicked.connect(printPoints)
+            #self.addItem(feet)
 
 
 class PlotDataItem(pg.PlotDataItem):
-    def __init__(self, series, xvalues=None, *args, **kwargs):
-        if xvalues is None:
-            xvalues = series.index
-        super(PlotDataItem, self).__init__(x    = xvalues,
+    def __init__(self, series, pen=QtGui.QColor(Qt.white)):
+        super(PlotDataItem, self).__init__(x    = series.index,
                                            y    = series.values.astype(np.float64),
                                            name = series.name,
-                                           *args, **kwargs)
+                                           pen  = pen)
 
 class PulseFeetItem(pg.ScatterPlotItem):
     def __init__(self, series):
-        feet = self.findPressureFeet(series)
-        super(PulseFeetItem, self).__init__(x    = feet.index,
-                                            y    = feet.values.astype(np.float64),
+        self.feet = self.findPressureFeet(series)
+        super(PulseFeetItem, self).__init__(x    = self.feet.index,
+                                            y    = self.feet.values.astype(np.float64),
                                             name = "{}-feet".format(series.name),
                                             pen  = 'w')
 
