@@ -76,8 +76,9 @@ class PlotFrame(QtGui.QWidget):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
-            for curve in self.plotw.listDataItems() if isinstance(curve, PulseFeetItem):
-                curve.removeSelection()
+            for curve in self.plotw.listDataItems():
+                if isinstance(curve, PulseFeetItem):
+                    curve.removeSelection()
 
 
 class PlotDataItem(pg.PlotDataItem):
@@ -111,22 +112,15 @@ class PulseFeetItem(pg.ScatterPlotItem):
         point.resetBrush()
 
     def removePoints(self, points):
-        datapoints = [pg.Point(p[0], p[1]) for p in self.data]
-        indexes = []
+        datapoints = [(p[0], p[1]) for p in self.data]
         for point in points:
             try:
-                indexes.append(datapoints.index(point.pos()))
-            except (IndexError, ValueError) as e:
+                datapoints.remove((point.pos().x(), point.pos().y()))
+            except ValueError as e:
                 print("Point not found: {}".format(e), sys.stderr)
                 continue
-        self.data = np.delete(self.data, indexes)
+        self.setData(pos = datapoints)
         self.selected = []
-        self.prepareGeometryChange()
-        self.informViewBoundsChanged()
-        self.bounds = [None, None]
-        self.invalidate()
-        self.updateSpots()
-        self.sigPlotChanged.emit(self)
 
     def removeSelection(self):
         return self.removePoints(self.selected)
