@@ -109,10 +109,10 @@ class Reader(QtCore.QRunnable):
             # Convert datetime to int64 so pyqtgraph can handle it.
             if self._plotdescr.isunixtime:
                 data['nsdatetime'] = pd.to_datetime(data[self._plotdescr.datefield],
-                                                    unit = 'ms').astype(np.int64)
+                                                    unit = 'ms')
             else:
                 data['nsdatetime'] = pd.to_datetime(data[self._plotdescr.datefield],
-                                                    format = self._plotdescr.datetime_format).astype(np.int64)
+                                                    format = self._plotdescr.datetime_format)
             data = data.set_index('nsdatetime')
         return data
 

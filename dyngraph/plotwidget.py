@@ -19,6 +19,8 @@ class PlotFrame(QtGui.QWidget):
     def __init__(self, plotdata, parent=None):
         super(PlotFrame, self).__init__(parent=parent)
         self.curves = {}
+        self.footpoints = {}
+
         self.parent = parent
         self.plotdata = plotdata
 
@@ -33,9 +35,9 @@ class PlotFrame(QtGui.QWidget):
         self.plotw.addLegend()
         self.layout.addWidget(self.plotw)
 
-        self.lst = QtGui.QListWidget(self)
-        self.lst.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.layout.addWidget(self.lst)
+        self.tabs = QtGui.QTabWidget(parent=self)
+        self.layout.addWidget(self.tabs)
+        self.tabs.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
 
         self.vb = self.plotw.getViewBox()
         self.vb.setMouseMode(self.vb.RectMode)
@@ -56,33 +58,89 @@ class PlotFrame(QtGui.QWidget):
             color = self.colors[n]
 
         try:
-            curve = PlotDataItem(series  = series,
-                                 pen     = QtGui.QColor(color))
+            curve = PlotDataItem(series = series,
+                                 pen    = QtGui.QColor(color))
         except ValueError as e:
             self.parent.haserror.emit(e)
         else:
             self.curves[series.name] = curve
             self.plotw.addItem(curve)
-            self.lst.addItem(series.name)
-            #feet = PulseFeetItem(series)
-            #feet.sigClicked.connect(printPoints)
-            #self.addItem(feet)
+            self.addFeet(series)
+
+    def addFeet(self, series):
+        feet = PulseFeetItem(series)
+        feet.sigClicked.connect(self.pointClicked)
+        lst = QtGui.QListWidget(self)
+        lst.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.footpoints[feet] = {}
+        for foot in feet.points():
+            item = QtGui.QListWidgetItem()
+            item.setText(str(foot.pos()))
+            lst.addItem(item)
+            self.footpoints[feet][foot] = item
+        self.tabs.addTab(lst, series.name)
+        self.plotw.addItem(feet)
+
+    def pointClicked(self, curve, points):
+        point = points[0] # more than 1 point can be given
+        try:
+            lstpoint = self.footpoints[curve][point]
+        except IndexError as e:
+            print("Point not in list: {}".format(e), sys.stderr)
+            return
+            
+        if not curve.isSelected(point):
+            curve.select(point)
+            lstpoint.setSelected(True)
+        else:
+            curve.unselect(point)
+            lstpoint.setSelected(False)
 
 
 class PlotDataItem(pg.PlotDataItem):
     def __init__(self, series, pen=QtGui.QColor(Qt.white)):
-        super(PlotDataItem, self).__init__(x    = series.index,
+        super(PlotDataItem, self).__init__(x    = series.index.astype(np.int64),
                                            y    = series.values.astype(np.float64),
                                            name = series.name,
                                            pen  = pen)
 
+
 class PulseFeetItem(pg.ScatterPlotItem):
     def __init__(self, series):
+        self.selected = []
         self.feet = self.findPressureFeet(series)
-        super(PulseFeetItem, self).__init__(x    = self.feet.index,
+        super(PulseFeetItem, self).__init__(x    = self.feet.index.astype(np.int64),
                                             y    = self.feet.values.astype(np.float64),
                                             name = "{}-feet".format(series.name),
                                             pen  = 'w')
+
+    def isSelected(self, point):
+        return point in self.selected
+
+    def select(self, point):
+        if not self.isSelected(point):
+            self.selected.append(point)
+        point.setBrush('r')
+
+    def unselect(self, point):
+        if self.isSelected(point):
+            self.selected.remove(point)
+        point.resetBrush()
+
+    def remove(self, point):
+        datapoints = [pg.Point(p[0], p[1]) for p in self.data]
+        try:
+            idx = datapoints.index(point.pos())
+        except IndexError as e:
+            print("Point not found: {}".format(e), sys.stderr)
+            return
+        self.data = np.delete(self.data, idx)
+        self.prepareGeometryChange()
+        self.informViewBoundsChanged()
+        self.bounds = [None, None]
+        self.invalidate()
+        self.updateSpots()
+        self.sigPlotChanged.emit(self)
 
     def findPressureFeet(self, series):
         sndderiv = series.diff().diff().shift(-2)

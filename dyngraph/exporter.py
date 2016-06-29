@@ -18,7 +18,11 @@ class Exporter():
     def updaterange(self):
         vbrange = self.viewbox.viewRange()
         xmin,xmax = vbrange[0]
-        self.xmin, self.xmax = xmin, xmax
+        if self.plotdescr.xisdate:
+            self.xmin = pd.to_datetime(xmin, unit='ns')
+            self.xmax = pd.to_datetime(xmax, unit='ns')
+        else:
+            self.xmin, self.xmax = int(xmin), int(xmax)
 
     def tocsv(self):
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
