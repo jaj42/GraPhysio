@@ -7,6 +7,7 @@ from PyQt4.QtCore import Qt
 import numpy as np
 import pyqtgraph as pg
 
+import algorithms
 import exporter
 
 class PlotFrame(QtGui.QWidget):
@@ -92,7 +93,7 @@ class PlotDataItem(pg.PlotDataItem):
 class PulseFeetItem(pg.ScatterPlotItem):
     def __init__(self, series):
         self.selected = []
-        self.feet = self.findPressureFeet(series)
+        self.feet = algorithms.findPressureFeet(series)
         super(PulseFeetItem, self).__init__(x    = self.feet.index.astype(np.int64),
                                             y    = self.feet.values.astype(np.float64),
                                             name = "{}-feet".format(series.name),
@@ -125,31 +126,6 @@ class PulseFeetItem(pg.ScatterPlotItem):
     def removeSelection(self):
         return self.removePoints(self.selected)
 
-    def findPressureFeet(self, series):
-        sndderiv = series.diff().diff().shift(-2)
-        try:
-            threshold = np.percentile(sndderiv.dropna(), 98)
-        except IndexError as e:
-            print("percentile error: {}".format(e), sys.stderr)
-            return pd.Series()
-
-        peaks = np.diff((sndderiv > threshold).astype(int))
-        peakStarts = np.flatnonzero(peaks > 0)
-        peakStops  = np.flatnonzero(peaks < 0)
-
-        def locateMaxima():
-            try:
-                iterator = np.nditer((peakStarts, peakStops))
-            except ValueError as e:
-                print("nditer error: {}".format(e), sys.stderr)
-                return
-            for start, stop in iterator:
-                idxstart = sndderiv.index.values[start]
-                idxstop  = sndderiv.index.values[stop]
-                maximum = sndderiv[idxstart:idxstop].idxmax()
-                yield maximum
-
-        return series[list(locateMaxima())]
 
 class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
