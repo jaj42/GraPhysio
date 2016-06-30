@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'designer/mainwindow.ui'
+# Form implementation generated from reading ui file '.\mainwindow.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #
@@ -40,18 +40,21 @@ class Ui_MainWindow(object):
         self.statusBar.setObjectName(_fromUtf8("statusBar"))
         MainWindow.setStatusBar(self.statusBar)
         self.menuBar = QtGui.QMenuBar(MainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 800, 19))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 800, 21))
         self.menuBar.setObjectName(_fromUtf8("menuBar"))
         self.menuFile = QtGui.QMenu(self.menuBar)
         self.menuFile.setObjectName(_fromUtf8("menuFile"))
         self.menuExport = QtGui.QMenu(self.menuBar)
         self.menuExport.setObjectName(_fromUtf8("menuExport"))
+        self.menuData = QtGui.QMenu(self.menuBar)
+        self.menuData.setObjectName(_fromUtf8("menuData"))
         MainWindow.setMenuBar(self.menuBar)
         self.actNewplot = QtGui.QAction(MainWindow)
         self.actNewplot.setObjectName(_fromUtf8("actNewplot"))
         self.actQuit = QtGui.QAction(MainWindow)
         self.actQuit.setObjectName(_fromUtf8("actQuit"))
         self.menuBar.addAction(self.menuFile.menuAction())
+        self.menuBar.addAction(self.menuData.menuAction())
         self.menuBar.addAction(self.menuExport.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -62,6 +65,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "DynGraph", None))
         self.menuFile.setTitle(_translate("MainWindow", "File", None))
         self.menuExport.setTitle(_translate("MainWindow", "Export", None))
+        self.menuData.setTitle(_translate("MainWindow", "Data", None))
         self.actNewplot.setText(_translate("MainWindow", "New plot", None))
         self.actQuit.setText(_translate("MainWindow", "Quit", None))
 

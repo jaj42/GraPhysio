@@ -1,5 +1,6 @@
 import os, sys
 from datetime import datetime
+from enum import Enum
 
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
@@ -61,15 +62,19 @@ class PlotFrame(QtGui.QWidget):
         else:
             self.curves[series.name] = curve
             self.plotw.addItem(curve)
-            self.addFeet(series)
 
-    def addFeet(self, series):
-        feet = PulseFeetItem(series)
+    def addFeet(self, series, foottype):
+        if foottype is FootType.pressure:
+            feet = PressureFeetItem(series)
+        elif foottype is FootType.velocity:
+            feet = VelocityFeetItem(series)
+        else:
+            return
         feet.sigClicked.connect(self.sigPointClicked)
         self.plotw.addItem(feet)
 
     def sigPointClicked(self, curve, points):
-        point = points[0] # more than 1 point can be given
+        point = points[0] # keep the first point
         if not curve.isPointSelected(point):
             curve.selectPoint(point)
         else:
@@ -78,26 +83,26 @@ class PlotFrame(QtGui.QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
             for curve in self.plotw.listDataItems():
-                if isinstance(curve, PulseFeetItem):
+                if isinstance(curve, PressureFeetItem):
                     curve.removeSelection()
 
 
 class PlotDataItem(pg.PlotDataItem):
-    def __init__(self, series, pen=QtGui.QColor(Qt.white)):
-        super(PlotDataItem, self).__init__(x    = series.index.astype(np.int64),
-                                           y    = series.values.astype(np.float64),
-                                           name = series.name,
+    def __init__(self, series, pen=QtGui.QColor(Qt.white), parent=None):
+        self.series = series
+        super(PlotDataItem, self).__init__(x    = self.series.index.astype(np.int64),
+                                           y    = self.series.values.astype(np.float64),
+                                           name = self.series.name,
                                            pen  = pen)
 
 
-class PulseFeetItem(pg.ScatterPlotItem):
-    def __init__(self, series):
+class FeetItem(pg.ScatterPlotItem):
+    def __init__(self, feet, name):
         self.selected = []
-        self.feet = algorithms.findPressureFeet(series)
-        super(PulseFeetItem, self).__init__(x    = self.feet.index.astype(np.int64),
-                                            y    = self.feet.values.astype(np.float64),
-                                            name = "{}-feet".format(series.name),
-                                            pen  = 'w')
+        super(FeetItem, self).__init__(x    = feet.index.astype(np.int64),
+                                       y    = feet.values.astype(np.float64),
+                                       name = "{}-feet".format(name),
+                                       pen  = 'w')
 
     def isPointSelected(self, point):
         return point in self.selected
@@ -125,6 +130,18 @@ class PulseFeetItem(pg.ScatterPlotItem):
 
     def removeSelection(self):
         return self.removePoints(self.selected)
+
+
+class PressureFeetItem(FeetItem):
+    def __init__(self, series, parent=None):
+        feet = algorithms.findPressureFeet(series)
+        super(PressureFeetItem, self).__init__(feet, series.name)
+
+
+class VelocityFeetItem(FeetItem):
+    def __init__(self, series):
+        feet = algorithms.findFlowCycles(series)
+        super(VelocityFeetItem, self).__init__(feet[0], series.name)
 
 
 class TimeAxisItem(pg.AxisItem):
@@ -181,3 +198,8 @@ class PlotDescription():
     def name(self):
         name, _ = os.path.splitext(os.path.basename(self.filename))
         return name
+
+class FootType(Enum):
+    none     = 'None'
+    pressure = 'Pressure'
+    velocity = 'Velocity'

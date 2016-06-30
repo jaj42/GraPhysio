@@ -8,8 +8,9 @@ from PyQt4.QtCore import Qt
 
 import plotwidget
 
-from newplot_ui    import Ui_NewPlot
-from mainwindow_ui import Ui_MainWindow
+from newplot_ui     import Ui_NewPlot
+from mainwindow_ui  import Ui_MainWindow
+from cycledetect_ui import Ui_CycleDetection
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     hasdata  = QtCore.pyqtSignal(object)
@@ -21,9 +22,11 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
 
-        self.menuFile.addAction('&New Plot', self.requestNewPlot, Qt.CTRL + Qt.Key_N)
+        self.menuFile.addAction('&New Plot', self.launchNewPlot, Qt.CTRL + Qt.Key_N)
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
+
+        self.menuData.addAction('Cycle &Detection', self.launchCycleDetection, Qt.CTRL + Qt.Key_D)
 
         self.menuExport.addAction('&Series to CSV', self.exportCsv)
         self.menuExport.addAction('&Time info to CSV', self.exportPeriod)
@@ -31,7 +34,16 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.hasdata.connect(self.createNewPlotWithData)
         self.haserror.connect(self.displayError)
 
-    def requestNewPlot(self):
+    def launchCycleDetection(self):
+        dlgCycles = DlgCycleDetection(parent = self)
+        if not dlgCycles.exec_(): return
+        choices = dlgCycles.result
+        plotframe = self.tabWidget.currentWidget()
+        for curvename, choice in choices.items():
+            curve = plotframe.curves[curvename]
+            plotframe.addFeet(curve.series, plotwidget.FootType(choice))
+
+    def launchNewPlot(self):
         dlgNewplot = DlgNewPlot(parent = self)
         if not dlgNewplot.exec_(): return
         plotdescr = dlgNewplot.result
@@ -47,15 +59,13 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.statusBar.showMessage("Loading... done")
 
     def exportCsv(self):
-        i = self.tabWidget.currentIndex()
-        if i < 0: return
-        plotwidget = self.tabWidget.widget(i)
-        plotwidget.exporter.tocsv()
+        plotframe = self.tabWidget.currentWidget()
+        if plotframe is None: return
+        plotframe.exporter.tocsv()
 
     def exportPeriod(self):
-        i = self.tabWidget.currentIndex()
-        if i < 0: return
-        plotwidget = self.tabWidget.widget(i)
+        plotframe = self.tabWidget.currentWidget()
+        if plotframe is None: return
         plotwidget.exporter.toperiodcsv()
 
     def fileQuit(self):
@@ -262,6 +272,33 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.plotdescr.isunixtime = self.chkUnixTime.isChecked()
         self.plotdescr.loadall = self.chkLoadAll.isChecked()
         self.accept()
+
+
+class DlgCycleDetection(QtGui.QDialog, Ui_CycleDetection):
+    def __init__(self, parent=None):
+        super(DlgCycleDetection, self).__init__(parent=parent)
+        self.setupUi(self)
+
+        self.okButton.clicked.connect(self.accept)
+        self.cancelButton.clicked.connect(self.reject)
+
+        plotframe = self.parent().tabWidget.currentWidget()
+        if plotframe is None:
+            return
+
+        self.choices = {}
+        for n, curvename in enumerate(plotframe.curves.keys()):
+            curveitem = QtGui.QTableWidgetItem(curvename)
+            combo = QtGui.QComboBox()
+            combo.addItems(['Pressure','Velocity','None'])
+            self.table.insertRow(n)
+            self.table.setItem(n, 0, curveitem)
+            self.table.setCellWidget(n, 1, combo)
+            self.choices[curvename] = combo
+
+    @property
+    def result(self):
+        return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
 
 
 if __name__ == '__main__':

@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 
@@ -26,3 +28,15 @@ def findPressureFeet(series):
             yield maximum
 
     return series[list(locateMaxima())]
+
+def findFlowCycles(series):
+    bincycles = (series > series.min()).astype(int)
+    idxstarts, = (bincycles.diff().shift(-1) > 0).nonzero()
+    idxstops,  = (bincycles.diff() < 0).nonzero()
+    cycleStarts = series.iloc[idxstarts]
+    cycleStops  = series.iloc[idxstops]
+
+    # Handle the case where we start within a cycle
+    cycleStops = cycleStops[cycleStops.index > cycleStarts.index[0]]
+
+    return (cycleStarts, cycleStops)
