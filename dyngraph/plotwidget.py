@@ -83,7 +83,7 @@ class PlotFrame(QtGui.QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
             for curve in self.plotw.listDataItems():
-                if isinstance(curve, PressureFeetItem):
+                if isinstance(curve, FeetItem):
                     curve.removeSelection()
 
 
@@ -97,12 +97,13 @@ class PlotDataItem(pg.PlotDataItem):
 
 
 class FeetItem(pg.ScatterPlotItem):
-    def __init__(self, feet, name):
+    def __init__(self, feet, name, *args, **kwargs):
         self.selected = []
         super(FeetItem, self).__init__(x    = feet.index.astype(np.int64),
                                        y    = feet.values.astype(np.float64),
                                        name = "{}-feet".format(name),
-                                       pen  = 'w')
+                                       pen  = 'w',
+                                       *args, **kwargs)
 
     def isPointSelected(self, point):
         return point in self.selected
@@ -140,8 +141,11 @@ class PressureFeetItem(FeetItem):
 
 class VelocityFeetItem(FeetItem):
     def __init__(self, series):
-        feet = algorithms.findFlowCycles(series)
-        super(VelocityFeetItem, self).__init__(feet[0], series.name)
+        starts, stops = algorithms.findFlowCycles(series)
+        super(VelocityFeetItem, self).__init__(starts, series.name, symbol='s')
+        self.addPoints(x = stops.index.astype(np.int64),
+                       y = stops.values.astype(np.float64),
+                       pen = 'w')
 
 
 class TimeAxisItem(pg.AxisItem):
