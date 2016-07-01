@@ -1,4 +1,4 @@
-UIFILES=mainwindow_ui.py newplot_ui.py periodexport_ui.py
+UIFILES=cycledetect_ui.py mainwindow_ui.py newplot_ui.py periodexport_ui.py
 
 %_ui.py: designer/%.ui
 	pyuic4 $< > $@
