@@ -17,7 +17,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     haserror = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
-        super(MainUi, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setupUi(self)
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
@@ -30,6 +30,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
         self.menuExport.addAction('&Series to CSV', self.exportCsv)
         self.menuExport.addAction('&Time info to CSV', self.exportPeriod)
+        self.menuExport.addAction('&Cycle info to CSV', self.exportCycles)
 
         self.hasdata.connect(self.createNewPlotWithData)
         self.haserror.connect(self.displayError)
@@ -41,7 +42,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         plotframe = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
             curve = plotframe.curves[curvename]
-            plotframe.addFeet(curve.series, plotwidget.FootType(choice))
+            plotframe.addFeet(curve, plotwidget.FootType(choice))
 
     def launchNewPlot(self):
         dlgNewplot = DlgNewPlot(parent = self)
@@ -61,12 +62,17 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def exportCsv(self):
         plotframe = self.tabWidget.currentWidget()
         if plotframe is None: return
-        plotframe.exporter.tocsv()
+        plotframe.exporter.seriestocsv()
 
     def exportPeriod(self):
         plotframe = self.tabWidget.currentWidget()
         if plotframe is None: return
-        plotwidget.exporter.toperiodcsv()
+        plotframe.exporter.periodstocsv()
+
+    def exportCycles(self):
+        plotframe = self.tabWidget.currentWidget()
+        if plotframe is None: return
+        plotframe.exporter.cyclepointstocsv()
 
     def fileQuit(self):
         self.close()
@@ -89,7 +95,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
 class Reader(QtCore.QRunnable):
     def __init__(self, parent, plotdescr):
-        super(Reader, self).__init__()
+        super().__init__()
         self._parent = parent
         self._plotdescr = plotdescr
 
@@ -129,7 +135,7 @@ class Reader(QtCore.QRunnable):
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
     def __init__(self, parent=None):
-        super(DlgNewPlot, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setupUi(self)
 
         self.plotdescr = plotwidget.PlotDescription()
@@ -276,7 +282,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
 
 class DlgCycleDetection(QtGui.QDialog, Ui_CycleDetection):
     def __init__(self, parent=None):
-        super(DlgCycleDetection, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setupUi(self)
 
         self.okButton.clicked.connect(self.accept)

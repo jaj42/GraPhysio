@@ -6,6 +6,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 
 import numpy as np
+import pandas as pd
 import pyqtgraph as pg
 
 import algorithms
@@ -19,8 +20,7 @@ class PlotFrame(QtGui.QWidget):
               Qt.darkCyan, Qt.darkMagenta, Qt.darkYellow]
 
     def __init__(self, plotdata, parent=None):
-        super(PlotFrame, self).__init__(parent=parent)
-        self.curves = {}
+        super().__init__(parent=parent)
 
         self.parent = parent
         self.plotdata = plotdata
@@ -32,15 +32,25 @@ class PlotFrame(QtGui.QWidget):
         else:
             axisItems = None
 
+        #self.plotw = pg.PlotWidget(parent=self, axisItems=axisItems, background='w')
         self.plotw = pg.PlotWidget(parent=self, axisItems=axisItems)
+        self.plotw.setAntialiasing(True)
         self.plotw.addLegend()
         self.layout.addWidget(self.plotw)
 
         self.vb = self.plotw.getViewBox()
         self.vb.setMouseMode(self.vb.RectMode)
-        self.exporter = exporter.Exporter(self.plotdata, self.vb)
+        self.exporter = exporter.Exporter(self)
 
         self.addAllCurves()
+
+    @property
+    def curves(self):
+        return {item.name() : item for item in self.plotw.listDataItems() if isinstance(item, CurveItem)}
+
+    @property
+    def feetitems(self):
+        return {item.name() : item for item in self.plotw.listDataItems() if isinstance(item, FeetItem)}
 
     def addAllCurves(self):
         allSeries = (self.plotdata.data[c] for c in self.plotdata.yfields)
@@ -55,23 +65,27 @@ class PlotFrame(QtGui.QWidget):
             color = self.colors[n]
 
         try:
-            curve = PlotDataItem(series = series,
+            curve = CurveItem(series = series,
                                  pen    = QtGui.QColor(color))
         except ValueError as e:
             self.parent.haserror.emit(e)
         else:
-            self.curves[series.name] = curve
             self.plotw.addItem(curve)
 
-    def addFeet(self, series, foottype):
+    def addFeet(self, curve, foottype):
         if foottype is FootType.pressure:
-            feet = PressureFeetItem(series)
+            feet = PressureFeetItem(curve)
+            feet.sigClicked.connect(self.sigPointClicked)
+            self.plotw.addItem(feet)
         elif foottype is FootType.velocity:
-            feet = VelocityFeetItem(series)
+            start = VelocityFeetItem(curve, isend=False)
+            start.sigClicked.connect(self.sigPointClicked)
+            self.plotw.addItem(start)
+            stop = VelocityFeetItem(curve, isend=True)
+            stop.sigClicked.connect(self.sigPointClicked)
+            self.plotw.addItem(stop)
         else:
             return
-        feet.sigClicked.connect(self.sigPointClicked)
-        self.plotw.addItem(feet)
 
     def sigPointClicked(self, curve, points):
         point = points[0] # keep the first point
@@ -82,28 +96,43 @@ class PlotFrame(QtGui.QWidget):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
-            for curve in self.plotw.listDataItems():
-                if isinstance(curve, FeetItem):
-                    curve.removeSelection()
+            for curve in self.feetitems.values():
+                curve.removeSelection()
 
 
-class PlotDataItem(pg.PlotDataItem):
+class CurveItem(pg.PlotDataItem):
     def __init__(self, series, pen=QtGui.QColor(Qt.white), parent=None):
         self.series = series
-        super(PlotDataItem, self).__init__(x    = self.series.index.astype(np.int64),
+        #self.pen = pg.mkPen(pen, width=2)
+        self.pen = pen
+        super().__init__(x    = self.series.index.astype(np.int64),
                                            y    = self.series.values.astype(np.float64),
                                            name = self.series.name,
-                                           pen  = pen)
+                                           background = 'w',
+                                           pen  = self.pen)
 
 
 class FeetItem(pg.ScatterPlotItem):
-    def __init__(self, feet, name, *args, **kwargs):
+    def __init__(self, feet, curve, namesuffix='feet', *args, **kwargs):
         self.selected = []
-        super(FeetItem, self).__init__(x    = feet.index.astype(np.int64),
-                                       y    = feet.values.astype(np.float64),
-                                       name = "{}-feet".format(name),
-                                       pen  = 'w',
-                                       *args, **kwargs)
+        pen = curve.opts['pen']
+        self._name = "{}-{}".format(curve.name(), namesuffix)
+        super().__init__(x    = feet.index.astype(np.int64),
+                         y    = feet.values.astype(np.float64),
+                         pen  = pen,
+                         *args, **kwargs)
+
+    def name(self):
+        return self._name
+
+    @property
+    def feet(self):
+        points = self.points()
+        time   = [point.pos().x() for point in points]
+        values = [point.pos().y() for point in points]
+        return pd.Series(data  = values,
+                         index = pd.to_datetime(time, unit='ns'),
+                         name  = self.name())
 
     def isPointSelected(self, point):
         return point in self.selected
@@ -119,14 +148,14 @@ class FeetItem(pg.ScatterPlotItem):
         point.resetBrush()
 
     def removePoints(self, points):
-        datapoints = [(p[0], p[1]) for p in self.data]
+        datapoints = self.points().tolist()
         for point in points:
             try:
-                datapoints.remove((point.pos().x(), point.pos().y()))
+                datapoints.remove(point)
             except ValueError as e:
                 print("Point not found: {}".format(e), sys.stderr)
                 continue
-        self.setData(pos = datapoints)
+        self.setData(pos = [(p.pos().x(), p.pos().y()) for p in datapoints])
         self.selected = []
 
     def removeSelection(self):
@@ -134,18 +163,18 @@ class FeetItem(pg.ScatterPlotItem):
 
 
 class PressureFeetItem(FeetItem):
-    def __init__(self, series, parent=None):
-        feet = algorithms.findPressureFeet(series)
-        super(PressureFeetItem, self).__init__(feet, series.name)
+    def __init__(self, curve):
+        feet = algorithms.findPressureFeet(curve.series)
+        super().__init__(feet, curve)
 
 
 class VelocityFeetItem(FeetItem):
-    def __init__(self, series):
-        starts, stops = algorithms.findFlowCycles(series)
-        super(VelocityFeetItem, self).__init__(starts, series.name, symbol='s')
-        self.addPoints(x = stops.index.astype(np.int64),
-                       y = stops.values.astype(np.float64),
-                       pen = 'w')
+    def __init__(self, curve, isend=False):
+        starts, stops = algorithms.findFlowCycles(curve.series)
+        if isend:
+            super().__init__(stops, curve, namesuffix='velstop', symbol='t')
+        else:
+            super().__init__(starts, curve, namesuffix='velstart', symbol='s')
 
 
 class TimeAxisItem(pg.AxisItem):

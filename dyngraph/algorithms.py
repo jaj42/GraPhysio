@@ -14,6 +14,9 @@ def findPressureFeet(series):
     peaks = np.diff((sndderiv > threshold).astype(int))
     peakStarts = np.flatnonzero(peaks > 0)
     peakStops  = np.flatnonzero(peaks < 0)
+    maxlen = min(peakStarts.size, peakStops.size)
+    peakStarts = peakStarts[0:maxlen - 1]
+    peakStops  = peakStops[0:maxlen - 1]
 
     def locateMaxima():
         try:
