@@ -122,7 +122,6 @@ class Reader(QtCore.QRunnable):
                            encoding  = 'latin1',
                            engine    = 'c')
         if self._plotdata.xisdate:
-            # Convert datetime to int64 so pyqtgraph can handle it.
             if self._plotdata.isunixtime:
                 data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield],
                                                     unit = 'ms')

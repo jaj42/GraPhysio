@@ -106,10 +106,10 @@ class CurveItem(pg.PlotDataItem):
         #self.pen = pg.mkPen(pen, width=2)
         self.pen = pen
         super().__init__(x    = self.series.index.astype(np.int64),
-                                           y    = self.series.values.astype(np.float64),
-                                           name = self.series.name,
-                                           background = 'w',
-                                           pen  = self.pen)
+                         y    = self.series.values.astype(np.float64),
+                         name = self.series.name,
+                         pen  = self.pen,
+                         *args, **kwargs)
 
 
 class FeetItem(pg.ScatterPlotItem):
@@ -189,7 +189,7 @@ class TimeAxisItem(pg.AxisItem):
         return ret
 
 class PlotDescription():
-    def __init__(self, filename  = "",
+    def __init__(self, filepath  = "",
                        seperator = ",",
                        decimal   = ".",
                        xfield  = None,
@@ -198,7 +198,7 @@ class PlotDescription():
                        isunixtime = False,
                        loadall = False,
                        datetime_format = "%Y-%m-%d %H:%M:%S,%f"):
-        self.filename = filename
+        self.filepath = filepath
         self.seperator = seperator
         self.decimal = decimal
         self.xfield  = xfield
@@ -229,7 +229,7 @@ class PlotDescription():
 
     @property
     def name(self):
-        name, _ = os.path.splitext(os.path.basename(self.filename))
+        name, _ = os.path.splitext(os.path.basename(self.filepath))
         return name
 
 class FootType(Enum):
