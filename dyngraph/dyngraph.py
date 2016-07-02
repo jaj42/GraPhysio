@@ -47,15 +47,15 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def launchNewPlot(self):
         dlgNewplot = DlgNewPlot(parent = self)
         if not dlgNewplot.exec_(): return
-        plotdescr = dlgNewplot.result
-        self.statusBar.showMessage("Loading... {}...".format(plotdescr.name))
+        plotdata = dlgNewplot.result
+        self.statusBar.showMessage("Loading... {}...".format(plotdata.name))
 
-        reader = Reader(self, plotdescr)
+        reader = Reader(self, plotdata)
         QtCore.QThreadPool.globalInstance().start(reader)
 
-    def createNewPlotWithData(self, plotdescr):
-        plotframe = plotwidget.PlotFrame(plotdata=plotdescr, parent=self)
-        tabindex = self.tabWidget.addTab(plotframe, plotdescr.name)
+    def createNewPlotWithData(self, plotdata):
+        plotframe = plotwidget.PlotFrame(plotdata=plotdata, parent=self)
+        tabindex = self.tabWidget.addTab(plotframe, plotdata.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
 
@@ -94,10 +94,10 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
 
 class Reader(QtCore.QRunnable):
-    def __init__(self, parent, plotdescr):
+    def __init__(self, parent, plotdata):
         super().__init__()
         self._parent = parent
-        self._plotdescr = plotdescr
+        self._plotdata = plotdata
 
     def run(self):
         try:
@@ -105,30 +105,30 @@ class Reader(QtCore.QRunnable):
         except ValueError as e:
             self._parent.haserror.emit(str(e))
         else:
-            self._plotdescr.data = data
-            self._parent.hasdata.emit(self._plotdescr)
+            self._plotdata.data = data
+            self._parent.hasdata.emit(self._plotdata)
 
     def getdata(self):
-        if self._plotdescr.loadall:
+        if self._plotdata.loadall:
             # usecols = None loads all columns
             usecols = None
         else:
-            usecols = self._plotdescr.fields
-        data = pd.read_csv(self._plotdescr.filename,
-                           sep     = self._plotdescr.seperator,
-                           usecols = usecols,
-                           decimal = self._plotdescr.decimal,
+            usecols = self._plotdata.fields
+        data = pd.read_csv(self._plotdata.filepath,
+                           sep       = self._plotdata.seperator,
+                           usecols   = usecols,
+                           decimal   = self._plotdata.decimal,
                            index_col = False,
-                           encoding = 'latin1',
-                           engine  = 'c')
-        if self._plotdescr.xisdate:
+                           encoding  = 'latin1',
+                           engine    = 'c')
+        if self._plotdata.xisdate:
             # Convert datetime to int64 so pyqtgraph can handle it.
-            if self._plotdescr.isunixtime:
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdescr.datefield],
+            if self._plotdata.isunixtime:
+                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield],
                                                     unit = 'ms')
             else:
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdescr.datefield],
-                                                    format = self._plotdescr.datetime_format)
+                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield],
+                                                    format = self._plotdata.datetime_format)
             data = data.set_index('nsdatetime')
         return data
 
@@ -138,7 +138,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         super().__init__(parent=parent)
         self.setupUi(self)
 
-        self.plotdescr = plotwidget.PlotDescription()
+        self.plotdata = plotwidget.PlotDescription()
         self.dircache = ""
 
         # Attach models to ListViews
@@ -167,7 +167,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
 
     @property
     def result(self):
-        return self.plotdescr
+        return self.plotdata
 
     # Methods / Callbacks
     def boolUnixtime(self, state):
@@ -204,12 +204,12 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
 
     def loadCsvFields(self):
         sep = self.txtSep.currentText()
-        filename = self.txtFile.text()
+        filepath = self.txtFile.text()
         fields = []
         # Use the csv module to retrieve csv fields
         for lst in [self.lstAll, self.lstX, self.lstY]: lst.clear()
         self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
-        with open(filename, 'r') as csvfile:
+        with open(filepath, 'r') as csvfile:
             csvreader = csv.DictReader(csvfile, delimiter=sep)
             row = next(csvreader)
             for key, value in row.items():
@@ -264,19 +264,19 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         xRows = [i.text() for i in self.lstX.findItems("", Qt.MatchContains)]
         xState = [i.checkState() for i in self.lstX.findItems("", Qt.MatchContains)]
         for s in xState:
-            self.plotdescr.xisdate = s > Qt.Unchecked
+            self.plotdata.xisdate = s > Qt.Unchecked
             break
         if len(xRows) > 0:
-            self.plotdescr.xfield = xRows[0]
+            self.plotdata.xfield = xRows[0]
         else:
-            self.plotdescr.xfield = None
-        self.plotdescr.yfields = yRows
-        self.plotdescr.filename = self.txtFile.text()
-        self.plotdescr.seperator = self.txtSep.currentText()
-        self.plotdescr.decimal = self.txtDecimal.currentText()
-        self.plotdescr.datetime_format = self.txtDateTime.currentText()
-        self.plotdescr.isunixtime = self.chkUnixTime.isChecked()
-        self.plotdescr.loadall = self.chkLoadAll.isChecked()
+            self.plotdata.xfield = None
+        self.plotdata.yfields = yRows
+        self.plotdata.filepath = self.txtFile.text()
+        self.plotdata.seperator = self.txtSep.currentText()
+        self.plotdata.decimal = self.txtDecimal.currentText()
+        self.plotdata.datetime_format = self.txtDateTime.currentText()
+        self.plotdata.isunixtime = self.chkUnixTime.isChecked()
+        self.plotdata.loadall = self.chkLoadAll.isChecked()
         self.accept()
 
 
@@ -288,11 +288,12 @@ class DlgCycleDetection(QtGui.QDialog, Ui_CycleDetection):
         self.okButton.clicked.connect(self.accept)
         self.cancelButton.clicked.connect(self.reject)
 
+        self.choices = {}
+
         plotframe = self.parent().tabWidget.currentWidget()
         if plotframe is None:
             return
 
-        self.choices = {}
         for n, curvename in enumerate(plotframe.curves.keys()):
             curveitem = QtGui.QTableWidgetItem(curvename)
             combo = QtGui.QComboBox()

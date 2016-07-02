@@ -172,9 +172,9 @@ class VelocityFeetItem(FeetItem):
     def __init__(self, curve, isend=False):
         starts, stops = algorithms.findFlowCycles(curve.series)
         if isend:
-            super().__init__(stops, curve, namesuffix='velstop', symbol='t')
+            super().__init__(stops, curve, namesuffix='velstop', symbol='s')
         else:
-            super().__init__(starts, curve, namesuffix='velstart', symbol='s')
+            super().__init__(starts, curve, namesuffix='velstart', symbol='t')
 
 
 class TimeAxisItem(pg.AxisItem):
