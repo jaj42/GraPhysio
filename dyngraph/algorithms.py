@@ -14,17 +14,9 @@ def findPressureFeet(series):
     peaks = np.diff((sndderiv > threshold).astype(int))
     peakStarts = np.flatnonzero(peaks > 0)
     peakStops  = np.flatnonzero(peaks < 0)
-    maxlen = min(peakStarts.size, peakStops.size)
-    peakStarts = peakStarts[0:maxlen - 1]
-    peakStops  = peakStops[0:maxlen - 1]
 
     def locateMaxima():
-        try:
-            iterator = np.nditer((peakStarts, peakStops))
-        except ValueError as e:
-            print("nditer error: {}".format(e), sys.stderr)
-            return
-        for start, stop in iterator:
+        for start, stop in zip(peakStarts, peakStops):
             idxstart = sndderiv.index.values[start]
             idxstop  = sndderiv.index.values[stop]
             maximum = sndderiv[idxstart:idxstop].idxmax()
@@ -41,5 +33,16 @@ def findFlowCycles(series):
 
     # Handle the case where we start within a cycle
     cycleStops = cycleStops[cycleStops.index > cycleStarts.index[0]]
+
+    # Filter noise cycles which are shorter than 240ms
+    if type(series.index) == pd.tseries.index.DatetimeIndex:
+        def notShortCycles():
+            minSystoleLength = pd.Timedelta('240ms')
+            for (startidx, stopidx) in zip(cycleStarts.index, cycleStops.index):
+                if stopidx - startidx >= minSystoleLength:
+                    yield (startidx, stopidx)
+        (startidx, stopidx) = zip(*notShortCycles())
+        cycleStarts = cycleStarts[list(startidx)]
+        cycleStops = cycleStops[list(stopidx)]
 
     return (cycleStarts, cycleStops)
