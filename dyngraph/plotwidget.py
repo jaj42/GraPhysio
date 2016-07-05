@@ -1,5 +1,4 @@
 import os, sys
-from datetime import datetime
 from enum import Enum
 
 from PyQt4 import QtCore, QtGui
@@ -101,7 +100,7 @@ class PlotFrame(QtGui.QWidget):
 
 
 class CurveItem(pg.PlotDataItem):
-    def __init__(self, series, pen=QtGui.QColor(Qt.white), parent=None):
+    def __init__(self, series, pen=QtGui.QColor(Qt.white), parent=None, *args, **kwargs):
         self.series = series
         #self.pen = pg.mkPen(pen, width=2)
         self.pen = pen
@@ -117,6 +116,7 @@ class FeetItem(pg.ScatterPlotItem):
         self.selected = []
         pen = curve.opts['pen']
         self._name = "{}-{}".format(curve.name(), namesuffix)
+        self.xisdate = type(feet.index) == pd.tseries.index.DatetimeIndex
         super().__init__(x    = feet.index.astype(np.int64),
                          y    = feet.values.astype(np.float64),
                          pen  = pen,
@@ -128,10 +128,12 @@ class FeetItem(pg.ScatterPlotItem):
     @property
     def feet(self):
         points = self.points()
-        time   = [point.pos().x() for point in points]
         values = [point.pos().y() for point in points]
+        time   = [point.pos().x() for point in points]
+        if self.xisdate:
+            time = pd.to_datetime(time, unit='ns')
         return pd.Series(data  = values,
-                         index = pd.to_datetime(time, unit='ns'),
+                         index = time,
                          name  = self.name())
 
     def isPointSelected(self, point):
@@ -153,7 +155,7 @@ class FeetItem(pg.ScatterPlotItem):
             try:
                 datapoints.remove(point)
             except ValueError as e:
-                print("Point not found: {}".format(e), sys.stderr)
+                print("Point not found: {}".format(e), file=sys.stderr)
                 continue
         self.setData(pos = [(p.pos().x(), p.pos().y()) for p in datapoints])
         self.selected = []
@@ -231,6 +233,11 @@ class PlotDescription():
     def name(self):
         name, _ = os.path.splitext(os.path.basename(self.filepath))
         return name
+
+    @property
+    def folder(self):
+        _, folder = os.path.splitext(os.path.basename(self.filepath))
+        return folder
 
 class FootType(Enum):
     none     = 'None'

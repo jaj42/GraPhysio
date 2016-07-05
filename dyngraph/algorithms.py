@@ -8,19 +8,28 @@ def findPressureFeet(series):
     try:
         threshold = np.percentile(sndderiv.dropna(), 98)
     except IndexError as e:
-        print("percentile error: {}".format(e), sys.stderr)
+        print("percentile error: {}".format(e), file=sys.stderr)
         return pd.Series()
 
     peaks = np.diff((sndderiv > threshold).astype(int))
     peakStarts = np.flatnonzero(peaks > 0)
     peakStops  = np.flatnonzero(peaks < 0)
 
+    # Handle the case where we start near a foot
+    peakStops = peakStops[peakStops > peakStarts[0]]
+
     def locateMaxima():
         for start, stop in zip(peakStarts, peakStops):
             idxstart = sndderiv.index.values[start]
             idxstop  = sndderiv.index.values[stop]
-            maximum = sndderiv[idxstart:idxstop].idxmax()
-            yield maximum
+            try:
+                maximum = sndderiv[idxstart:idxstop].idxmax()
+            except ValueError as e:
+                print("local maximum error: {}".format(e), file=sys.stderr)
+                print("from {} to {}".format(idxstart, idxstop))
+                continue
+            else:
+                yield maximum
 
     return series[list(locateMaxima())]
 

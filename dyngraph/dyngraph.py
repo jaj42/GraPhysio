@@ -19,6 +19,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
+        self.dircache = os.path.expanduser('~')
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
 
@@ -45,7 +46,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
             plotframe.addFeet(curve, plotwidget.FootType(choice))
 
     def launchNewPlot(self):
-        dlgNewplot = DlgNewPlot(parent = self)
+        dlgNewplot = DlgNewPlot(parent=self, directory=self.dircache)
         if not dlgNewplot.exec_(): return
         plotdata = dlgNewplot.result
         self.statusBar.showMessage("Loading... {}...".format(plotdata.name))
@@ -133,12 +134,12 @@ class Reader(QtCore.QRunnable):
 
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, directory=""):
         super().__init__(parent=parent)
         self.setupUi(self)
 
+        self.dircache = directory
         self.plotdata = plotwidget.PlotDescription()
-        self.dircache = ""
 
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()

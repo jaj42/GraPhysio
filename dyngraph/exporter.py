@@ -13,10 +13,10 @@ class Exporter():
 
     def __init__(self, parent):
         self.parent = parent
-        self.plotdata = parent.plotdata
         self.viewbox = parent.vb
-        self.dircache = ""
-        self.patientcache = ""
+        self.plotdata = parent.plotdata
+        self.dircache = parent.plotdata.folder
+        self.patientcache = parent.plotdata.name
 
     def updaterange(self):
         vbrange = self.viewbox.viewRange()
@@ -40,8 +40,6 @@ class Exporter():
 
     def periodstocsv(self):
         self.updaterange()
-        if not self.patientcache:
-            self.patientcache = self.plotdata.name
         dlg = DlgPeriodExport(begin   = self.xmin,
                               end     = self.xmax,
                               patient = self.patientcache,
