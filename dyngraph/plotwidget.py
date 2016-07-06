@@ -236,7 +236,7 @@ class PlotDescription():
 
     @property
     def folder(self):
-        _, folder = os.path.splitext(os.path.basename(self.filepath))
+        folder = os.path.dirname(self.filepath)
         return folder
 
 class FootType(Enum):

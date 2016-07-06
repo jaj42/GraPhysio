@@ -25,8 +25,7 @@ def findPressureFeet(series):
             try:
                 maximum = sndderiv[idxstart:idxstop].idxmax()
             except ValueError as e:
-                print("local maximum error: {}".format(e), file=sys.stderr)
-                print("from {} to {}".format(idxstart, idxstop))
+                print("local maximum error: {} [{} - {}]".format(e, idxstart, idxstop), file=sys.stderr)
                 continue
             else:
                 yield maximum

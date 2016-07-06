@@ -49,6 +49,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         dlgNewplot = DlgNewPlot(parent=self, directory=self.dircache)
         if not dlgNewplot.exec_(): return
         plotdata = dlgNewplot.result
+        self.dircache = plotdata.folder
         self.statusBar.showMessage("Loading... {}...".format(plotdata.name))
 
         reader = Reader(self, plotdata)
