@@ -296,9 +296,14 @@ class DlgCycleDetection(QtGui.QDialog, Ui_CycleDetection):
             return
 
         for n, curvename in enumerate(plotframe.curves.keys()):
-            curveitem = QtGui.QTableWidgetItem(curvename)
             combo = QtGui.QComboBox()
             combo.addItems(['Pressure','Velocity','None'])
+            curveitem = QtGui.QTableWidgetItem(curvename)
+
+            # Preselect velocity based on the field name
+            if curvename.lower().find('vel') >= 0:
+                combo.setCurrentIndex(1)
+
             self.table.insertRow(n)
             self.table.setItem(n, 0, curveitem)
             self.table.setCellWidget(n, 1, combo)
