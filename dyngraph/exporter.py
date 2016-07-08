@@ -27,9 +27,11 @@ class Exporter():
             self.xmin, self.xmax = int(xmin), int(xmax)
 
     def seriestocsv(self):
+        filename = "{}-subset.csv".format(self.patientcache)
+        defaultpath = os.path.join(self.dircache, filename)
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
-                                                     directory = self.dircache)
+                                                     directory = defaultpath)
         if not filepath: return
         self.dircache = os.path.dirname(filepath)
         self.updaterange()
@@ -62,9 +64,11 @@ class Exporter():
                              'comment'  : dlg.comment})
 
     def cyclepointstocsv(self):
+        filename = "{}-feet.csv".format(self.patientcache)
+        defaultpath = os.path.join(self.dircache, filename)
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
-                                                     directory = self.dircache)
+                                                     directory = defaultpath)
         if not filepath: return
         self.dircache = os.path.dirname(filepath)
         feetidx = [pd.Series(item.feet.index) for item in self.parent.feetitems.values()]
