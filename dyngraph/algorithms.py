@@ -62,7 +62,11 @@ def findFlowCycles(series):
     cycleStops  = series.iloc[idxstops]
 
     # Handle the case where we start within a cycle
-    cycleStops = cycleStops[cycleStops.index > cycleStarts.index[0]]
+    try:
+        cycleStops = cycleStops[cycleStops.index > cycleStarts.index[0]]
+    except IndexError as e:
+        print("No cycle detected: {}".format(e), file=sys.stderr)
+        return (pd.Series(), pd.Series())
 
     # Filter noise cycles which are shorter than 240ms
     if type(series.index) == pd.tseries.index.DatetimeIndex:
