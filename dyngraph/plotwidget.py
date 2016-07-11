@@ -113,8 +113,9 @@ class CurveItem(pg.PlotDataItem):
 
 class FeetItem(pg.ScatterPlotItem):
     def __init__(self, feet, curve, namesuffix='feet', *args, **kwargs):
-        self.selected = []
         pen = curve.opts['pen']
+        self.selected = []
+        self.curve = curve
         self._name = "{}-{}".format(curve.name(), namesuffix)
         self.xisdate = type(feet.index) == pd.tseries.index.DatetimeIndex
         super().__init__(x    = feet.index.astype(np.int64),
@@ -127,14 +128,15 @@ class FeetItem(pg.ScatterPlotItem):
 
     @property
     def feet(self):
-        points = self.points()
-        values = [point.pos().y() for point in points]
-        time   = [point.pos().x() for point in points]
+        time = [point.pos().x() for point in self.points()]
         if self.xisdate:
             time = pd.to_datetime(time, unit='ns')
-        return pd.Series(data  = values,
-                         index = time,
-                         name  = self.name())
+
+        # Sometimes points are a bit off due to rounding errors
+        indices = [self.curve.series.index.get_loc(t, method='nearest') for t in time]
+        elements = self.curve.series.iloc[indices]
+
+        return elements.rename(self.name())
 
     def isPointSelected(self, point):
         return point in self.selected
