@@ -71,8 +71,9 @@ class Exporter():
                                                      directory = defaultpath)
         if not filepath: return
         self.dircache = os.path.dirname(filepath)
-        feetidx = [pd.Series(item.feet.index) for item in self.parent.feetitems.values()]
-        feetnames = [item.feet.name for item in self.parent.feetitems.values()]
+        feetitems = self.parent.feetitems.values()
+        feetidx = [pd.Series(item.feet.index) for item in feetitems]
+        feetnames = [item.feet.name for item in feetitems]
         df = pd.concat(feetidx, axis=1, keys=feetnames)
         df.to_csv(filepath, datetime_format = "%Y-%m-%d %H:%M:%S.%f")
 
