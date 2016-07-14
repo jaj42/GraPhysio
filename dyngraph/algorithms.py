@@ -70,7 +70,7 @@ def findFlowCycles(series):
 
     # Filter noise cycles which are shorter than 240ms
     if type(series.index) == pd.tseries.index.DatetimeIndex:
-        minSystoleLength = pd.Timedelta('240ms')
+        minSystoleLength = pd.Timedelta('200ms')
         def notShortCycles():
             for (startidx, stopidx) in zip(cycleStarts.index, cycleStops.index):
                 if stopidx - startidx >= minSystoleLength:
