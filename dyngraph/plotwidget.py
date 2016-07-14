@@ -65,7 +65,7 @@ class PlotFrame(QtGui.QWidget):
 
         try:
             curve = CurveItem(series = series,
-                                 pen    = QtGui.QColor(color))
+                              pen    = QtGui.QColor(color))
         except ValueError as e:
             self.parent.haserror.emit(e)
         else:
@@ -73,16 +73,15 @@ class PlotFrame(QtGui.QWidget):
 
     def addFeet(self, curve, foottype):
         if foottype is FootType.pressure:
-            feet = PressureFeetItem(curve)
+            feet = pressureFeetItem(curve)
             feet.sigClicked.connect(self.sigPointClicked)
             self.plotw.addItem(feet)
         elif foottype is FootType.velocity:
-            start = VelocityFeetItem(curve, isend=False)
-            start.sigClicked.connect(self.sigPointClicked)
-            self.plotw.addItem(start)
-            stop = VelocityFeetItem(curve, isend=True)
-            stop.sigClicked.connect(self.sigPointClicked)
-            self.plotw.addItem(stop)
+            starts, stops = velocityFeetItems(curve)
+            starts.sigClicked.connect(self.sigPointClicked)
+            self.plotw.addItem(starts)
+            stops.sigClicked.connect(self.sigPointClicked)
+            self.plotw.addItem(stops)
         else:
             return
 
@@ -166,19 +165,16 @@ class FeetItem(pg.ScatterPlotItem):
         return self.removePoints(self.selected)
 
 
-class PressureFeetItem(FeetItem):
-    def __init__(self, curve):
-        feet = algorithms.findPressureFeet(curve.series)
-        super().__init__(feet, curve)
+def pressureFeetItem(curve):
+    feet = algorithms.findPressureFeet(curve.series)
+    return FeetItem(feet, curve)
 
 
-class VelocityFeetItem(FeetItem):
-    def __init__(self, curve, isend=False):
-        starts, stops = algorithms.findFlowCycles(curve.series)
-        if isend:
-            super().__init__(stops, curve, namesuffix='velstop', symbol='s')
-        else:
-            super().__init__(starts, curve, namesuffix='velstart', symbol='t')
+def velocityFeetItems(curve):
+    starts, stops = algorithms.findFlowCycles(curve.series)
+    startitem = FeetItem(starts, curve, namesuffix='velstart', symbol='t')
+    stopitem  = FeetItem(stops,  curve, namesuffix='velstop',  symbol='s')
+    return (startitem, stopitem)
 
 
 class TimeAxisItem(pg.AxisItem):
