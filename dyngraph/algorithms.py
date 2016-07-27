@@ -29,9 +29,9 @@ def findPressureFeet(series):
     sndderiv = sndderiv * (fstderiv > 0)
 
     peaks = pulsePeaks(series, sndderiv)
-    peakvar = np.diff(peaks.astype(int))
-    peakStarts = np.flatnonzero(peakvar > 0)
-    peakStops  = np.flatnonzero(peakvar < 0)
+    peakvar = peaks.diff()
+    peakStarts, = (peakvar > 0).nonzero()
+    peakStops,  = (peakvar < 0).nonzero()
 
     # Handle the case where we start near a foot
     try:
