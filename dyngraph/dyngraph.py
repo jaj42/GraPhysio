@@ -14,7 +14,7 @@ from cycledetect_ui import Ui_CycleDetection
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     hasdata  = QtCore.pyqtSignal(object)
-    haserror = QtCore.pyqtSignal(str)
+    haserror = QtCore.pyqtSignal(object)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -105,7 +105,7 @@ class Reader(QtCore.QRunnable):
         try:
             data = self.getdata()
         except ValueError as e:
-            self._parent.haserror.emit(str(e))
+            self._parent.haserror.emit(e)
         else:
             self._plotdata.data = data
             self._parent.hasdata.emit(self._plotdata)
