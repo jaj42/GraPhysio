@@ -116,6 +116,7 @@ class Reader(QtCore.QRunnable):
             usecols = None
         else:
             usecols = self._plotdata.fields
+
         data = pd.read_csv(self._plotdata.filepath,
                            sep       = self._plotdata.seperator,
                            usecols   = usecols,
@@ -123,6 +124,7 @@ class Reader(QtCore.QRunnable):
                            index_col = False,
                            encoding  = 'latin1',
                            engine    = 'c')
+
         if self._plotdata.xisdate:
             if self._plotdata.isunixtime:
                 data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield],
@@ -131,6 +133,14 @@ class Reader(QtCore.QRunnable):
                 data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield],
                                                     format = self._plotdata.datetime_format)
             data = data.set_index('nsdatetime')
+
+        # Coerce all columns to numeric and remove empty columns
+        tonum = lambda x: pd.to_numeric(x, errors='coerce')
+        data = data.apply(tonum).dropna(axis='columns', how='all')
+
+        # Don't try requested fields that are empty
+        self._plotdata.yfields = [f for f in self._plotdata.yfields if f in data.columns]
+
         return data
 
 
