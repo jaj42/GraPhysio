@@ -22,6 +22,7 @@ def pulsePeaks(series, deriv):
     return (integral > thres).astype(int)
 
 def findPressureFeet(series):
+    series = series.dropna()
     fstderiv = series.diff().shift(-1)
     sndderiv = fstderiv.diff().shift(-1)
 
@@ -55,6 +56,7 @@ def findPressureFeet(series):
     return series[list(locateMaxima())]
 
 def findFlowCycles(series):
+    series = series.dropna()
     bincycles = (series > series.min()).astype(int)
     idxstarts, = (bincycles.diff().shift(-1) > 0).nonzero()
     idxstops,  = (bincycles.diff() < 0).nonzero()
