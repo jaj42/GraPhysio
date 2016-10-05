@@ -8,9 +8,10 @@ from PyQt4.QtCore import Qt
 
 import plotwidget
 
-from newplot_ui     import Ui_NewPlot
 from mainwindow_ui  import Ui_MainWindow
+from newplot_ui     import Ui_NewPlot
 from cycledetect_ui import Ui_CycleDetection
+from filter_ui      import Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     hasdata  = QtCore.pyqtSignal(object)
@@ -27,6 +28,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
 
+        self.menuData.addAction('&Filter', self.launchFilter, Qt.CTRL + Qt.Key_F)
         self.menuData.addAction('Cycle &Detection', self.launchCycleDetection, Qt.CTRL + Qt.Key_D)
 
         self.menuExport.addAction('&Series to CSV', self.exportCsv)
@@ -44,6 +46,15 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         for curvename, choice in choices.items():
             curve = plotframe.curves[curvename]
             plotframe.addFeet(curve, plotwidget.FootType(choice))
+
+    def launchFilter(self):
+        dlgFilter = DlgFilter(parent = self)
+        if not dlgFilter.exec_(): return
+        choices = dlgFilter.result
+        plotframe = self.tabWidget.currentWidget()
+        for curvename, choice in choices.items():
+            curve = plotframe.curves[curvename]
+            plotframe.addFiltered(curve, plotwidget.FilterType(choice))
 
     def launchNewPlot(self):
         dlgNewplot = DlgNewPlot(parent=self, directory=self.dircache)
@@ -307,12 +318,41 @@ class DlgCycleDetection(QtGui.QDialog, Ui_CycleDetection):
 
         for n, curvename in enumerate(plotframe.curves.keys()):
             combo = QtGui.QComboBox()
-            combo.addItems(['Pressure','Velocity','None'])
+            combo.addItems(['Pressure', 'Velocity', 'None'])
             curveitem = QtGui.QTableWidgetItem(curvename)
 
             # Preselect velocity based on the field name
             if curvename.lower().find('vel') >= 0:
                 combo.setCurrentIndex(1)
+
+            self.table.insertRow(n)
+            self.table.setItem(n, 0, curveitem)
+            self.table.setCellWidget(n, 1, combo)
+            self.choices[curvename] = combo
+
+    @property
+    def result(self):
+        return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
+
+
+class DlgFilter(QtGui.QDialog, Ui_Filter):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.setupUi(self)
+
+        self.okButton.clicked.connect(self.accept)
+        self.cancelButton.clicked.connect(self.reject)
+
+        self.choices = {}
+
+        plotframe = self.parent().tabWidget.currentWidget()
+        if plotframe is None:
+            return
+
+        for n, curvename in enumerate(plotframe.curves.keys()):
+            combo = QtGui.QComboBox()
+            combo.addItems(['None', 'TF Combi', 'TF Sphygmo'])
+            curveitem = QtGui.QTableWidgetItem(curvename)
 
             self.table.insertRow(n)
             self.table.setItem(n, 0, curveitem)

@@ -1,7 +1,8 @@
 import sys
-
 import numpy as np
 import pandas as pd
+import scipy.signal as signal
+
 
 def calcSampleRate(series):
     if type(series.index) != pd.tseries.index.DatetimeIndex:
@@ -10,6 +11,14 @@ def calcSampleRate(series):
     starttime = series.index.values[0]
     stopidx = series.index.get_loc(starttime + pd.Timedelta('1s'), method='nearest')
     return stopidx
+
+def applytf(series, tf):
+    oldseries = series.dropna()
+    Fs = calcSampleRate(oldseries)
+    (b, a) = tf.discretize(Fs)
+    filtered = signal.lfilter(b, a, oldseries)
+    newname = "{}-{}".format(oldseries.name, tf.name)
+    return pd.Series(filtered, index=oldseries.index, name=newname)
 
 def pulsePeaks(series, deriv):
     samplerate = calcSampleRate(series)
@@ -82,3 +91,22 @@ def findFlowCycles(series):
         cycleStops = cycleStops[list(stopidx)]
 
     return (cycleStarts, cycleStops)
+
+class TF(object):
+    def __init__(self, num, den, name=''):
+        self.num  = num
+        self.den  = den
+        self.name = name
+
+    def discretize(self, samplerate):
+        sys = (self.num, self.den)
+        (dnum, dden, dt) = signal.cont2discrete(sys, 1 / samplerate)
+        return (np.squeeze(dnum), np.squeeze(dden))
+
+combinum = [0.408751920435766, 151.582581166692, 85635.5276753896, 14338095.4595983, 246284412.280726, 7589761184.49952]
+combiden = [1, 262.177056516015, 179623.668255216, 17136951.4801190, 440747055.723416, 7279892605.18387]
+tfcombi = TF(combinum, combiden, name='tfcombi')
+
+sphygmonum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873.0713084, 218273825.541909, 6489400920.14402]
+sphygmoden = [1, 180.289425270434, 174563.510125383, 17057258.6774222, 555352944.277185, 6493213494.43661]
+tfsphygmo = TF(sphygmonum, sphygmoden, name='tfsphygmo')
