@@ -56,16 +56,18 @@ class PlotFrame(QtGui.QWidget):
         for series in allSeries:
             self.addCurve(series)
 
-    def addCurve(self, series):
-        n = len(self.curves)
-        if n >= len(self.colors):
-            color = Qt.white
-        else:
-            color = self.colors[n]
+    def addCurve(self, series, pen=None):
+        if pen is None:
+            n = len(self.curves)
+            if n >= len(self.colors):
+                color = Qt.white
+            else:
+                color = self.colors[n]
+            pen = QtGui.QColor(color)
 
         try:
             curve = CurveItem(series = series,
-                              pen    = QtGui.QColor(color))
+                              pen    = pen)
         except ValueError as e:
             self.parent.haserror.emit(e)
         else:
@@ -84,6 +86,19 @@ class PlotFrame(QtGui.QWidget):
             self.plotw.addItem(stops)
         else:
             return
+
+    def addFiltered(self, oldcurve, filtertype):
+        series = oldcurve.series
+        if filtertype is FilterType.tfsphygmo:
+            tf = algorithms.tfsphygmo
+        elif filtertype is FilterType.tfcombi:
+            #tf = algorithms.tfcombi
+            return
+        else:
+            return
+        newseries = algorithms.applytf(series, tf)
+        newcurve = self.addCurve(series = newseries,
+                                 pen    = oldcurve.pen.lighter())
 
     def sigPointClicked(self, curve, points):
         point = points[0] # keep the first point
@@ -241,3 +256,8 @@ class FootType(Enum):
     none     = 'None'
     pressure = 'Pressure'
     velocity = 'Velocity'
+
+class FilterType(Enum):
+    none      = 'None'
+    tfcombi   = 'TF Combi'
+    tfsphygmo = 'TF Sphygmo'
