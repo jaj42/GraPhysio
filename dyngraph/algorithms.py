@@ -103,8 +103,8 @@ class TF(object):
         (dnum, dden, dt) = signal.cont2discrete(sys, 1 / samplerate)
         return (np.squeeze(dnum), np.squeeze(dden))
 
-combinum = [0.408751920435766, 151.582581166692, 85635.5276753896, 14338095.4595983, 246284412.280726, 7589761184.49952]
-combiden = [1, 262.177056516015, 179623.668255216, 17136951.4801190, 440747055.723416, 7279892605.18387]
+combinum = [1]
+combiden = [1]
 tfcombi = TF(combinum, combiden, name='tfcombi')
 
 sphygmonum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873.0713084, 218273825.541909, 6489400920.14402]
