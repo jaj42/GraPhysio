@@ -89,11 +89,10 @@ class PlotFrame(QtGui.QWidget):
 
     def addFiltered(self, oldcurve, filtertype):
         series = oldcurve.series
-        if filtertype is FilterType.tfsphygmo:
+        if filtertype is FilterType.tfcombi:
+            tf = algorithms.tfcombi
+        elif filtertype is FilterType.tfsphygmo:
             tf = algorithms.tfsphygmo
-        elif filtertype is FilterType.tfcombi:
-            #tf = algorithms.tfcombi
-            return
         else:
             return
         newseries = algorithms.applytf(series, tf)
