@@ -7,6 +7,7 @@ from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
 from dyngraph import plotwidget
+from dyngraph.utils import PlotDescription
 from dyngraph.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
@@ -157,7 +158,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.setupUi(self)
 
         self.dircache = directory
-        self.plotdata = plotwidget.PlotDescription()
+        self.plotdata = PlotDescription()
 
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()
