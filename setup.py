@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(name='dyngraph',
-      version='0.1',
+      version='0.2',
       description='Dynamic graph view',
-      url='http://joachim.cc/',
+      url='https://git.joachim.cc/cgit.cgi/dyngraph/',
       author='Jona JOACHIM',
       author_email='jona@joachim.cc',
       license='ISC',
@@ -12,4 +12,7 @@ setup(name='dyngraph',
           'pyqtgraph',
           'pandas'
       ],
-      zip_safe=False)
+      scripts = [
+          'scripts/dyngraph.pyw'
+      ]
+)

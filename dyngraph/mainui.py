@@ -6,12 +6,12 @@ import numpy as np
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
-import plotwidget
+from dyngraph import plotwidget
 
-from ui.mainwindow  import Ui_MainWindow
-from ui.newplot     import Ui_NewPlot
-from ui.cycledetect import Ui_CycleDetection
-from ui.filter      import Ui_Filter
+from dyngraph.ui.mainwindow  import Ui_MainWindow
+from dyngraph.ui.newplot     import Ui_NewPlot
+from dyngraph.ui.cycledetect import Ui_CycleDetection
+from dyngraph.ui.filter      import Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     hasdata  = QtCore.pyqtSignal(object)

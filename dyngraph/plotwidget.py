@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 
-import algorithms
-import exporter
+from dyngraph import algorithms, exporter
 
 class PlotFrame(QtGui.QWidget):
     layout = property(QtGui.QWidget.layout, QtGui.QWidget.setLayout)
