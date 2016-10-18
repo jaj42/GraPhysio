@@ -7,11 +7,7 @@ from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
 from dyngraph import plotwidget
-
-from dyngraph.ui.mainwindow  import Ui_MainWindow
-from dyngraph.ui.newplot     import Ui_NewPlot
-from dyngraph.ui.cycledetect import Ui_CycleDetection
-from dyngraph.ui.filter      import Ui_Filter
+from dyngraph.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     hasdata  = QtCore.pyqtSignal(object)

@@ -5,7 +5,7 @@ import pandas as pd
 
 from PyQt4 import QtGui
 
-from dyngraph.ui.periodexport import Ui_PeriodExport
+from dyngraph.ui import Ui_PeriodExport
 
 class Exporter():
     periodfields = ['patient', 'begin', 'end', 'periodid', 'comment']
