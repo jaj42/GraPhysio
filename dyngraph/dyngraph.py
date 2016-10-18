@@ -8,10 +8,10 @@ from PyQt4.QtCore import Qt
 
 import plotwidget
 
-from ui.mainwindow_ui  import Ui_MainWindow
-from ui.newplot_ui     import Ui_NewPlot
-from ui.cycledetect_ui import Ui_CycleDetection
-from ui.filter_ui      import Ui_Filter
+from ui.mainwindow  import Ui_MainWindow
+from ui.newplot     import Ui_NewPlot
+from ui.cycledetect import Ui_CycleDetection
+from ui.filter      import Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     hasdata  = QtCore.pyqtSignal(object)
