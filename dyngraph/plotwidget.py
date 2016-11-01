@@ -115,6 +115,7 @@ class PlotFrame(QtGui.QWidget):
 class CurveItem(pg.PlotDataItem):
     def __init__(self, series, pen=QtGui.QColor(Qt.white), parent=None, *args, **kwargs):
         self.series = series
+        self.feet = None
         #self.pen = pg.mkPen(pen, width=2)
         self.pen = pen
         super().__init__(x    = self.series.index.astype(np.int64),
@@ -181,11 +182,13 @@ class FeetItem(pg.ScatterPlotItem):
 
 def pressureFeetItem(curve):
     feet = algorithms.findPressureFeet(curve.series)
+    curve.feet = feet.index
     return FeetItem(feet, curve)
 
 
 def velocityFeetItems(curve):
     starts, stops = algorithms.findFlowCycles(curve.series)
+    curve.feet = (starts.index, stops.index)
     startitem = FeetItem(starts, curve, namesuffix='velstart', symbol='t')
     stopitem  = FeetItem(stops,  curve, namesuffix='velstop',  symbol='s')
     return (startitem, stopitem)
