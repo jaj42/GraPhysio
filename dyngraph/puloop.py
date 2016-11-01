@@ -15,6 +15,7 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
 
         self.btnPrev.clicked.connect(self.prevloop)
         self.btnNext.clicked.connect(self.nextloop)
+        self.btnDelete.clicked.connect(self.delloop)
 
         self.curidx = 0
         self.loops = []
@@ -28,6 +29,7 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
             self.loops.append(PULoop(loopu, loopp))
 
         if len(self.loops) > 0:
+            self.lblTot.setText(str(len(self.loops)))
             self.renderloop(0)
 
     def renderloop(self, idx=None):
@@ -45,13 +47,20 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         idx = self.curidx - 1
         if idx >= 0:
             self.curidx = idx
+            self.lblIdx.setText(str(self.curidx + 1))
             self.renderloop()
 
     def nextloop(self):
         idx = self.curidx + 1
         if idx < len(self.loops):
             self.curidx = idx
+            self.lblIdx.setText(str(self.curidx + 1))
             self.renderloop()
+
+    def delloop(self):
+        self.loops.pop(self.curidx)
+        self.lblTot.setText(str(len(self.loops)))
+        self.renderloop()
 
 
 class PULoop(object):
