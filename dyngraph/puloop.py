@@ -23,8 +23,12 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
 
         u = u.series; p = p.series
         for ubegin, uend, pf in zip(*uperiods, pfeet):
-            duration = uend - ubegin
+            # Don't miss the last flow point
+            endloc = u.index.get_loc(uend) + 1
+            uend = u.index[endloc]
+
             loopu = u[ubegin:uend]
+            duration = (uend - ubegin) * 2
             loopp = p[pf:pf+duration]
             self.loops.append(PULoop(loopu, loopp))
 
@@ -65,5 +69,7 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
 
 class PULoop(object):
     def __init__(self, u, p):
-        self.u = u
-        self.p = p
+        # Ensure both arrays have the same length
+        maxidx = min(len(u), len(p)) - 1
+        self.u = u.iloc[0:maxidx]
+        self.p = p.iloc[0:maxidx]
