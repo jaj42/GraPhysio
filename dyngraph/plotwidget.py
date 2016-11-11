@@ -11,40 +11,34 @@ import pyqtgraph as pg
 from dyngraph import algorithms, exporter, utils
 from dyngraph.utils import FootType, FilterType
 
-class PlotFrame(QtGui.QWidget):
-    layout = property(QtGui.QWidget.layout, QtGui.QWidget.setLayout)
-
+class PlotWidget(pg.PlotWidget):
     def __init__(self, plotdata, parent=None):
-        super().__init__(parent=parent)
-
         self.parent = parent
         self.plotdata = plotdata
         self.colors = utils.Colors()
-
-        self.layout = QtGui.QHBoxLayout(self)
 
         if self.plotdata.xisdate:
             axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         else:
             axisItems = None
 
-        self.plotw = pg.PlotWidget(parent=self, axisItems=axisItems, background='w')
-        self.plotw.addLegend()
-        self.layout.addWidget(self.plotw)
+        super().__init__(parent=parent, axisItems=axisItems, background='w')
+        self.addLegend()
 
-        self.vb = self.plotw.getViewBox()
+        self.vb = self.getViewBox()
         self.vb.setMouseMode(self.vb.RectMode)
+
         self.exporter = exporter.Exporter(self)
 
         self.addAllCurves()
 
     @property
     def curves(self):
-        return {item.name() : item for item in self.plotw.listDataItems() if isinstance(item, CurveItem)}
+        return {item.name() : item for item in self.listDataItems() if isinstance(item, CurveItem)}
 
     @property
     def feetitems(self):
-        return {item.name() : item for item in self.plotw.listDataItems() if isinstance(item, FeetItem)}
+        return {item.name() : item for item in self.listDataItems() if isinstance(item, FeetItem)}
 
     def addAllCurves(self):
         allSeries = (self.plotdata.data[c] for c in self.plotdata.yfields)
@@ -61,19 +55,19 @@ class PlotFrame(QtGui.QWidget):
         except ValueError as e:
             self.parent.haserror.emit(e)
         else:
-            self.plotw.addItem(curve)
+            self.addItem(curve)
 
     def addFeet(self, curve, foottype):
         if foottype is FootType.pressure:
             feet = pressureFeetItem(curve)
             feet.sigClicked.connect(self.sigPointClicked)
-            self.plotw.addItem(feet)
+            self.addItem(feet)
         elif foottype is FootType.velocity:
             starts, stops = velocityFeetItems(curve)
             starts.sigClicked.connect(self.sigPointClicked)
-            self.plotw.addItem(starts)
+            self.addItem(starts)
             stops.sigClicked.connect(self.sigPointClicked)
-            self.plotw.addItem(stops)
+            self.addItem(stops)
         else:
             return
 

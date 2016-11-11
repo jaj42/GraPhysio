@@ -8,7 +8,7 @@ from PyQt4.QtCore import Qt
 
 from dyngraph import dialogs
 
-from dyngraph.plotwidget import PlotFrame
+from dyngraph.plotwidget import PlotWidget
 from dyngraph.puloop import LoopWidget
 from dyngraph.utils import PlotDescription, FootType, FilterType
 from dyngraph.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
@@ -95,7 +95,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def createNewPlotWithData(self, plotdata):
-        plotframe = PlotFrame(plotdata=plotdata, parent=self)
+        plotframe = PlotWidget(plotdata=plotdata, parent=self)
         tabindex = self.tabWidget.addTab(plotframe, plotdata.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
