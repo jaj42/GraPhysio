@@ -46,22 +46,17 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
         uname, pname = dlgSetupPU.result
 
-        curves = sourcewidget.curves
-        plotdata = sourcewidget.plotdata
-        u = curves[uname]
-        ufeet = u.feet
-        p = curves[pname]
-        pfeet = p.feet
-
-        if type(ufeet) is not tuple:
-            self.haserror.emit("Incorrect Velocity feet")
+        try:
+            curves = sourcewidget.curves
+            plotdata = sourcewidget.plotdata
+            u = curves[uname]
+            ufeet = [fi.feet.index for fi in u.feetitem]
+            p = curves[pname]
+            pfeet = p.feetitem.feet.index
+        except:
+            ## XXX todo check existance / correctness of data
             return
 
-        if type(pfeet) is tuple:
-            self.haserror.emit("Incorrect Pressure feet")
-            return
-
-        ## XXX todo check existance / correctness of data
         loopwidget = LoopWidget(u, p, ufeet, pfeet, parent=self)
         tabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(plotdata.name))
         self.tabWidget.setCurrentIndex(tabindex)

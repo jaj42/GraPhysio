@@ -60,10 +60,12 @@ class PlotWidget(pg.PlotWidget):
     def addFeet(self, curve, foottype):
         if foottype is FootType.pressure:
             feet = pressureFeetItem(curve)
+            curve.feetitem = feet
             feet.sigClicked.connect(self.sigPointClicked)
             self.addItem(feet)
         elif foottype is FootType.velocity:
             starts, stops = velocityFeetItems(curve)
+            curve.feetitem = (starts, stops)
             starts.sigClicked.connect(self.sigPointClicked)
             self.addItem(starts)
             stops.sigClicked.connect(self.sigPointClicked)
@@ -97,9 +99,9 @@ class PlotWidget(pg.PlotWidget):
 
 
 class CurveItem(pg.PlotDataItem):
-    def __init__(self, series, pen=QtGui.QColor(Qt.white), parent=None, *args, **kwargs):
+    def __init__(self, series, pen=QtGui.QColor(Qt.black), parent=None, *args, **kwargs):
         self.series = series
-        self.feet = None
+        self.feetitem = None
         self.pen = pen
         super().__init__(x    = self.series.index.astype(np.int64),
                          y    = self.series.values.astype(np.float64),
@@ -167,13 +169,11 @@ class FeetItem(pg.ScatterPlotItem):
 
 def pressureFeetItem(curve):
     feet = algorithms.findPressureFeet(curve.series)
-    curve.feet = feet.index
     return FeetItem(feet, curve)
 
 
 def velocityFeetItems(curve):
     starts, stops = algorithms.findFlowCycles(curve.series)
-    curve.feet = (starts.index, stops.index)
     startitem = FeetItem(starts, curve, namesuffix='velstart', symbol='t')
     stopitem  = FeetItem(stops,  curve, namesuffix='velstop',  symbol='s')
     return (startitem, stopitem)
