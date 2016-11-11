@@ -8,21 +8,18 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 
-from dyngraph import algorithms, exporter
+from dyngraph import algorithms, exporter, utils
 from dyngraph.utils import FootType, FilterType
 
 class PlotFrame(QtGui.QWidget):
     layout = property(QtGui.QWidget.layout, QtGui.QWidget.setLayout)
-    colors = [Qt.red, Qt.green, Qt.blue,
-              Qt.cyan, Qt.magenta, Qt.yellow,
-              Qt.darkRed, Qt.darkGreen, Qt.darkBlue,
-              Qt.darkCyan, Qt.darkMagenta, Qt.darkYellow]
 
     def __init__(self, plotdata, parent=None):
         super().__init__(parent=parent)
 
         self.parent = parent
         self.plotdata = plotdata
+        self.colors = utils.Colors()
 
         self.layout = QtGui.QHBoxLayout(self)
 
@@ -31,9 +28,7 @@ class PlotFrame(QtGui.QWidget):
         else:
             axisItems = None
 
-        #self.plotw = pg.PlotWidget(parent=self, axisItems=axisItems, background='w')
-        self.plotw = pg.PlotWidget(parent=self, axisItems=axisItems)
-        self.plotw.setAntialiasing(True)
+        self.plotw = pg.PlotWidget(parent=self, axisItems=axisItems, background='w')
         self.plotw.addLegend()
         self.layout.addWidget(self.plotw)
 
@@ -58,12 +53,7 @@ class PlotFrame(QtGui.QWidget):
 
     def addCurve(self, series, pen=None):
         if pen is None:
-            n = len(self.curves)
-            if n >= len(self.colors):
-                color = Qt.white
-            else:
-                color = self.colors[n]
-            pen = QtGui.QColor(color)
+            pen = next(self.colors)
 
         try:
             curve = CurveItem(series = series,
@@ -116,12 +106,13 @@ class CurveItem(pg.PlotDataItem):
     def __init__(self, series, pen=QtGui.QColor(Qt.white), parent=None, *args, **kwargs):
         self.series = series
         self.feet = None
-        #self.pen = pg.mkPen(pen, width=2)
         self.pen = pen
         super().__init__(x    = self.series.index.astype(np.int64),
                          y    = self.series.values.astype(np.float64),
                          name = self.series.name,
                          pen  = self.pen,
+                         antialias      = True,
+                         #autoDownsample = True,
                          *args, **kwargs)
 
 

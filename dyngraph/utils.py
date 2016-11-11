@@ -1,5 +1,8 @@
 import os
+import time
 from enum import Enum
+import itertools
+from PyQt4 import QtGui
 
 class FootType(Enum):
     none     = 'None'
@@ -59,3 +62,25 @@ class PlotDescription():
     def folder(self):
         folder = os.path.dirname(self.filepath)
         return folder
+
+# https://stackoverflow.com/questions/5478351/python-time-measure-function
+def Timing(f):
+    def wrap(*args):
+        time1 = time.time()
+        ret = f(*args)
+        time2 = time.time()
+        print ('{} function took {:.3f} ms'.format(f.__name__, (time2 - time1) * 1000))
+        return ret
+    return wrap
+
+def Colors():
+    qtcolors = [
+        QtGui.QColor(0, 114, 189),
+        QtGui.QColor(217, 83, 25),
+        QtGui.QColor(237, 177, 32),
+        QtGui.QColor(126, 47, 142),
+        QtGui.QColor(119, 172, 48),
+        QtGui.QColor(77, 190, 238),
+        QtGui.QColor(162, 20, 47)
+    ]
+    return itertools.cycle(qtcolors)
