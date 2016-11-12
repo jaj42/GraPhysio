@@ -6,11 +6,7 @@ import numpy as np
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
-from dyngraph import dialogs
-
-from dyngraph.plotwidget import PlotWidget
-from dyngraph.puloop import LoopWidget
-from dyngraph.utils import PlotDescription, FootType, FilterType
+from dyngraph import plotwidget, puloop, dialogs, utils
 from dyngraph.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
@@ -50,14 +46,14 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
             curves = sourcewidget.curves
             plotdata = sourcewidget.plotdata
             u = curves[uname]
-            ufeet = [fi.feet.index for fi in u.feetitem]
             p = curves[pname]
-            pfeet = p.feetitem.feet.index
-        except:
-            ## XXX todo check existance / correctness of data
+        except Exception as e:
+            self.haserror.emit('Could not create PU loops: {}', e)
             return
 
-        loopwidget = LoopWidget(u, p, ufeet, pfeet, parent=self)
+        subsetrange = utils.getvbrange(sourcewidget)
+
+        loopwidget = puloop.LoopWidget(u, p, subsetrange=subsetrange, parent=self)
         tabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(plotdata.name))
         self.tabWidget.setCurrentIndex(tabindex)
 
@@ -65,19 +61,19 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         dlgCycles = dialogs.DlgCycleDetection(parent = self)
         if not dlgCycles.exec_(): return
         choices = dlgCycles.result
-        plotframe = self.tabWidget.currentWidget()
+        plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
-            curve = plotframe.curves[curvename]
-            plotframe.addFeet(curve, FootType(choice))
+            curve = plotwidget.curves[curvename]
+            plotwidget.addFeet(curve, utils.FootType(choice))
 
     def launchFilter(self):
         dlgFilter = dialogs.DlgFilter(parent = self)
         if not dlgFilter.exec_(): return
         choices = dlgFilter.result
-        plotframe = self.tabWidget.currentWidget()
+        plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
-            curve = plotframe.curves[curvename]
-            plotframe.addFiltered(curve, FilterType(choice))
+            curve = plotwidget.curves[curvename]
+            plotwidget.addFiltered(curve, utils.FilterType(choice))
 
     def launchNewPlot(self):
         dlgNewplot = dialogs.DlgNewPlot(parent=self, directory=self.dircache)
@@ -90,25 +86,25 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def createNewPlotWithData(self, plotdata):
-        plotframe = PlotWidget(plotdata=plotdata, parent=self)
-        tabindex = self.tabWidget.addTab(plotframe, plotdata.name)
+        plotwidget = plotwidget.PlotWidget(plotdata=plotdata, parent=self)
+        tabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
 
     def exportCsv(self):
-        plotframe = self.tabWidget.currentWidget()
-        if plotframe is None: return
-        plotframe.exporter.seriestocsv()
+        plotwidget = self.tabWidget.currentWidget()
+        if plotwidget is None: return
+        plotwidget.exporter.seriestocsv()
 
     def exportPeriod(self):
-        plotframe = self.tabWidget.currentWidget()
-        if plotframe is None: return
-        plotframe.exporter.periodstocsv()
+        plotwidget = self.tabWidget.currentWidget()
+        if plotwidget is None: return
+        plotwidget.exporter.periodstocsv()
 
     def exportCycles(self):
-        plotframe = self.tabWidget.currentWidget()
-        if plotframe is None: return
-        plotframe.exporter.cyclepointstocsv()
+        plotwidget = self.tabWidget.currentWidget()
+        if plotwidget is None: return
+        plotwidget.exporter.cyclepointstocsv()
 
     def fileQuit(self):
         self.close()

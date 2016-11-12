@@ -16,7 +16,7 @@ Angles    = namedtuple('Angles', ['alpha', 'beta', 'gamma'])
 
 
 class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
-    def __init__(self, u, p, uperiods, pfeet, subsetrange=None, parent=None):
+    def __init__(self, u, p, subsetrange=None, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -28,9 +28,12 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         self.loops = []
         self.plotitem = self.graphicsView.getPlotItem()
 
+        pfeet = p.feetitem.feet.index
+        uperiods = [fi.feet.index for fi in u.feetitem]
+
         u = u.series; p = p.series
         for ubegin, uend, pf in zip(*uperiods, pfeet):
-            # Don't miss the last flow point
+            # Don't miss the last flow point XXX this is hacky
             endloc = u.index.get_loc(uend) + 1
             uend = u.index[endloc]
 
@@ -52,7 +55,7 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
             parent.haserror.emit('Missing loop: {}'.format(e))
         else:
             self.plotitem.plot(curloop.u, curloop.p, clear=True)
-            alpha, beta, gamma = map(lambda a: round(a, 1), curloop.angles)
+            alpha, beta, gamma = map(lambda theta: round(theta, 1), curloop.angles)
             self.lblAlpha.setText(str(alpha))
             self.lblBeta.setText(str(beta))
             self.lblGamma.setText(str(gamma))
