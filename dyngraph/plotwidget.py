@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 
-from dyngraph import algorithms, exporter, utils
+from dyngraph import algorithms, exporter, utils, legend
 from dyngraph.utils import FootType, FilterType
 
 class PlotWidget(pg.PlotWidget):
@@ -23,7 +23,9 @@ class PlotWidget(pg.PlotWidget):
             axisItems = None
 
         super().__init__(parent=parent, axisItems=axisItems, background='w')
-        self.addLegend()
+
+        self.legend = legend.MyLegendItem()
+        self.legend.setParentItem(self.getPlotItem())
 
         self.vb = self.getViewBox()
         self.vb.setMouseMode(self.vb.RectMode)
@@ -56,6 +58,7 @@ class PlotWidget(pg.PlotWidget):
             self.parent.haserror.emit(e)
         else:
             self.addItem(curve)
+            self.legend.addItem(curve, curve.name())
 
     def addFeet(self, curve, foottype):
         if foottype is FootType.pressure:
