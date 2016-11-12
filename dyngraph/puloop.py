@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 
@@ -8,8 +10,13 @@ import pyqtgraph as pg
 from dyngraph import algorithms, exporter
 from dyngraph.ui import Ui_LoopWidget
 
+Point     = namedtuple('Point', ['x', 'y'])
+Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
+Angles    = namedtuple('Angles', ['alpha', 'beta', 'gamma'])
+
+
 class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
-    def __init__(self, u, p, uperiods, pfeet, parent=None):
+    def __init__(self, u, p, uperiods, pfeet, subsetrange=None, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -42,10 +49,13 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         try:
             curloop = self.loops[idx]
         except IndexError as e:
-            # TODO report error
-            return
+            parent.haserror.emit('Missing loop: {}'.format(e))
         else:
             self.plotitem.plot(curloop.u, curloop.p, clear=True)
+            alpha, beta, gamma = map(lambda a: round(a, 1), curloop.angles)
+            self.lblAlpha.setText(str(alpha))
+            self.lblBeta.setText(str(beta))
+            self.lblGamma.setText(str(gamma))
         
     def prevloop(self):
         idx = self.curidx - 1
@@ -69,7 +79,37 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
 
 class PULoop(object):
     def __init__(self, u, p):
+        self.card = None
+        self.ang = None
         # Ensure both arrays have the same length
         maxidx = min(len(u), len(p)) - 1
-        self.u = u.iloc[0:maxidx]
-        self.p = p.iloc[0:maxidx]
+        self.u = u.values[0:maxidx]
+        self.p = p.values[0:maxidx]
+
+    @property
+    def cardpoints(self):
+        if self.card is None:
+            idxpmax = self.p.argmax()
+            idxvmax = self.u.argmax()
+            A = Point(self.u[0],  self.p[0])
+            B = Point(self.u[idxvmax], self.p[idxvmax])
+            C = Point(self.u[idxpmax], self.p[idxpmax])
+            self.card = Cardinals(A, B, C)
+        return self.card
+
+    @property
+    def angles(self):
+        if self.ang is None:
+            self.card = self.cardpoints
+            alpha = self.calcangle(self.card.B)
+            beta  = self.calcangle(self.card.C)
+            gamma = self.calcangle(self.card.B, self.card.C)
+            self.ang = Angles(alpha, beta, gamma)
+        return self.ang
+
+    def calcangle(self, pointb, pointa=Point(1,0)):
+        ca = complex(pointa.x, pointa.y)
+        cb = complex(pointb.x, pointb.y)
+        angca = np.angle(ca, deg=True)
+        angcb = np.angle(cb, deg=True)
+        return abs(angca - angcb)
