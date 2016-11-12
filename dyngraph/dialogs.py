@@ -4,7 +4,7 @@ from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
 from dyngraph.utils import PlotDescription
-from dyngraph.ui import Ui_NewPlot, Ui_CycleDetection, Ui_Filter, Ui_SetupPULoop
+from dyngraph.ui import Ui_NewPlot, Ui_CycleDetection, Ui_Filter, Ui_SetupPULoop, Ui_PeriodExport
 
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
@@ -237,3 +237,44 @@ class DlgSetupPULoop(QtGui.QDialog, Ui_SetupPULoop):
         uname = self.comboU.currentText()
         pname = self.comboP.currentText()
         return (uname, pname)
+
+
+class DlgPeriodExport(QtGui.QDialog, Ui_PeriodExport):
+    def __init__(self, begin, end, patient="", directory="", parent=None):
+        super().__init__(parent=parent)
+        self.setupUi(self)
+
+        self.dircache = directory
+
+        self.lblPeriodStart.setText(str(begin))
+        self.lblPeriodStop.setText(str(end))
+        self.txtPatient.setText(patient)
+
+        self.btnOk.clicked.connect(self.accept)
+        self.btnCancel.clicked.connect(self.reject)
+        self.btnBrowse.clicked.connect(self.selectFile)
+
+    def selectFile(self):
+        filename = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
+                                                     filter  = "CSV files (*.csv *.dat)",
+                                                     options = QtGui.QFileDialog.DontConfirmOverwrite,
+                                                     directory = self.dircache)
+        if filename:
+            self.txtFile.setText(filename)
+            self.dircache = os.path.dirname(filename)
+
+    @property
+    def patient(self):
+        return self.txtPatient.text()
+
+    @property
+    def comment(self):
+        return self.txtComment.text()
+
+    @property
+    def periodname(self):
+        return self.txtPeriod.currentText()
+
+    @property
+    def filepath(self):
+        return self.txtFile.text()

@@ -3,6 +3,7 @@ import time
 from enum import Enum
 import itertools
 from PyQt4 import QtGui
+import pandas as pd
 
 class FootType(Enum):
     none     = 'None'
@@ -84,3 +85,13 @@ def Colors():
         QtGui.QColor(162, 20, 47)
     ]
     return itertools.cycle(qtcolors)
+
+def getvbrange(plotwidget):
+    vbrange = plotwidget.vb.viewRange()
+    xmin, xmax = vbrange[0]
+    if plotwidget.plotdata.xisdate:
+        xmin = pd.to_datetime(xmin, unit='ns')
+        xmax = pd.to_datetime(xmax, unit='ns')
+    else:
+        xmin, xmax = int(xmin), int(xmax)
+    return (xmin, xmax)
