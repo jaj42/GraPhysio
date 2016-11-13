@@ -4,6 +4,34 @@ import pandas as pd
 import scipy.signal as signal
 
 
+class TF(object):
+    def __init__(self, num, den, name=''):
+        self.num  = num
+        self.den  = den
+        self.name = name
+
+    def discretize(self, samplerate):
+        sys = (self.num, self.den)
+        (dnum, dden, dt) = signal.cont2discrete(sys, 1 / samplerate)
+        return (np.squeeze(dnum), np.squeeze(dden))
+
+combinum = [1]
+combiden = [1]
+tfcombi = TF(combinum, combiden, name='tfcombi')
+
+sphygmonum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873.0713084, 218273825.541909, 6489400920.14402]
+sphygmoden = [1, 180.289425270434, 174563.510125383, 17057258.6774222, 555352944.277185, 6493213494.43661]
+tfsphygmo = TF(sphygmonum, sphygmoden, name='tfsphygmo')
+
+Filters = {'savgol125' : 'savgol',
+           'tfsphygmo' : 'tf',
+           'tfcombi'   : 'tf'}
+
+TFs = {tfsphygmo.name : tfsphygmo,
+       tfcombi.name   : tfcombi}
+
+SavGols = {'savgol125' : [3, 29]}
+
 def calcSampleRate(series):
     if type(series.index) != pd.tseries.index.DatetimeIndex:
         print("No time information for cycle identification", file=sys.stderr)
@@ -12,12 +40,32 @@ def calcSampleRate(series):
     stopidx = series.index.get_loc(starttime + pd.Timedelta('1s'), method='nearest')
     return stopidx
 
+def filter(series, filtname):
+    try:
+        filttype = Filters[filtname]
+    except KeyError:
+        return None
+
+    if filttype == 'tf':
+        return applytf(series, TFs[filtname])
+    elif filttype == 'savgol':
+        order, window = SavGols[filtname]
+        return applysavgol(series, order, window)
+    else:
+        return None
+
 def applytf(series, tf):
     oldseries = series.dropna()
     Fs = calcSampleRate(oldseries)
     (b, a) = tf.discretize(Fs)
     filtered = signal.lfilter(b, a, oldseries)
     newname = "{}-{}".format(oldseries.name, tf.name)
+    return pd.Series(filtered, index=oldseries.index, name=newname)
+
+def applysavgol(series, order, window):
+    oldseries = series.dropna()
+    filtered = signal.savgol_filter(oldseries, window, order)
+    newname = "{}-{}".format(oldseries.name, 'filtered')
     return pd.Series(filtered, index=oldseries.index, name=newname)
 
 def pulsePeaks(series, deriv):
@@ -91,22 +139,3 @@ def findFlowCycles(series):
         cycleStops = cycleStops[list(stopidx)]
 
     return (cycleStarts, cycleStops)
-
-class TF(object):
-    def __init__(self, num, den, name=''):
-        self.num  = num
-        self.den  = den
-        self.name = name
-
-    def discretize(self, samplerate):
-        sys = (self.num, self.den)
-        (dnum, dden, dt) = signal.cont2discrete(sys, 1 / samplerate)
-        return (np.squeeze(dnum), np.squeeze(dden))
-
-combinum = [1]
-combiden = [1]
-tfcombi = TF(combinum, combiden, name='tfcombi')
-
-sphygmonum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873.0713084, 218273825.541909, 6489400920.14402]
-sphygmoden = [1, 180.289425270434, 174563.510125383, 17057258.6774222, 555352944.277185, 6493213494.43661]
-tfsphygmo = TF(sphygmonum, sphygmoden, name='tfsphygmo')

@@ -3,7 +3,7 @@ import os, csv
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
-from dyngraph.utils import PlotDescription
+from dyngraph import algorithms, utils
 from dyngraph.ui import Ui_NewPlot, Ui_CycleDetection, Ui_Filter, Ui_SetupPULoop, Ui_PeriodExport
 
 
@@ -13,7 +13,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.setupUi(self)
 
         self.dircache = directory
-        self.plotdata = PlotDescription()
+        self.plotdata = utils.PlotDescription()
 
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()
@@ -203,7 +203,10 @@ class DlgFilter(QtGui.QDialog, Ui_Filter):
 
         for n, curvename in enumerate(plotframe.curves.keys()):
             combo = QtGui.QComboBox()
-            combo.addItems(['None', 'TF Combi', 'TF Sphygmo'])
+
+            combo.addItems(['None'])
+            combo.addItems(list(algorithms.Filters.keys()))
+
             curveitem = QtGui.QTableWidgetItem(curvename)
 
             self.table.insertRow(n)
