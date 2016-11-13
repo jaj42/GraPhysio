@@ -26,7 +26,16 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
 
         self.curidx = 0
         self.loops = []
+        self.pen = p.pen
+        self.graphicsView.setBackground('w')
         self.plotitem = self.graphicsView.getPlotItem()
+
+        self.scatteritem = pg.ScatterPlotItem()
+        self.graphicsView.addItem(self.scatteritem)
+
+        if p.feetitem is None or u.feetitem is None:
+            parent.haserror.emit('No feet for this curve')
+            return
 
         pfeet = p.feetitem.feet.index
         uperiods = [fi.feet.index for fi in u.feetitem]
@@ -54,11 +63,15 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         except IndexError as e:
             parent.haserror.emit('Missing loop: {}'.format(e))
         else:
-            self.plotitem.plot(curloop.u, curloop.p, clear=True)
+            self.plotitem.plot(curloop.u, curloop.p, clear=True, pen=self.pen)
             alpha, beta, gamma = map(lambda theta: round(theta, 1), curloop.angles)
             self.lblAlpha.setText(str(alpha))
             self.lblBeta.setText(str(beta))
             self.lblGamma.setText(str(gamma))
+            # XXX TODO
+#            cardpoints = curloop.cardpoints
+#            cardx, cardy = zip(*cardpoints)
+#            self.scatteritem.setData(np.array(cardx), np.array(cardy))
         
     def prevloop(self):
         idx = self.curidx - 1
@@ -103,10 +116,10 @@ class PULoop(object):
     @property
     def angles(self):
         if self.ang is None:
-            self.card = self.cardpoints
-            alpha = self.calcangle(self.card.B)
-            beta  = self.calcangle(self.card.C)
-            gamma = self.calcangle(self.card.B, self.card.C)
+            card = self.cardpoints
+            alpha = self.calcangle(card.B)
+            beta  = self.calcangle(card.C)
+            gamma = self.calcangle(card.B, card.C)
             self.ang = Angles(alpha, beta, gamma)
         return self.ang
 

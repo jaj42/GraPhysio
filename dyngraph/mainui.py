@@ -6,7 +6,7 @@ import numpy as np
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
-from dyngraph import plotwidget, puloop, dialogs, utils
+from dyngraph import tsplot, puplot, dialogs, utils
 from dyngraph.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
@@ -53,7 +53,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
         subsetrange = utils.getvbrange(sourcewidget)
 
-        loopwidget = puloop.LoopWidget(u, p, subsetrange=subsetrange, parent=self)
+        loopwidget = puplot.LoopWidget(u, p, subsetrange=subsetrange, parent=self)
         tabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(plotdata.name))
         self.tabWidget.setCurrentIndex(tabindex)
 
@@ -73,7 +73,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
             curve = plotwidget.curves[curvename]
-            plotwidget.addFiltered(curve, utils.FilterType(choice))
+            plotwidget.addFiltered(curve, choice)
 
     def launchNewPlot(self):
         dlgNewplot = dialogs.DlgNewPlot(parent=self, directory=self.dircache)
@@ -86,7 +86,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def createNewPlotWithData(self, plotdata):
-        plotwidget = plotwidget.PlotWidget(plotdata=plotdata, parent=self)
+        plotwidget = tsplot.PlotWidget(plotdata=plotdata, parent=self)
         tabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")

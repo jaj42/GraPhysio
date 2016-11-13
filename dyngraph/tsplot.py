@@ -9,7 +9,6 @@ import pandas as pd
 import pyqtgraph as pg
 
 from dyngraph import algorithms, exporter, utils, legend
-from dyngraph.utils import FootType, FilterType
 
 class PlotWidget(pg.PlotWidget):
     def __init__(self, plotdata, parent=None):
@@ -61,12 +60,12 @@ class PlotWidget(pg.PlotWidget):
             self.legend.addItem(curve, curve.name())
 
     def addFeet(self, curve, foottype):
-        if foottype is FootType.pressure:
+        if foottype is utils.FootType.pressure:
             feet = pressureFeetItem(curve)
             curve.feetitem = feet
             feet.sigClicked.connect(self.sigPointClicked)
             self.addItem(feet)
-        elif foottype is FootType.velocity:
+        elif foottype is utils.FootType.velocity:
             starts, stops = velocityFeetItems(curve)
             curve.feetitem = (starts, stops)
             starts.sigClicked.connect(self.sigPointClicked)
@@ -76,17 +75,12 @@ class PlotWidget(pg.PlotWidget):
         else:
             return
 
-    def addFiltered(self, oldcurve, filtertype):
+    def addFiltered(self, oldcurve, filtername):
         series = oldcurve.series
-        if filtertype is FilterType.tfcombi:
-            tf = algorithms.tfcombi
-        elif filtertype is FilterType.tfsphygmo:
-            tf = algorithms.tfsphygmo
-        else:
-            return
-        newseries = algorithms.applytf(series, tf)
-        newcurve = self.addCurve(series = newseries,
-                                 pen    = oldcurve.pen.lighter())
+        newseries = algorithms.filter(series, filtername)
+        if newseries is not None:
+            newcurve = self.addCurve(series = newseries,
+                                     pen    = oldcurve.pen.lighter())
 
     def sigPointClicked(self, curve, points):
         point = points[0] # keep the first point
