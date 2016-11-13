@@ -28,10 +28,12 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         self.loops = []
         self.pen = p.pen
         self.graphicsView.setBackground('w')
-        self.plotitem = self.graphicsView.getPlotItem()
 
+        self.curveitem = pg.PlotCurveItem()
         self.scatteritem = pg.ScatterPlotItem()
-        self.graphicsView.addItem(self.scatteritem)
+        plotitem = self.graphicsView.getPlotItem()
+        plotitem.addItem(self.scatteritem)
+        plotitem.addItem(self.curveitem)
 
         if p.feetitem is None or u.feetitem is None:
             parent.haserror.emit('No feet for this curve')
@@ -63,15 +65,23 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         except IndexError as e:
             parent.haserror.emit('Missing loop: {}'.format(e))
         else:
-            self.plotitem.plot(curloop.u, curloop.p, clear=True, pen=self.pen)
             alpha, beta, gamma = map(lambda theta: round(theta, 1), curloop.angles)
             self.lblAlpha.setText(str(alpha))
             self.lblBeta.setText(str(beta))
             self.lblGamma.setText(str(gamma))
-            # XXX TODO
-#            cardpoints = curloop.cardpoints
-#            cardx, cardy = zip(*cardpoints)
-#            self.scatteritem.setData(np.array(cardx), np.array(cardy))
+
+            card = curloop.cardpoints
+            cardx, cardy = zip(*card)
+
+            # Set visible range with quadratic aspect ratio
+            bottomleft = QtCore.QPointF(card.A.x, card.A.y)
+            size = max(card.B.x - card.A.x, card.C.y - card.A.y)
+            qsize = QtCore.QSizeF(size, size)
+            rect = QtCore.QRectF(bottomleft, qsize)
+            self.graphicsView.setRange(rect=rect)
+
+            self.curveitem.setData(curloop.u, curloop.p, pen=self.pen)
+            self.scatteritem.setData(np.array(cardx), np.array(cardy))
         
     def prevloop(self):
         idx = self.curidx - 1
@@ -95,8 +105,8 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
 
 class PULoop(object):
     def __init__(self, u, p):
-        self.card = None
-        self.ang = None
+        self.__angles = None
+        self.__cardpoints = None
         # Ensure both arrays have the same length
         maxidx = min(len(u), len(p)) - 1
         self.u = u.values[0:maxidx]
@@ -104,24 +114,24 @@ class PULoop(object):
 
     @property
     def cardpoints(self):
-        if self.card is None:
+        if self.__cardpoints is None:
             idxpmax = self.p.argmax()
             idxvmax = self.u.argmax()
-            A = Point(self.u[0],  self.p[0])
+            A = Point(self.u[0], self.p[0])
             B = Point(self.u[idxvmax], self.p[idxvmax])
             C = Point(self.u[idxpmax], self.p[idxpmax])
-            self.card = Cardinals(A, B, C)
-        return self.card
+            self.__cardpoints = Cardinals(A, B, C)
+        return self.__cardpoints
 
     @property
     def angles(self):
-        if self.ang is None:
+        if self.__angles is None:
             card = self.cardpoints
             alpha = self.calcangle(card.B)
             beta  = self.calcangle(card.C)
             gamma = self.calcangle(card.B, card.C)
-            self.ang = Angles(alpha, beta, gamma)
-        return self.ang
+            self.__angles = Angles(alpha, beta, gamma)
+        return self.__angles
 
     def calcangle(self, pointb, pointa=Point(1,0)):
         ca = complex(pointa.x, pointa.y)
