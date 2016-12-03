@@ -31,6 +31,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.menuExport.addAction('&Series to CSV', self.exportCsv)
         self.menuExport.addAction('&Time info to CSV', self.exportPeriod)
         self.menuExport.addAction('&Cycle info to CSV', self.exportCycles)
+        self.menuExport.addAction('&Loop Data', self.exportLoops)
 
         self.hasdata.connect(self.createNewPlotWithData)
         self.haserror.connect(self.displayError)
@@ -53,7 +54,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
         subsetrange = utils.getvbrange(sourcewidget)
 
-        loopwidget = puplot.LoopWidget(u, p, subsetrange=subsetrange, parent=self)
+        loopwidget = puplot.LoopWidget(u, p, plotdata, subsetrange=subsetrange, parent=self)
         tabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(plotdata.name))
         self.tabWidget.setCurrentIndex(tabindex)
 
@@ -94,17 +95,34 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     def exportCsv(self):
         plotwidget = self.tabWidget.currentWidget()
         if plotwidget is None: return
-        plotwidget.exporter.seriestocsv()
+        try:
+            plotwidget.exporter.seriestocsv()
+        except AttributeError:
+            self.haserror.emit('Method available for this plot.')
 
     def exportPeriod(self):
         plotwidget = self.tabWidget.currentWidget()
         if plotwidget is None: return
-        plotwidget.exporter.periodstocsv()
+        try:
+            plotwidget.exporter.periodstocsv()
+        except AttributeError:
+            self.haserror.emit('Method available for this plot.')
 
     def exportCycles(self):
         plotwidget = self.tabWidget.currentWidget()
         if plotwidget is None: return
-        plotwidget.exporter.cyclepointstocsv()
+        try:
+            plotwidget.exporter.cyclepointstocsv()
+        except AttributeError:
+            self.haserror.emit('Method available for this plot.')
+
+    def exportLoops(self):
+        plotwidget = self.tabWidget.currentWidget()
+        if plotwidget is None: return
+        try:
+            plotwidget.exporter.exportloops()
+        except AttributeError:
+            self.haserror.emit('Method available for this plot.')
 
     def fileQuit(self):
         self.close()

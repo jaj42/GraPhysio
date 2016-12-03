@@ -8,7 +8,7 @@ from PyQt4 import QtGui
 from dyngraph import utils
 from dyngraph.dialogs import DlgPeriodExport
 
-class Exporter():
+class TsExporter():
     periodfields = ['patient', 'begin', 'end', 'periodid', 'comment']
 
     def __init__(self, parent):
@@ -71,3 +71,32 @@ class Exporter():
         feetnames = [item.feet.name for item in feetitems]
         df = pd.concat(feetidx, axis=1, keys=feetnames)
         df.to_csv(filepath, datetime_format = "%Y-%m-%d %H:%M:%S.%f")
+
+class PuExporter():
+    def __init__(self, parent):
+        self.parent = parent
+        self.basename = parent.plotdata.name
+
+    def exportloops(self):
+        self.outdir = QtGui.QFileDialog.getExistingDirectory(caption = "Export to",
+                                                             directory = self.parent.plotdata.folder)
+        self.writetable()
+        self.writeloops()
+
+    def writetable(self):
+        data = []
+        for loop in self.parent.loops:
+            alpha, beta, gamma = loop.angles
+            tmpdict = {'alpha' : alpha, 'beta' : beta, 'gamma' : gamma}
+            data.append(tmpdict)
+        df = pd.DataFrame(data)
+        filename = "{}-loopdata.csv".format(self.basename)
+        outfile = os.path.join(self.outdir, filename)
+        df.to_csv(outfile)
+
+    def writeloops(self):
+        for n, loop in enumerate(self.parent.loops):
+            df = pd.DataFrame({'u' : loop.u, 'p' : loop.p})
+            filename = "{}-{}.csv".format(self.basename, n)
+            outfile = os.path.join(self.outdir, filename)
+            df.to_csv(outfile)

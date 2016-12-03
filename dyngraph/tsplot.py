@@ -29,7 +29,7 @@ class PlotWidget(pg.PlotWidget):
         self.vb = self.getViewBox()
         self.vb.setMouseMode(self.vb.RectMode)
 
-        self.exporter = exporter.Exporter(self)
+        self.exporter = exporter.TsExporter(self)
 
         self.addAllCurves()
 

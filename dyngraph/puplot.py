@@ -16,9 +16,14 @@ Angles    = namedtuple('Angles', ['alpha', 'beta', 'gamma'])
 
 
 class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
-    def __init__(self, u, p, subsetrange=None, parent=None):
+    def __init__(self, u, p, plotdata, subsetrange=None, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
+
+        xmin, xmax = subsetrange
+
+        self.plotdata = plotdata
+        self.exporter = exporter.PuExporter(self)
 
         self.btnPrev.clicked.connect(self.prevloop)
         self.btnNext.clicked.connect(self.nextloop)
@@ -44,6 +49,10 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
 
         u = u.series; p = p.series
         for ubegin, uend, pf in zip(*uperiods, pfeet):
+            if ubegin < xmin or uend > xmax:
+                # Only keep visible cycles
+                continue
+
             # Don't miss the last flow point XXX this is hacky
             endloc = u.index.get_loc(uend) + 1
             uend = u.index[endloc]
@@ -65,6 +74,8 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         except IndexError as e:
             parent.haserror.emit('Missing loop: {}'.format(e))
         else:
+            self.lblIdx.setText(str(idx + 1))
+
             alpha, beta, gamma = map(lambda theta: round(theta, 1), curloop.angles)
             self.lblAlpha.setText(str(alpha))
             self.lblBeta.setText(str(beta))
@@ -87,14 +98,12 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         idx = self.curidx - 1
         if idx >= 0:
             self.curidx = idx
-            self.lblIdx.setText(str(self.curidx + 1))
             self.renderloop()
 
     def nextloop(self):
         idx = self.curidx + 1
         if idx < len(self.loops):
             self.curidx = idx
-            self.lblIdx.setText(str(self.curidx + 1))
             self.renderloop()
 
     def delloop(self):
