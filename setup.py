@@ -18,8 +18,8 @@ setup(name = 'dyngraph',
       author_email = 'jona@joachim.cc',
       license = 'ISC',
       install_requires = ['pyqtgraph', 'pandas'],
-      scripts = ['scripts/dyngraph.pyw'],
+      scripts = ['scripts/dyngraph.py'],
       packages = ['dyngraph', 'dyngraph.ui'],
       options = {"build_exe" : build_exe_options},
-      executables = [Executable("scripts/dyngraph.pyw", base=base)]
+      executables = [Executable("scripts/dyngraph.py", base=base)]
 )
