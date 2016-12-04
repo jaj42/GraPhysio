@@ -21,6 +21,7 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         self.setupUi(self)
 
         xmin, xmax = subsetrange
+        self.parent = parent
 
         self.plotdata = plotdata
         self.exporter = exporter.PuExporter(self)
@@ -41,7 +42,7 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         plotitem.addItem(self.curveitem)
 
         if p.feetitem is None or u.feetitem is None:
-            parent.haserror.emit('No feet for this curve')
+            self.parent.haserror.emit('No feet for this curve')
             return
 
         pfeet = p.feetitem.feet.index
@@ -54,8 +55,8 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
                 continue
 
             # Don't miss the last flow point XXX this is hacky
-            endloc = u.index.get_loc(uend) + 1
-            uend = u.index[endloc]
+            #endloc = u.index.get_loc(uend) + 1
+            #uend = u.index[endloc]
 
             loopu = u[ubegin:uend]
             duration = (uend - ubegin) * 2
@@ -72,7 +73,7 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         try:
             curloop = self.loops[idx]
         except IndexError as e:
-            parent.haserror.emit('Missing loop: {}'.format(e))
+            self.parent.haserror.emit('Missing loop: {}'.format(e))
         else:
             self.lblIdx.setText(str(idx + 1))
 
@@ -116,6 +117,8 @@ class PULoop(object):
     def __init__(self, u, p):
         self.__angles = None
         self.__cardpoints = None
+        u = u.dropna()
+        p = p.dropna()
         # Ensure both arrays have the same length
         maxidx = min(len(u), len(p)) - 1
         self.u = u.values[0:maxidx]
