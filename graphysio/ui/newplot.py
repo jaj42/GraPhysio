@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_NewPlot(object):
     def setupUi(self, NewPlot):
         NewPlot.setObjectName(_fromUtf8("NewPlot"))
-        NewPlot.resize(578, 763)
+        NewPlot.resize(401, 763)
         NewPlot.setSizeGripEnabled(False)
         self.verticalLayout_4 = QtGui.QVBoxLayout(NewPlot)
         self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
@@ -69,7 +69,6 @@ class Ui_NewPlot(object):
         self.txtDateTime = QtGui.QComboBox(NewPlot)
         self.txtDateTime.setEditable(True)
         self.txtDateTime.setObjectName(_fromUtf8("txtDateTime"))
-        self.txtDateTime.addItem(_fromUtf8(""))
         self.txtDateTime.addItem(_fromUtf8(""))
         self.txtDateTime.addItem(_fromUtf8(""))
         self.txtDateTime.addItem(_fromUtf8(""))
@@ -185,8 +184,7 @@ class Ui_NewPlot(object):
         self.txtDateTime.setItemText(2, _translate("NewPlot", "%H:%M", None))
         self.txtDateTime.setItemText(3, _translate("NewPlot", "<seconds>", None))
         self.txtDateTime.setItemText(4, _translate("NewPlot", "<milliseconds>", None))
-        self.txtDateTime.setItemText(5, _translate("NewPlot", "<microseconds>", None))
-        self.txtDateTime.setItemText(6, _translate("NewPlot", "<nanoseconds>", None))
+        self.txtDateTime.setItemText(5, _translate("NewPlot", "<nanoseconds>", None))
         self.chkLoadNotAll.setText(_translate("NewPlot", "Load only selected Series", None))
         self.label_3.setText(_translate("NewPlot", "Drop n first lines", None))
         self.btnLoad.setText(_translate("NewPlot", "Load Fields", None))
