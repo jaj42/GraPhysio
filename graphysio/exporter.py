@@ -5,8 +5,8 @@ import pandas as pd
 
 from PyQt4 import QtGui
 
-from dyngraph import utils
-from dyngraph.dialogs import DlgPeriodExport
+from graphysio import utils
+from graphysio.dialogs import DlgPeriodExport
 
 class TsExporter():
     periodfields = ['patient', 'begin', 'end', 'periodid', 'comment']

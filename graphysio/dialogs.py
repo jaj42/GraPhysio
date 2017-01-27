@@ -3,8 +3,8 @@ import os, csv
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
-from dyngraph import algorithms, utils
-from dyngraph.ui import Ui_NewPlot, Ui_CycleDetection, Ui_Filter, Ui_SetupPULoop, Ui_PeriodExport
+from graphysio import algorithms, utils
+from graphysio.ui import Ui_NewPlot, Ui_CycleDetection, Ui_Filter, Ui_SetupPULoop, Ui_PeriodExport
 
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):

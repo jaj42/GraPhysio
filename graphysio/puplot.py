@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 
-from dyngraph import algorithms, exporter
-from dyngraph.ui import Ui_LoopWidget
+from graphysio import algorithms, exporter
+from graphysio.ui import Ui_LoopWidget
 
 Point     = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])

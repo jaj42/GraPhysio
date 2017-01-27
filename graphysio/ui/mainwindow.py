@@ -62,7 +62,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "DynGraph", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "GraPhysio", None))
         self.menuFile.setTitle(_translate("MainWindow", "File", None))
         self.menuExport.setTitle(_translate("MainWindow", "Export", None))
         self.menuData.setTitle(_translate("MainWindow", "Data", None))

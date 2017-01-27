@@ -6,8 +6,8 @@ import numpy as np
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
-from dyngraph import tsplot, puplot, dialogs, utils
-from dyngraph.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
+from graphysio import tsplot, puplot, dialogs, utils
+from graphysio.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
     hasdata  = QtCore.pyqtSignal(object)

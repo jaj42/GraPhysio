@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 
-from dyngraph import algorithms, exporter, utils, legend
+from graphysio import algorithms, exporter, utils, legend
 
 class PlotWidget(pg.PlotWidget):
     def __init__(self, plotdata, parent=None):
