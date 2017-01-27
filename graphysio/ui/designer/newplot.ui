@@ -22,7 +22,7 @@
      <property name="title">
       <string>Open File</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLineEdit" name="txtFile"/>
       </item>
@@ -37,9 +37,9 @@
     </widget>
    </item>
    <item>
-    <layout class="QFormLayout" name="formLayout_2">
+    <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="label">
        <property name="frameShape">
         <enum>QFrame::NoFrame</enum>
        </property>
@@ -64,6 +64,11 @@
        <item>
         <property name="text">
          <string>,</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>&lt;tab&gt;</string>
         </property>
        </item>
       </widget>
@@ -114,21 +119,52 @@
          <string>%Y-%m-%d %H:%M:%S.%f</string>
         </property>
        </item>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QCheckBox" name="chkUnixTime">
-       <property name="text">
-        <string>Unix Timestamp in milliseconds</string>
-       </property>
+       <item>
+        <property name="text">
+         <string>%H:%M</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>&lt;seconds&gt;</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>&lt;milliseconds&gt;</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>&lt;microseconds&gt;</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>&lt;nanoseconds&gt;</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QCheckBox" name="chkLoadAll">
+      <widget class="QCheckBox" name="chkLoadNotAll">
        <property name="text">
-        <string>Load all Series</string>
+        <string>Load only selected Series</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Drop n first lines</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="spnLinedrop"/>
      </item>
     </layout>
    </item>
@@ -140,7 +176,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Loaded Fields</string>
      </property>
@@ -175,12 +211,15 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
-      <widget class="QGroupBox" name="groupBox_3">
+     <item row="2" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_6"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QGroupBox" name="groupBox_5">
        <property name="title">
         <string>Series on Y axis</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
          <widget class="QListView" name="lstVY">
           <property name="selectionMode">
@@ -191,48 +230,44 @@
        </layout>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QGroupBox" name="groupBox_4">
+     <item row="0" column="1">
+      <widget class="QGroupBox" name="groupBox_6">
        <property name="title">
         <string>Series on X axis</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_6">
+       <layout class="QVBoxLayout" name="verticalLayout_8">
         <item>
-         <widget class="QListView" name="lstVX">
-          <property name="selectionMode">
-           <enum>QAbstractItemView::MultiSelection</enum>
+         <widget class="QComboBox" name="lstVX">
+          <property name="maxCount">
+           <number>4</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>(Check to interpret as Date/Time)</string>
           </property>
          </widget>
         </item>
        </layout>
       </widget>
      </item>
-     <item row="1" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
-       <item>
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>(Check to interpret as Date/Time)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnRemoveX">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Remove</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="1" column="1" alignment="Qt::AlignRight">
+     <item row="1" column="2">
       <widget class="QPushButton" name="btnRemoveY">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="btnRemoveX">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -266,7 +301,7 @@
    </item>
   </layout>
   <zorder>groupBox</zorder>
-  <zorder>groupBox_2</zorder>
+  <zorder>groupBox</zorder>
   <zorder>btnLoad</zorder>
  </widget>
  <resources/>

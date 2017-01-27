@@ -170,16 +170,27 @@ class Reader(QtCore.QRunnable):
                            usecols   = usecols,
                            decimal   = self._plotdata.decimal,
                            index_col = False,
+                           skiprows  = self._plotdata.droplines,
                            encoding  = 'latin1',
                            engine    = 'c')
 
         if self._plotdata.xisdate:
-            if self._plotdata.isunixtime:
+            dtformat = self._plotdata.datetime_format
+            if dtformat == '<seconds>':
+                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield] * 1e9,
+                                                    unit = 'ns')
+            elif dtformat == '<milliseconds>':
+                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield] * 1e6,
+                                                    unit = 'ns')
+            elif dtformat == '<microseconds>':
+                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield] * 1e3,
+                                                    unit = 'ns')
+            elif dtformat == '<nanoseconds>':
                 data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield],
-                                                    unit = 'ms')
+                                                    unit = 'ns')
             else:
                 data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield],
-                                                    format = self._plotdata.datetime_format)
+                                                    format = dtformat)
             data = data.set_index('nsdatetime')
 
         # Coerce all columns to numeric and remove empty columns

@@ -37,16 +37,12 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.btnToY.clicked.connect(self.moveToY)
         self.btnRemoveX.clicked.connect(self.delFromX)
         self.btnRemoveY.clicked.connect(self.delFromY)
-        self.chkUnixTime.stateChanged.connect(self.boolUnixtime)
 
     @property
     def result(self):
         return self.plotdata
 
     # Methods / Callbacks
-    def boolUnixtime(self, state):
-        self.txtDateTime.setEnabled(not self.chkUnixTime.isChecked())
-
     def selectFile(self):
         filepath = QtGui.QFileDialog.getOpenFileName(parent = self,
                                                      caption = "Open CSV file",
@@ -84,6 +80,9 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         for lst in [self.lstAll, self.lstX, self.lstY]: lst.clear()
         self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
         with open(filepath, 'r') as csvfile:
+            # Artificially drop n first lines as requested
+            for i in range(self.spnLinedrop.value()):
+                next(csvfile)
             csvreader = csv.DictReader(csvfile, delimiter=sep)
             row = next(csvreader)
             for key, value in row.items():
@@ -109,18 +108,18 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
             self.lstY.appendRow(self.lstAll.takeRow(rowindex))
 
     def delFromX(self):
-        while True:
-            selection = self.lstVX.selectedIndexes()
-            if len(selection) < 1: break
-            rowindex = selection[0].row()
-            row = self.lstX.takeRow(rowindex)
-            self.itemCheckable(row, False)
-            self.lstAll.appendRow(row)
+        try:
+            row = self.lstX.takeRow(0)
+        except IndexError:
+            return
+        self.itemCheckable(row, False)
+        self.lstAll.appendRow(row)
 
     def delFromY(self):
         while True:
             rowindexes = self.lstVY.selectedIndexes()
-            if len(rowindexes) < 1: break
+            if len(rowindexes) < 1:
+                break
             row = rowindexes[0].row()
             self.lstAll.appendRow(self.lstY.takeRow(row))
 
@@ -144,13 +143,19 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
             self.plotdata.xfield = xRows[0]
         else:
             self.plotdata.xfield = None
+
+        seperator = self.txtSep.currentText()
+        if seperator == '<tab>':
+            self.plotdata.seperator = '\t'
+        else:
+            self.plotdata.seperator = seperator
+
         self.plotdata.yfields = yRows
         self.plotdata.filepath = self.txtFile.text()
-        self.plotdata.seperator = self.txtSep.currentText()
         self.plotdata.decimal = self.txtDecimal.currentText()
         self.plotdata.datetime_format = self.txtDateTime.currentText()
-        self.plotdata.isunixtime = self.chkUnixTime.isChecked()
-        self.plotdata.loadall = self.chkLoadAll.isChecked()
+        self.plotdata.droplines = self.spnLinedrop.value()
+        self.plotdata.loadall = not self.chkLoadNotAll.isChecked()
         self.accept()
 
 

@@ -22,7 +22,7 @@ class PlotDescription():
                        xfield  = None,
                        yfields = [],
                        xisdate = False,
-                       isunixtime = False,
+                       droplines = 0,
                        loadall = False,
                        datetime_format = "%Y-%m-%d %H:%M:%S,%f"):
         self.filepath = filepath
@@ -33,7 +33,7 @@ class PlotDescription():
         self.loadall = loadall
         self.datetime_format = datetime_format
         self.xisdate = xisdate
-        self.isunixtime = isunixtime
+        self.droplines = droplines
         self.data = None
 
     @property
