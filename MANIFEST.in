@@ -1,3 +1,5 @@
+include LICENSE
+include README.md
 include dyngraph/graphysio/ui/designer/cycledetect.ui
 include dyngraph/graphysio/ui/designer/filter.ui
 include dyngraph/graphysio/ui/designer/mainwindow.ui
