@@ -1,9 +1,9 @@
 include LICENSE
 include README.md
-include dyngraph/graphysio/ui/designer/cycledetect.ui
-include dyngraph/graphysio/ui/designer/filter.ui
-include dyngraph/graphysio/ui/designer/mainwindow.ui
-include dyngraph/graphysio/ui/designer/newplot.ui
-include dyngraph/graphysio/ui/designer/loopwidget.ui
-include dyngraph/graphysio/ui/designer/periodexport.ui
-include dyngraph/graphysio/ui/designer/setuppuloop.ui
+include graphysio/ui/designer/cycledetect.ui
+include graphysio/ui/designer/filter.ui
+include graphysio/ui/designer/mainwindow.ui
+include graphysio/ui/designer/newplot.ui
+include graphysio/ui/designer/loopwidget.ui
+include graphysio/ui/designer/periodexport.ui
+include graphysio/ui/designer/setuppuloop.ui
