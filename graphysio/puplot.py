@@ -109,6 +109,9 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
 
     def delloop(self):
         self.loops.pop(self.curidx)
+        if self.curidx >= len(self.loops):
+            # Handle the case where we deleted the last item
+            self.curidx = len(self.loops) - 1
         self.lblTot.setText(str(len(self.loops)))
         self.renderloop()
 
