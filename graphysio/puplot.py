@@ -12,7 +12,7 @@ from graphysio.ui import Ui_LoopWidget
 
 Point     = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
-Angles    = namedtuple('Angles', ['alpha', 'beta', 'gamma'])
+Angles    = namedtuple('Angles', ['alpha', 'beta', 'gala'])
 
 
 class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
@@ -77,10 +77,10 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         else:
             self.lblIdx.setText(str(idx + 1))
 
-            alpha, beta, gamma = map(lambda theta: round(theta, 1), curloop.angles)
+            alpha, beta, gala = map(lambda theta: round(theta, 1), curloop.angles)
             self.lblAlpha.setText(str(alpha))
             self.lblBeta.setText(str(beta))
-            self.lblGamma.setText(str(gamma))
+            self.lblGala.setText(str(gala))
 
             card = curloop.cardpoints
             cardx, cardy = zip(*card)
@@ -142,15 +142,19 @@ class PULoop(object):
     def angles(self):
         if self.__angles is None:
             card = self.cardpoints
-            alpha = self.calcangle(card.B)
-            beta  = self.calcangle(card.C)
-            gamma = self.calcangle(card.B, card.C)
-            self.__angles = Angles(alpha, beta, gamma)
+            alpha = self.calcangle(card.A, card.B)
+            beta  = self.calcangle(card.A, card.B, card.C)
+            gala  = self.calcangle(card.A, card.C)
+            self.__angles = Angles(alpha, beta, gala)
         return self.__angles
 
-    def calcangle(self, pointb, pointa=Point(1,0)):
-        ca = complex(pointa.x, pointa.y)
-        cb = complex(pointb.x, pointb.y)
+    def calcangle(self, looporigin, pointb, pointa=None):
+        orig = complex(looporigin.x, looporigin.y)
+        cb = complex(pointb.x, pointb.y) - orig
+        if pointa is None:
+            ca = complex(1, 0)
+        else:
+            ca = complex(pointa.x, pointa.y) - orig
         angca = np.angle(ca, deg=True)
         angcb = np.angle(cb, deg=True)
         return abs(angca - angcb)

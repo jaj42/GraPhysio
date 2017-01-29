@@ -149,26 +149,26 @@
      <item row="7" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Beta</string>
+        <string>β</string>
        </property>
       </widget>
      </item>
      <item row="6" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Alpha</string>
+        <string>α</string>
        </property>
       </widget>
      </item>
      <item row="8" column="0">
       <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>Gamma</string>
+        <string>GALA</string>
        </property>
       </widget>
      </item>
      <item row="8" column="1">
-      <widget class="QLabel" name="lblGamma">
+      <widget class="QLabel" name="lblGala">
        <property name="text">
         <string/>
        </property>

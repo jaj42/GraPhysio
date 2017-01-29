@@ -86,10 +86,10 @@ class Ui_LoopWidget(object):
         self.label_7 = QtGui.QLabel(LoopWidget)
         self.label_7.setObjectName(_fromUtf8("label_7"))
         self.gridLayout.addWidget(self.label_7, 8, 0, 1, 1)
-        self.lblGamma = QtGui.QLabel(LoopWidget)
-        self.lblGamma.setText(_fromUtf8(""))
-        self.lblGamma.setObjectName(_fromUtf8("lblGamma"))
-        self.gridLayout.addWidget(self.lblGamma, 8, 1, 1, 1)
+        self.lblGala = QtGui.QLabel(LoopWidget)
+        self.lblGala.setText(_fromUtf8(""))
+        self.lblGala.setObjectName(_fromUtf8("lblGala"))
+        self.gridLayout.addWidget(self.lblGala, 8, 1, 1, 1)
         self.horizontalLayout.addLayout(self.gridLayout)
 
         self.retranslateUi(LoopWidget)
@@ -104,8 +104,8 @@ class Ui_LoopWidget(object):
         self.lblTot.setText(_translate("LoopWidget", "0", None))
         self.label_2.setText(_translate("LoopWidget", "of", None))
         self.btnPrev.setText(_translate("LoopWidget", "<", None))
-        self.label_5.setText(_translate("LoopWidget", "Beta", None))
-        self.label_3.setText(_translate("LoopWidget", "Alpha", None))
-        self.label_7.setText(_translate("LoopWidget", "Gamma", None))
+        self.label_5.setText(_translate("LoopWidget", "β", None))
+        self.label_3.setText(_translate("LoopWidget", "α", None))
+        self.label_7.setText(_translate("LoopWidget", "GALA", None))
 
 from pyqtgraph import PlotWidget
