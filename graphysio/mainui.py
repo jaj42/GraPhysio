@@ -6,7 +6,7 @@ import numpy as np
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
-from graphysio import tsplot, puplot, dialogs, utils
+from graphysio import tsplot, puplot, dialogs, utils, io
 from graphysio.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
@@ -24,6 +24,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
 
+        self.menuData.addAction('&Set sampling rate', self.launchSetSamplerate, Qt.CTRL + Qt.Key_S)
         self.menuData.addAction('&Filter', self.launchFilter, Qt.CTRL + Qt.Key_F)
         self.menuData.addAction('Cycle &Detection', self.launchCycleDetection, Qt.CTRL + Qt.Key_D)
         self.menuData.addAction('Generate PU-&Loops', self.launchLoop, Qt.CTRL + Qt.Key_L)
@@ -67,6 +68,10 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
             curve = plotwidget.curves[curvename]
             plotwidget.addFeet(curve, utils.FootType(choice))
 
+    def launchSetSamplerate(self):
+        plotwidget = self.tabWidget.currentWidget()
+        plotwidget.askSamplerate()
+
     def launchFilter(self):
         dlgFilter = dialogs.DlgFilter(parent = self)
         if not dlgFilter.exec_(): return
@@ -83,7 +88,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.dircache = plotdata.folder
         self.statusBar.showMessage("Loading... {}...".format(plotdata.name))
 
-        reader = Reader(self, plotdata)
+        reader = io.Reader(self, plotdata)
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def createNewPlotWithData(self, plotdata):
@@ -141,63 +146,3 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
         msgbox.setIcon(QtGui.QMessageBox.Critical)
         msgbox.exec_()
-
-
-class Reader(QtCore.QRunnable):
-    def __init__(self, parent, plotdata):
-        super().__init__()
-        self._parent = parent
-        self._plotdata = plotdata
-
-    def run(self):
-        try:
-            data = self.getdata()
-        except ValueError as e:
-            self._parent.haserror.emit(e)
-        else:
-            self._plotdata.data = data
-            self._parent.hasdata.emit(self._plotdata)
-
-    def getdata(self):
-        if self._plotdata.loadall:
-            # usecols = None loads all columns
-            usecols = None
-        else:
-            usecols = self._plotdata.fields
-
-        data = pd.read_csv(self._plotdata.filepath,
-                           sep       = self._plotdata.seperator,
-                           usecols   = usecols,
-                           decimal   = self._plotdata.decimal,
-                           index_col = False,
-                           skiprows  = self._plotdata.droplines,
-                           encoding  = 'latin1',
-                           engine    = 'c')
-
-        if self._plotdata.xisdate:
-            dtformat = self._plotdata.datetime_format
-            if dtformat == '<seconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield] * 1e9,
-                                                    unit = 'ns')
-            elif dtformat == '<milliseconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield] * 1e6,
-                                                    unit = 'ns')
-            elif dtformat == '<microseconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield] * 1e3,
-                                                    unit = 'ns')
-            elif dtformat == '<nanoseconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield],
-                                                    unit = 'ns')
-            else:
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield],
-                                                    format = dtformat)
-            data = data.set_index('nsdatetime')
-
-        # Coerce all columns to numeric and remove empty columns
-        tonum = lambda x: pd.to_numeric(x, errors='coerce')
-        data = data.apply(tonum).dropna(axis='columns', how='all')
-
-        # Don't try requested fields that are empty
-        self._plotdata.yfields = [f for f in self._plotdata.yfields if f in data.columns]
-
-        return data

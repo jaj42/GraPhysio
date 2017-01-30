@@ -51,8 +51,9 @@ class PlotWidget(pg.PlotWidget):
             pen = next(self.colors)
 
         try:
-            curve = CurveItem(series = series,
-                              pen    = pen)
+            curve = CurveItem(series   = series,
+                              plotdata = self.plotdata,
+                              pen      = pen)
         except ValueError as e:
             self.parent.haserror.emit(e)
         else:
@@ -76,8 +77,7 @@ class PlotWidget(pg.PlotWidget):
             return
 
     def addFiltered(self, oldcurve, filtername):
-        series = oldcurve.series
-        newseries = algorithms.filter(series, filtername)
+        newseries = algorithms.filter(oldcurve, filtername)
         if newseries is not None:
             newcurve = self.addCurve(series = newseries,
                                      pen    = oldcurve.pen.lighter())
@@ -94,19 +94,41 @@ class PlotWidget(pg.PlotWidget):
             for curve in self.feetitems.values():
                 curve.removeSelection()
 
+    def askSamplerate(self):
+        initvalue = self.plotdata.samplerate
+        if initvalue is None:
+            initvalue = 128
+
+        Fs, isok = QtGui.QInputDialog.getInt(self.parent, 'Enter sampling rate', 'Sampling rate in Hz',
+                                             value = initvalue, min = 1)
+        if isok:
+            self.plotdata.samplerate = Fs
+
 
 class CurveItem(pg.PlotDataItem):
-    def __init__(self, series, pen=QtGui.QColor(Qt.black), parent=None, *args, **kwargs):
+    def __init__(self, series, plotdata, pen=QtGui.QColor(Qt.black), *args, **kwargs):
         self.series = series
+        self.plotdata = plotdata
         self.feetitem = None
+        self._samplerate = None
         self.pen = pen
         super().__init__(x    = self.series.index.astype(np.int64),
                          y    = self.series.values.astype(np.float64),
                          name = self.series.name,
                          pen  = self.pen,
-                         antialias      = True,
-                         #autoDownsample = True,
+                         antialias = True,
                          *args, **kwargs)
+
+    def setSamplerate(self, samplerate):
+        self._samplerate = samplerate
+
+    def getSamplerate(self):
+        if self._samplerate is not None:
+            return self._samplerate
+        else:
+            return self.plotdata.samplerate
+
+    samplerate = property(getSamplerate, setSamplerate)
 
 
 class FeetItem(pg.ScatterPlotItem):
@@ -165,7 +187,7 @@ class FeetItem(pg.ScatterPlotItem):
 
 
 def pressureFeetItem(curve):
-    feet = algorithms.findPressureFeet(curve.series)
+    feet = algorithms.findPressureFeet(curve)
     return FeetItem(feet, curve)
 
 

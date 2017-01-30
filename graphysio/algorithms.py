@@ -32,32 +32,25 @@ TFs = {tfsphygmo.name : tfsphygmo,
 
 SavGols = {'savgol125' : [3, 29]}
 
-def calcSampleRate(series):
-    if type(series.index) != pd.tseries.index.DatetimeIndex:
-        print("No time information for cycle identification", file=sys.stderr)
-        return 125
-    starttime = series.index.values[0]
-    stopidx = series.index.get_loc(starttime + pd.Timedelta('1s'), method='nearest')
-    return stopidx
-
-def filter(series, filtname):
+def filter(curve, filtname):
+    series = curve.series
+    samplerate = curve.samplerate
     try:
         filttype = Filters[filtname]
     except KeyError:
         return None
 
     if filttype == 'tf':
-        return applytf(series, TFs[filtname])
+        return applytf(series, TFs[filtname], samplerate)
     elif filttype == 'savgol':
         order, window = SavGols[filtname]
         return applysavgol(series, order, window)
     else:
         return None
 
-def applytf(series, tf):
+def applytf(series, tf, samplerate):
     oldseries = series.dropna()
-    Fs = calcSampleRate(oldseries)
-    (b, a) = tf.discretize(Fs)
+    (b, a) = tf.discretize(samplerate)
     filtered = signal.lfilter(b, a, oldseries)
     newname = "{}-{}".format(oldseries.name, tf.name)
     return pd.Series(filtered, index=oldseries.index, name=newname)
@@ -68,8 +61,7 @@ def applysavgol(series, order, window):
     newname = "{}-{}".format(oldseries.name, 'filtered')
     return pd.Series(filtered, index=oldseries.index, name=newname)
 
-def pulsePeaks(series, deriv):
-    samplerate = calcSampleRate(series)
+def pulsePeaks(series, deriv, samplerate):
     winsum   = int(samplerate / 4)
     winquant = int(samplerate * 3)
     derivsq  = deriv ** 2
@@ -78,15 +70,16 @@ def pulsePeaks(series, deriv):
     thres    = thres.fillna(method='backfill')
     return (integral > thres).astype(int)
 
-def findPressureFeet(series):
-    series = series.dropna()
+def findPressureFeet(curve):
+    series = curve.series.dropna()
+    samplerate = curve.samplerate
     fstderiv = series.diff().shift(-1)
     sndderiv = fstderiv.diff().shift(-1)
 
     # Remove deceleration peaks
     sndderiv = sndderiv * (fstderiv > 0)
 
-    peaks = pulsePeaks(series, sndderiv)
+    peaks = pulsePeaks(series, sndderiv, samplerate)
     peakvar = peaks.diff()
     peakStarts, = (peakvar > 0).nonzero()
     peakStops,  = (peakvar < 0).nonzero()

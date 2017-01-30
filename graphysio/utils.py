@@ -24,6 +24,7 @@ class PlotDescription():
                        xisdate = False,
                        droplines = 0,
                        loadall = False,
+                       samplerate = None,
                        datetime_format = "%Y-%m-%d %H:%M:%S,%f"):
         self.filepath = filepath
         self.seperator = seperator
@@ -34,6 +35,7 @@ class PlotDescription():
         self.datetime_format = datetime_format
         self.xisdate = xisdate
         self.droplines = droplines
+        self.samplerate = samplerate
         self.data = None
 
     @property
@@ -63,6 +65,7 @@ class PlotDescription():
     def folder(self):
         folder = os.path.dirname(self.filepath)
         return folder
+
 
 # https://stackoverflow.com/questions/5478351/python-time-measure-function
 def Timing(f):
