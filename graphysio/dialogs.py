@@ -74,6 +74,8 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
 
     def loadCsvFields(self):
         sep = self.txtSep.currentText()
+        if sep == '<tab>':
+            sep = '\t'
         filepath = self.txtFile.text()
         fields = []
         # Use the csv module to retrieve csv fields
