@@ -6,7 +6,7 @@ import numpy as np
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtCore import Qt
 
-from graphysio import tsplot, puplot, dialogs, utils, io
+from graphysio import tsplot, puplot, dialogs, utils, csvio
 from graphysio.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
 
 class MainUi(QtGui.QMainWindow, Ui_MainWindow):
@@ -88,7 +88,7 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.dircache = plotdata.folder
         self.statusBar.showMessage("Loading... {}...".format(plotdata.name))
 
-        reader = io.Reader(self, plotdata)
+        reader = csvio.Reader(self, plotdata)
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def createNewPlotWithData(self, plotdata):
