@@ -32,7 +32,7 @@ class TsExporter():
         self.updaterange()
         data = self.plotdata.data.ix[self.xmin : self.xmax]
         datanona = data.dropna(how = 'all', subset = self.plotdata.yfields)
-        datanona.to_csv(filepath, datetime_format = "%Y-%m-%d %H:%M:%S.%f")
+        datanona.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
 
     def periodstocsv(self):
         self.updaterange()
@@ -70,7 +70,7 @@ class TsExporter():
         feetidx = [pd.Series(item.feet.index) for item in feetitems]
         feetnames = [item.feet.name for item in feetitems]
         df = pd.concat(feetidx, axis=1, keys=feetnames)
-        df.to_csv(filepath, datetime_format = "%Y-%m-%d %H:%M:%S.%f")
+        df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
 
 class PuExporter():
     def __init__(self, parent):
