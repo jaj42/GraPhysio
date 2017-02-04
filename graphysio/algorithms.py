@@ -35,6 +35,10 @@ SavGols = {'savgol125' : [3, 29]}
 def filter(curve, filtname):
     series = curve.series
     samplerate = curve.samplerate
+    if samplerate is None:
+        print("Samplerate is not set and could not be inferred.", file=sys.stderr)
+        return None
+
     try:
         filttype = Filters[filtname]
     except KeyError:
@@ -73,6 +77,10 @@ def pulsePeaks(series, deriv, samplerate):
 def findPressureFeet(curve):
     series = curve.series.dropna()
     samplerate = curve.samplerate
+    if samplerate is None:
+        print("Samplerate is not set and could not be inferred.", file=sys.stderr)
+        return pd.Series()
+
     fstderiv = series.diff().shift(-1)
     sndderiv = fstderiv.diff().shift(-1)
 

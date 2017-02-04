@@ -57,7 +57,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.txtDateTime.setEditText("%Y-%m-%d %H:%M:%S{}%f".format(delims[1]))
 
     def estimateDelimiters(self, filepath):
-        with open(filepath, 'r') as csvfile:
+        with open(filepath, 'r', encoding='latin1') as csvfile:
             line1 = next(csvfile)
             line2 = next(csvfile)
             semipos = line1.find(';')
