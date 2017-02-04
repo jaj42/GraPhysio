@@ -1,4 +1,5 @@
 from collections import namedtuple
+from functools import partial
 
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
@@ -51,12 +52,8 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         u = u.series; p = p.series
         for ubegin, uend, pf in zip(*uperiods, pfeet):
             if ubegin < xmin or uend > xmax:
-                # Only keep visible cycles
+                # XXX Only keep visible cycles. Need to optimize.
                 continue
-
-            # Don't miss the last flow point XXX this is hacky
-            #endloc = u.index.get_loc(uend) + 1
-            #uend = u.index[endloc]
 
             loopu = u[ubegin:uend]
             duration = (uend - ubegin) * 2
@@ -77,7 +74,8 @@ class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
         else:
             self.lblIdx.setText(str(idx + 1))
 
-            alpha, beta, gala = map(lambda theta: round(theta, 1), curloop.angles)
+            round1 = partial(round, ndigits=1)
+            alpha, beta, gala = map(round1, curloop.angles)
             self.lblAlpha.setText(str(alpha))
             self.lblBeta.setText(str(beta))
             self.lblGala.setText(str(gala))

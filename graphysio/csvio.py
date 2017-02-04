@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from functools import partial
+
 from PyQt4 import QtCore
 from graphysio import utils
 
@@ -49,8 +51,8 @@ class Reader(QtCore.QRunnable):
             data = data.set_index('nsdatetime')
 
         # Coerce all columns to numeric and remove empty columns
-        tonum = lambda x: pd.to_numeric(x, errors='coerce')
-        data = data.apply(tonum).dropna(axis='columns', how='all')
+        pdtonum = partial(pd.to_numeric, errors='coerce')
+        data = data.apply(pdtonum).dropna(axis='columns', how='all')
         data = data.dropna(axis='rows', how='all')
 
         # Provide a gross estimation of the sampling rate based on the index

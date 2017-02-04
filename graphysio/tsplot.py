@@ -97,7 +97,7 @@ class PlotWidget(pg.PlotWidget):
     def askSamplerate(self):
         initvalue = self.plotdata.samplerate
         if initvalue is None:
-            initvalue = 128
+            initvalue = 100
 
         Fs, isok = QtGui.QInputDialog.getInt(self.parent, 'Enter sampling rate', 'Sampling rate in Hz',
                                              value = initvalue, min = 1)
