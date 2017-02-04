@@ -76,14 +76,19 @@ class PuExporter():
     def __init__(self, parent):
         self.parent = parent
         self.basename = parent.plotdata.name
+        self.outdir = None
 
     def exportloops(self):
-        self.outdir = QtGui.QFileDialog.getExistingDirectory(caption = "Export to",
+        outdirtmp = QtGui.QFileDialog.getExistingDirectory(caption = "Export to",
                                                              directory = self.parent.plotdata.folder)
+        if outdirtmp:
+            self.outdir = outdirtmp
         self.writetable()
         self.writeloops()
 
     def writetable(self):
+        if self.outdir is None:
+            return
         data = []
         for loop in self.parent.loops:
             alpha, beta, gamma = loop.angles
@@ -95,6 +100,8 @@ class PuExporter():
         df.to_csv(outfile)
 
     def writeloops(self):
+        if self.outdir is None:
+            return
         for n, loop in enumerate(self.parent.loops):
             df = pd.DataFrame({'u' : loop.u, 'p' : loop.p})
             filename = "{}-{}.csv".format(self.basename, n)
