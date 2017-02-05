@@ -1,4 +1,5 @@
 import sys,csv,os
+from functools import partial
 
 import pandas as pd
 import numpy as np
@@ -20,7 +21,10 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
 
-        self.menuFile.addAction('&New Plot', self.launchNewPlot, Qt.CTRL + Qt.Key_N)
+        launchNewPlot = partial(self.launchReadData, newwidget=True)
+        launchAppendPlot = partial(self.launchReadData, newwidget=False)
+        self.menuFile.addAction('&New Plot', launchNewPlot, Qt.CTRL + Qt.Key_N)
+        self.menuFile.addAction('&Append to Plot', launchAppendPlot, Qt.CTRL + Qt.Key_A)
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
 
@@ -34,7 +38,6 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
         self.menuExport.addAction('&Cycle info to CSV', self.exportCycles)
         self.menuExport.addAction('&Loop Data', self.exportLoops)
 
-        self.hasdata.connect(self.createNewPlotWithData)
         self.haserror.connect(self.displayError)
 
     def launchLoop(self):
@@ -81,15 +84,39 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
             curve = plotwidget.curves[curvename]
             plotwidget.addFiltered(curve, choice)
 
-    def launchNewPlot(self):
-        dlgNewplot = dialogs.DlgNewPlot(parent=self, directory=self.dircache)
+    def launchReadData(self, newwidget=True):
+        if newwidget:
+            title = "New Plot"
+            try:
+                self.hasdata.disconnect()
+            except TypeError:
+                pass
+            finally:
+                self.hasdata.connect(self.createNewPlotWithData)
+        else:
+            title = "Append to Plot"
+            try:
+                self.hasdata.disconnect()
+            except TypeError:
+                pass
+            finally:
+                self.hasdata.connect(self.appendToPlotWithData)
+        dlgNewplot = dialogs.DlgNewPlot(parent=self, title=title, directory=self.dircache)
         if not dlgNewplot.exec_(): return
         plotdata = dlgNewplot.result
         self.dircache = plotdata.folder
         self.statusBar.showMessage("Loading... {}...".format(plotdata.name))
 
-        reader = csvio.Reader(self, plotdata)
+        reader = csvio.Reader(plotdata, self.hasdata, self.haserror)
         QtCore.QThreadPool.globalInstance().start(reader)
+
+    def appendToPlotWithData(self, plotdata):
+        plotwidget = self.tabWidget.currentWidget()
+        if plotwidget is None:
+            self.haserror.emit('No plot selected.')
+            return
+        plotwidget.appendData(plotdata)
+        self.statusBar.showMessage("Loading... done")
 
     def createNewPlotWithData(self, plotdata):
         plotwidget = tsplot.PlotWidget(plotdata=plotdata, parent=self)
@@ -99,7 +126,8 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
     def exportCsv(self):
         plotwidget = self.tabWidget.currentWidget()
-        if plotwidget is None: return
+        if plotwidget is None:
+            return
         try:
             plotwidget.exporter.seriestocsv()
         except AttributeError:
@@ -107,7 +135,8 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
     def exportPeriod(self):
         plotwidget = self.tabWidget.currentWidget()
-        if plotwidget is None: return
+        if plotwidget is None:
+            return
         try:
             plotwidget.exporter.periodstocsv()
         except AttributeError:

@@ -6,19 +6,20 @@ from PyQt4 import QtCore
 from graphysio import utils
 
 class Reader(QtCore.QRunnable):
-    def __init__(self, parent, plotdata):
+    def __init__(self, plotdata, sigdata, sigerror):
         super().__init__()
-        self._parent = parent
         self._plotdata = plotdata
+        self.sigdata = sigdata
+        self.sigerror = sigerror
 
     def run(self):
         try:
             data = self.getdata()
         except ValueError as e:
-            self._parent.haserror.emit(e)
+            self.sigerror.emit(e)
         else:
             self._plotdata.data = data
-            self._parent.hasdata.emit(self._plotdata)
+            self.sigdata.emit(self._plotdata)
 
     def getdata(self):
         if self._plotdata.loadall:

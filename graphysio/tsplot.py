@@ -31,7 +31,29 @@ class PlotWidget(pg.PlotWidget):
 
         self.exporter = exporter.TsExporter(self)
 
-        self.addAllCurves()
+        allSeries = (self.plotdata.data[c] for c in self.plotdata.yfields)
+        for series in allSeries:
+            self.addCurve(series)
+
+
+    def appendData(self, newplotdata):
+        # Make sure indices are compatible
+        newidxtype = type(newplotdata.data.index)
+        oldidxtype = type(self.plotdata.data.index)
+        if oldidxtype is not newidxtype:
+            self.parent.haserror.emit("Index type mismatch: {} vs. {}".format(newidxtype, oldidxtype))
+            return
+
+        # Merge plotdata.data with current
+        self.plotdata.data = pd.concat([self.plotdata.data, newplotdata.data], axis=1).sort_index()
+
+        # addCurve() everything in new yfields
+        allSeries = (self.plotdata.data[c] for c in newplotdata.yfields)
+        for series in allSeries:
+            self.addCurve(series)
+
+        # Merge yfields
+        self.plotdata.yfields = list(set(self.plotdata.yfields) | set(newplotdata.yfields))
 
     @property
     def curves(self):
@@ -40,11 +62,6 @@ class PlotWidget(pg.PlotWidget):
     @property
     def feetitems(self):
         return {item.name() : item for item in self.listDataItems() if isinstance(item, FeetItem)}
-
-    def addAllCurves(self):
-        allSeries = (self.plotdata.data[c] for c in self.plotdata.yfields)
-        for series in allSeries:
-            self.addCurve(series)
 
     def addCurve(self, series, pen=None):
         if pen is None:

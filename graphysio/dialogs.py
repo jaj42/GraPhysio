@@ -8,9 +8,10 @@ from graphysio.ui import Ui_NewPlot, Ui_CycleDetection, Ui_Filter, Ui_SetupPULoo
 
 
 class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
-    def __init__(self, parent=None, directory=""):
+    def __init__(self, parent=None, title="New Plot", directory=""):
         super().__init__(parent=parent)
         self.setupUi(self)
+        self.setWindowTitle(title)
 
         self.dircache = directory
         self.plotdata = utils.PlotDescription()
