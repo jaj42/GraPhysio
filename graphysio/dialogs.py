@@ -1,21 +1,19 @@
 import os, csv
-from functools import partial
 
 from pyqtgraph.Qt import QtGui, QtCore, loadUiType
 
 from graphysio import algorithms, utils
 
-uiFiles = ['newplot.ui', 'cycledetect.ui', 'filter.ui', 'setuppuloop.ui', 'periodexport.ui']
+#uiFiles = ['newplot.ui', 'cycledetect.ui', 'filter.ui', 'setuppuloop.ui', 'periodexport.ui']
 
 curPath = os.path.dirname(os.path.abspath(__file__))
 uiBasePath = os.path.join(curPath, 'ui', 'designer')
-getUiPath = partial(os.path.join, uiBasePath)
+def loadUiFile(uiFile):
+    uiPath = os.path.join(uiBasePath, uiFile)
+    uiClasses = loadUiType(uiPath)
+    return uiClasses
 
-uiPaths = map(getUiPath, uiFiles)
-uiClasses = map(loadUiType, uiPaths)
-uiMapping = {filename: classes for filename, classes in zip(uiFiles, uiClasses)}
-
-class DlgNewPlot(*uiMapping['newplot.ui']):
+class DlgNewPlot(*loadUiFile('newplot.ui')):
     def __init__(self, parent=None, title="New Plot", directory=""):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -170,7 +168,7 @@ class DlgNewPlot(*uiMapping['newplot.ui']):
         self.accept()
 
 
-class DlgCycleDetection(*uiMapping['cycledetect.ui']):
+class DlgCycleDetection(*loadUiFile('cycledetect.ui')):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -203,7 +201,7 @@ class DlgCycleDetection(*uiMapping['cycledetect.ui']):
         return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
 
 
-class DlgFilter(*uiMapping['filter.ui']):
+class DlgFilter(*loadUiFile('filter.ui')):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -235,7 +233,7 @@ class DlgFilter(*uiMapping['filter.ui']):
         return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
 
 
-class DlgSetupPULoop(*uiMapping['setuppuloop.ui']):
+class DlgSetupPULoop(*loadUiFile('setuppuloop.ui')):
     def __init__(self, sourcewidget, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -258,7 +256,7 @@ class DlgSetupPULoop(*uiMapping['setuppuloop.ui']):
         return (uname, pname)
 
 
-class DlgPeriodExport(*uiMapping['periodexport.ui']):
+class DlgPeriodExport(*loadUiFile('periodexport.ui')):
     def __init__(self, begin, end, patient="", directory="", parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
