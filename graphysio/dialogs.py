@@ -1,7 +1,6 @@
 import os, csv
 
-from PyQt4 import QtGui,QtCore
-from PyQt4.QtCore import Qt
+from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import algorithms, utils
 from graphysio.ui import Ui_NewPlot, Ui_CycleDetection, Ui_Filter, Ui_SetupPULoop, Ui_PeriodExport
@@ -130,17 +129,17 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
             field = row[0]
             if checkable:
                 field.setFlags(field.flags() | QtCore.Qt.ItemIsUserCheckable)
-                field.setData(Qt.Checked, Qt.CheckStateRole)
+                field.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)
             else:
                 field.setFlags(field.flags() ^ QtCore.Qt.ItemIsUserCheckable)
-                field.setData(None, Qt.CheckStateRole)
+                field.setData(None, QtCore.Qt.CheckStateRole)
 
     def loadPlot(self):
-        yRows = [i.text() for i in self.lstY.findItems("", Qt.MatchContains)]
-        xRows = [i.text() for i in self.lstX.findItems("", Qt.MatchContains)]
-        xState = [i.checkState() for i in self.lstX.findItems("", Qt.MatchContains)]
+        yRows = [i.text() for i in self.lstY.findItems("", QtCore.Qt.MatchContains)]
+        xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
+        xState = [i.checkState() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
         for s in xState:
-            self.plotdata.xisdate = s > Qt.Unchecked
+            self.plotdata.xisdate = s > QtCore.Qt.Unchecked
             break
         if len(xRows) > 0:
             self.plotdata.xfield = xRows[0]

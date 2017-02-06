@@ -1,12 +1,11 @@
 from collections import namedtuple
 from functools import partial
 
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import Qt
-
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+
+from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import algorithms, exporter
 from graphysio.ui import Ui_LoopWidget

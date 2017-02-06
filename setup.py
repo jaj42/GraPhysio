@@ -8,7 +8,7 @@ setup(name = 'graphysio',
       author_email = 'jona@joachim.cc',
       license = 'ISC',
       python_requires = '>=3.4',
-      install_requires = ['pyqtgraph', 'pandas'],
+      install_requires = ['pyqtgraph', 'pandas', 'numpy', 'scipy'],
       scripts = ['scripts/graphysioui.py'],
       packages = ['graphysio', 'graphysio.ui'],
 )

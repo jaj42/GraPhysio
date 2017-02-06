@@ -4,8 +4,7 @@ from functools import partial
 import pandas as pd
 import numpy as np
 
-from PyQt4 import QtGui,QtCore
-from PyQt4.QtCore import Qt
+from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import tsplot, puplot, dialogs, utils, csvio
 from graphysio.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
@@ -23,15 +22,15 @@ class MainUi(QtGui.QMainWindow, Ui_MainWindow):
 
         launchNewPlot = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
-        self.menuFile.addAction('&New Plot', launchNewPlot, Qt.CTRL + Qt.Key_N)
-        self.menuFile.addAction('&Append to Plot', launchAppendPlot, Qt.CTRL + Qt.Key_A)
+        self.menuFile.addAction('&New Plot', launchNewPlot, QtCore.Qt.CTRL + QtCore.Qt.Key_N)
+        self.menuFile.addAction('&Append to Plot', launchAppendPlot, QtCore.Qt.CTRL + QtCore.Qt.Key_A)
         self.menuFile.addSeparator()
-        self.menuFile.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
+        self.menuFile.addAction('&Quit', self.fileQuit, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
-        self.menuData.addAction('&Set sampling rate', self.launchSetSamplerate, Qt.CTRL + Qt.Key_S)
-        self.menuData.addAction('&Filter', self.launchFilter, Qt.CTRL + Qt.Key_F)
-        self.menuData.addAction('Cycle &Detection', self.launchCycleDetection, Qt.CTRL + Qt.Key_D)
-        self.menuData.addAction('Generate PU-&Loops', self.launchLoop, Qt.CTRL + Qt.Key_L)
+        self.menuData.addAction('&Set sampling rate', self.launchSetSamplerate, QtCore.Qt.CTRL + QtCore.Qt.Key_S)
+        self.menuData.addAction('&Filter', self.launchFilter, QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        self.menuData.addAction('Cycle &Detection', self.launchCycleDetection, QtCore.Qt.CTRL + QtCore.Qt.Key_D)
+        self.menuData.addAction('Generate PU-&Loops', self.launchLoop, QtCore.Qt.CTRL + QtCore.Qt.Key_L)
 
         self.menuExport.addAction('&Series to CSV', self.exportCsv)
         self.menuExport.addAction('&Time info to CSV', self.exportPeriod)

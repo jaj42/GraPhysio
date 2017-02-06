@@ -1,9 +1,11 @@
 import os
 import time
+
 from enum import Enum
-import itertools
-from PyQt4 import QtGui
+from itertools import cycle
+
 import pandas as pd
+from pyqtgraph.Qt import QtGui
 
 class FootType(Enum):
     none     = 'None'
@@ -87,7 +89,7 @@ def Colors():
         QtGui.QColor(77, 190, 238),
         QtGui.QColor(162, 20, 47)
     ]
-    return itertools.cycle(qtcolors)
+    return cycle(qtcolors)
 
 def getvbrange(plotwidget):
     vbrange = plotwidget.vb.viewRange()

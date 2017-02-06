@@ -3,7 +3,7 @@ import os, csv
 import numpy as np
 import pandas as pd
 
-from PyQt4 import QtGui
+from pyqtgraph.Qt import QtGui
 
 from graphysio import utils
 from graphysio.dialogs import DlgPeriodExport

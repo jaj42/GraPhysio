@@ -1,12 +1,11 @@
 import sys
 from enum import Enum
 
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import Qt
-
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+
+from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import algorithms, exporter, utils, legend
 
@@ -107,7 +106,7 @@ class PlotWidget(pg.PlotWidget):
             curve.unselectPoint(point)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Delete:
+        if event.key() == QtCore.Qt.Key_Delete:
             for curve in self.feetitems.values():
                 curve.removeSelection()
 
@@ -123,7 +122,7 @@ class PlotWidget(pg.PlotWidget):
 
 
 class CurveItem(pg.PlotDataItem):
-    def __init__(self, series, plotdata, pen=QtGui.QColor(Qt.black), *args, **kwargs):
+    def __init__(self, series, plotdata, pen=QtGui.QColor(QtCore.Qt.black), *args, **kwargs):
         self.series = series
         self.plotdata = plotdata
         self.feetitem = None
@@ -221,7 +220,7 @@ class TimeAxisItem(pg.AxisItem):
         for value in values:
             value = value / 1e6 # convert from ns to ms
             date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
-            date = date.toTimeSpec(Qt.UTC)
+            date = date.toTimeSpec(QtCore.Qt.UTC)
             datestr = date.toString("hh:mm:ss.zzz")
             ret.append(datestr)
         return ret

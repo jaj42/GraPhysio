@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from functools import partial
 
-from PyQt4 import QtCore
+from pyqtgraph.Qt import QtCore
 from graphysio import utils
 
 class Reader(QtCore.QRunnable):
