@@ -1,12 +1,21 @@
 import os, csv
+from functools import partial
 
-from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtGui, QtCore, loadUiType
 
 from graphysio import algorithms, utils
-from graphysio.ui import Ui_NewPlot, Ui_CycleDetection, Ui_Filter, Ui_SetupPULoop, Ui_PeriodExport
 
+uiFiles = ['newplot.ui', 'cycledetect.ui', 'filter.ui', 'setuppuloop.ui', 'periodexport.ui']
 
-class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
+curPath = os.path.dirname(os.path.abspath(__file__))
+uiBasePath = os.path.join(curPath, 'ui', 'designer')
+getUiPath = partial(os.path.join, uiBasePath)
+
+uiPaths = map(getUiPath, uiFiles)
+uiClasses = map(loadUiType, uiPaths)
+uiMapping = {filename: classes for filename, classes in zip(uiFiles, uiClasses)}
+
+class DlgNewPlot(*uiMapping['newplot.ui']):
     def __init__(self, parent=None, title="New Plot", directory=""):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -161,7 +170,7 @@ class DlgNewPlot(QtGui.QDialog, Ui_NewPlot):
         self.accept()
 
 
-class DlgCycleDetection(QtGui.QDialog, Ui_CycleDetection):
+class DlgCycleDetection(*uiMapping['cycledetect.ui']):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -194,7 +203,7 @@ class DlgCycleDetection(QtGui.QDialog, Ui_CycleDetection):
         return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
 
 
-class DlgFilter(QtGui.QDialog, Ui_Filter):
+class DlgFilter(*uiMapping['filter.ui']):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -226,7 +235,7 @@ class DlgFilter(QtGui.QDialog, Ui_Filter):
         return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
 
 
-class DlgSetupPULoop(QtGui.QDialog, Ui_SetupPULoop):
+class DlgSetupPULoop(*uiMapping['setuppuloop.ui']):
     def __init__(self, sourcewidget, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -249,7 +258,7 @@ class DlgSetupPULoop(QtGui.QDialog, Ui_SetupPULoop):
         return (uname, pname)
 
 
-class DlgPeriodExport(QtGui.QDialog, Ui_PeriodExport):
+class DlgPeriodExport(*uiMapping['periodexport.ui']):
     def __init__(self, begin, end, patient="", directory="", parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
