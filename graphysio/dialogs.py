@@ -1,19 +1,10 @@
 import os, csv
 
-from pyqtgraph.Qt import QtGui, QtCore, loadUiType
+from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import algorithms, utils
 
-#uiFiles = ['newplot.ui', 'cycledetect.ui', 'filter.ui', 'setuppuloop.ui', 'periodexport.ui']
-
-curPath = os.path.dirname(os.path.abspath(__file__))
-uiBasePath = os.path.join(curPath, 'ui', 'designer')
-def loadUiFile(uiFile):
-    uiPath = os.path.join(uiBasePath, uiFile)
-    uiClasses = loadUiType(uiPath)
-    return uiClasses
-
-class DlgNewPlot(*loadUiFile('newplot.ui')):
+class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
     def __init__(self, parent=None, title="New Plot", directory=""):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -168,7 +159,7 @@ class DlgNewPlot(*loadUiFile('newplot.ui')):
         self.accept()
 
 
-class DlgCycleDetection(*loadUiFile('cycledetect.ui')):
+class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -201,7 +192,7 @@ class DlgCycleDetection(*loadUiFile('cycledetect.ui')):
         return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
 
 
-class DlgFilter(*loadUiFile('filter.ui')):
+class DlgFilter(*utils.loadUiFile('filter.ui')):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -233,7 +224,7 @@ class DlgFilter(*loadUiFile('filter.ui')):
         return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
 
 
-class DlgSetupPULoop(*loadUiFile('setuppuloop.ui')):
+class DlgSetupPULoop(*utils.loadUiFile('setuppuloop.ui')):
     def __init__(self, sourcewidget, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -256,7 +247,7 @@ class DlgSetupPULoop(*loadUiFile('setuppuloop.ui')):
         return (uname, pname)
 
 
-class DlgPeriodExport(*loadUiFile('periodexport.ui')):
+class DlgPeriodExport(*utils.loadUiFile('periodexport.ui')):
     def __init__(self, begin, end, patient="", directory="", parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)

@@ -7,9 +7,8 @@ import numpy as np
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import tsplot, puplot, dialogs, utils, csvio
-from graphysio.ui import Ui_MainWindow, Ui_NewPlot, Ui_CycleDetection, Ui_Filter
 
-class MainUi(QtGui.QMainWindow, Ui_MainWindow):
+class MainUi(*utils.loadUiFile('mainwindow.ui')):
     hasdata  = QtCore.pyqtSignal(object)
     haserror = QtCore.pyqtSignal(object)
 

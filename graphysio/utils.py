@@ -5,7 +5,7 @@ from enum import Enum
 from itertools import cycle
 
 import pandas as pd
-from pyqtgraph.Qt import QtGui
+from pyqtgraph.Qt import QtGui, loadUiType
 
 class FootType(Enum):
     none     = 'None'
@@ -100,3 +100,10 @@ def getvbrange(plotwidget):
     else:
         xmin, xmax = int(xmin), int(xmax)
     return (xmin, xmax)
+
+curPath = os.path.dirname(os.path.abspath(__file__))
+uiBasePath = os.path.join(curPath, 'ui', 'designer')
+def loadUiFile(uiFile):
+    uiPath = os.path.join(uiBasePath, uiFile)
+    uiClasses = loadUiType(uiPath)
+    return uiClasses
