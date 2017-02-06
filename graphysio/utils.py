@@ -102,7 +102,7 @@ def getvbrange(plotwidget):
     return (xmin, xmax)
 
 curPath = os.path.dirname(os.path.abspath(__file__))
-uiBasePath = os.path.join(curPath, 'ui', 'designer')
+uiBasePath = os.path.join(curPath, 'ui')
 def loadUiFile(uiFile):
     uiPath = os.path.join(uiBasePath, uiFile)
     uiClasses = loadUiType(uiPath)

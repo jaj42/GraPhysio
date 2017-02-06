@@ -1,3 +1,3 @@
 include LICENSE
 include README.md
-include graphysio/ui/designer/*.ui
+include graphysio/ui/*.ui

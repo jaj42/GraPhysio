@@ -7,15 +7,14 @@ import pyqtgraph as pg
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import algorithms, exporter
-from graphysio.ui import Ui_LoopWidget
+from graphysio import algorithms, exporter, utils
 
 Point     = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
 Angles    = namedtuple('Angles', ['alpha', 'beta', 'gala'])
 
 
-class LoopWidget(QtGui.QWidget, Ui_LoopWidget):
+class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
     def __init__(self, u, p, plotdata, subsetrange=None, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
