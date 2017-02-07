@@ -3,12 +3,13 @@ import pandas as pd
 from functools import partial
 
 from pyqtgraph.Qt import QtCore
+
 from graphysio import utils
 
 class Reader(QtCore.QRunnable):
-    def __init__(self, plotdata, sigdata, sigerror):
+    def __init__(self, csvrequest, sigdata, sigerror):
         super().__init__()
-        self._plotdata = plotdata
+        self.csvrequest = csvrequest
         self.sigdata = sigdata
         self.sigerror = sigerror
 
@@ -18,51 +19,55 @@ class Reader(QtCore.QRunnable):
         except ValueError as e:
             self.sigerror.emit(e)
         else:
-            self._plotdata.data = data
-            self.sigdata.emit(self._plotdata)
+            self.sigdata.emit(data)
 
     def getdata(self):
-        if self._plotdata.loadall:
+        if self.csvrequest.loadall:
             # usecols = None loads all columns
             usecols = None
         else:
-            usecols = self._plotdata.fields
+            usecols = self.csvrequest.fields
 
-        data = pd.read_csv(self._plotdata.filepath,
-                           sep       = self._plotdata.seperator,
+        data = pd.read_csv(self.csvrequest.filepath,
+                           sep       = self.csvrequest.seperator,
                            usecols   = usecols,
-                           decimal   = self._plotdata.decimal,
+                           decimal   = self.csvrequest.decimal,
                            index_col = False,
-                           skiprows  = self._plotdata.droplines,
+                           skiprows  = self.csvrequest.droplines,
                            encoding  = 'latin1',
                            engine    = 'c')
 
-        if self._plotdata.xisdate:
-            dtformat = self._plotdata.datetime_format
+        if self.csvrequest.xisdate:
+            dtformat = self.csvrequest.datetime_format
             if dtformat == '<seconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield] * 1e9, unit = 'ns')
+                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield] * 1e9, unit = 'ns')
             elif dtformat == '<milliseconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield] * 1e6, unit = 'ns')
+                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield] * 1e6, unit = 'ns')
             elif dtformat == '<microseconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield] * 1e3, unit = 'ns')
+                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield] * 1e3, unit = 'ns')
             elif dtformat == '<nanoseconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield], unit = 'ns')
+                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield], unit = 'ns')
             else:
-                data['nsdatetime'] = pd.to_datetime(data[self._plotdata.datefield], format = dtformat)
+                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield], format = dtformat)
             data = data.set_index('nsdatetime')
 
         # Coerce all columns to numeric and remove empty columns
         pdtonum = partial(pd.to_numeric, errors='coerce')
         data = data.apply(pdtonum).dropna(axis='columns', how='all')
         data = data.dropna(axis='rows', how='all')
+        data = data.sort_index()
 
         # Provide a gross estimation of the sampling rate based on the index
-        self._plotdata.samplerate = estimateSampleRate(data)
+        samplerate = estimateSampleRate(data)
 
         # Don't try requested fields that are empty
-        self._plotdata.yfields = [f for f in self._plotdata.yfields if f in data.columns]
+        fields = [f for f in self.csvrequest.yfields if f in data.columns]
 
-        return data
+        plotdata = utils.PlotData(data       = data,
+                                  fields     = fields,
+                                  samplerate = samplerate,
+                                  filepath   = self.csvrequest.filepath)
+        return plotdata
 
 
 def estimateSampleRate(series):

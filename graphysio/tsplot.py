@@ -30,7 +30,7 @@ class PlotWidget(pg.PlotWidget):
 
         self.exporter = exporter.TsExporter(self)
 
-        allSeries = (self.plotdata.data[c] for c in self.plotdata.yfields)
+        allSeries = (self.plotdata.data[c] for c in self.plotdata.fields)
         for series in allSeries:
             self.addCurve(series)
 
@@ -46,13 +46,13 @@ class PlotWidget(pg.PlotWidget):
         # Merge plotdata.data with current
         self.plotdata.data = pd.concat([self.plotdata.data, newplotdata.data], axis=1).sort_index()
 
-        # addCurve() everything in new yfields
-        allSeries = (self.plotdata.data[c] for c in newplotdata.yfields)
+        # addCurve() everything in new fields
+        allSeries = (self.plotdata.data[c] for c in newplotdata.fields)
         for series in allSeries:
             self.addCurve(series)
 
-        # Merge yfields
-        self.plotdata.yfields = list(set(self.plotdata.yfields) | set(newplotdata.yfields))
+        # Merge fields
+        self.plotdata.fields = list(set(self.plotdata.fields) | set(newplotdata.fields))
 
     @property
     def curves(self):
@@ -93,7 +93,7 @@ class PlotWidget(pg.PlotWidget):
             return
 
     def addFiltered(self, oldcurve, filtername):
-        newseries = algorithms.filter(oldcurve, filtername)
+        newseries = algorithms.filter(oldcurve, filtername, utils.fullfillType)
         if newseries is not None:
             newcurve = self.addCurve(series = newseries,
                                      pen    = oldcurve.pen.lighter())

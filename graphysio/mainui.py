@@ -101,11 +101,11 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 self.hasdata.connect(self.appendToPlotWithData)
         dlgNewplot = dialogs.DlgNewPlot(parent=self, title=title, directory=self.dircache)
         if not dlgNewplot.exec_(): return
-        plotdata = dlgNewplot.result
-        self.dircache = plotdata.folder
-        self.statusBar.showMessage("Loading... {}...".format(plotdata.name))
+        csvrequest = dlgNewplot.result
+        self.dircache = csvrequest.folder
+        self.statusBar.showMessage("Loading... {}...".format(csvrequest.name))
 
-        reader = csvio.Reader(plotdata, self.hasdata, self.haserror)
+        reader = csvio.Reader(csvrequest, self.hasdata, self.haserror)
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def appendToPlotWithData(self, plotdata):
@@ -168,7 +168,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
     def displayError(self, errmsg):
         msgbox = QtGui.QMessageBox()
-        msgbox.setWindowTitle("Error creating plot")
+        msgbox.setWindowTitle("Error")
         msgbox.setText(str(errmsg))
         msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
         msgbox.setIcon(QtGui.QMessageBox.Critical)

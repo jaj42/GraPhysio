@@ -17,7 +17,7 @@ class FilterType(Enum):
     tfcombi   = 'TF Combi'
     tfsphygmo = 'TF Sphygmo'
 
-class PlotDescription():
+class CsvRequest():
     def __init__(self, filepath  = "",
                        seperator = ",",
                        decimal   = ".",
@@ -38,7 +38,6 @@ class PlotDescription():
         self.xisdate = xisdate
         self.droplines = droplines
         self.samplerate = samplerate
-        self.data = None
 
     @property
     def fields(self):
@@ -47,16 +46,10 @@ class PlotDescription():
 
     @property
     def datefield(self):
-        if not self.xisdate: return False
-        return self.xfield if self.xfield is not None else False
-
-    @property
-    def xvalues(self):
-        if not self.xisdate and self.xfield is not None:
-            values = self.data[self.xfield].values
-            return values.astype(np.float64)
-        else:
+        if not self.xisdate:
             return None
+        else:
+            return self.xfield
 
     @property
     def name(self):
@@ -68,6 +61,29 @@ class PlotDescription():
         folder = os.path.dirname(self.filepath)
         return folder
 
+class PlotData():
+    def __init__(self, data = None,
+                       fields = [],
+                       samplerate = None,
+                       filepath  = ""):
+        self.data = data
+        self.fields = fields
+        self.samplerate = samplerate
+        self.filepath = filepath
+
+    @property
+    def name(self):
+        name, _ = os.path.splitext(os.path.basename(self.filepath))
+        return name
+
+    @property
+    def folder(self):
+        folder = os.path.dirname(self.filepath)
+        return folder
+
+    @property
+    def xisdate(self):
+        return type(self.data.index) == pd.tseries.index.DatetimeIndex
 
 # https://stackoverflow.com/questions/5478351/python-time-measure-function
 def Timing(f):
@@ -107,3 +123,17 @@ def loadUiFile(uiFile):
     uiPath = os.path.join(uiBasePath, uiFile)
     uiClasses = loadUiType(uiPath)
     return uiClasses
+
+def fullfillType(param):
+    if param.type is str:
+        value, isok = QtGui.QInputDialog.getText(None, 'Enter value', param.description)
+    elif param.type is int:
+        value, isok = QtGui.QInputDialog.getInt(None, 'Enter value', param.description)
+    elif param.type is float:
+        value, isok = QtGui.QInputDialog.getDouble(None, 'Enter value', param.description, decimals=3)
+    else:
+        return None
+    if isok:
+        return value
+    else:
+        return None

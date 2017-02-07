@@ -11,7 +11,7 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         self.setWindowTitle(title)
 
         self.dircache = directory
-        self.plotdata = utils.PlotDescription()
+        self.csvrequest = utils.CsvRequest()
 
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()
@@ -38,13 +38,16 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
 
     @property
     def result(self):
-        return self.plotdata
+        return self.csvrequest
 
     # Methods / Callbacks
     def selectFile(self):
         filepath = QtGui.QFileDialog.getOpenFileName(parent = self,
                                                      caption = "Open CSV file",
                                                      directory = self.dircache)
+        # Strange PyQt5 API change makes it return a tuple now
+        if type(filepath) is tuple:
+            filepath = filepath[0]
         if not filepath: return
         self.dircache = os.path.dirname(filepath)
         self.txtFile.setText(filepath)
@@ -137,25 +140,25 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
         xState = [i.checkState() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
         for s in xState:
-            self.plotdata.xisdate = s > QtCore.Qt.Unchecked
+            self.csvrequest.xisdate = s > QtCore.Qt.Unchecked
             break
         if len(xRows) > 0:
-            self.plotdata.xfield = xRows[0]
+            self.csvrequest.xfield = xRows[0]
         else:
-            self.plotdata.xfield = None
+            self.csvrequest.xfield = None
 
         seperator = self.txtSep.currentText()
         if seperator == '<tab>':
-            self.plotdata.seperator = '\t'
+            self.csvrequest.seperator = '\t'
         else:
-            self.plotdata.seperator = seperator
+            self.csvrequest.seperator = seperator
 
-        self.plotdata.yfields = yRows
-        self.plotdata.filepath = self.txtFile.text()
-        self.plotdata.decimal = self.txtDecimal.currentText()
-        self.plotdata.datetime_format = self.txtDateTime.currentText()
-        self.plotdata.droplines = self.spnLinedrop.value()
-        self.plotdata.loadall = not self.chkLoadNotAll.isChecked()
+        self.csvrequest.yfields = yRows
+        self.csvrequest.filepath = self.txtFile.text()
+        self.csvrequest.decimal = self.txtDecimal.currentText()
+        self.csvrequest.datetime_format = self.txtDateTime.currentText()
+        self.csvrequest.droplines = self.spnLinedrop.value()
+        self.csvrequest.loadall = not self.chkLoadNotAll.isChecked()
         self.accept()
 
 
@@ -210,7 +213,8 @@ class DlgFilter(*utils.loadUiFile('filter.ui')):
             combo = QtGui.QComboBox()
 
             combo.addItems(['None'])
-            combo.addItems(list(algorithms.Filters.keys()))
+            filters = list(algorithms.Filters.keys())
+            combo.addItems(filters)
 
             curveitem = QtGui.QTableWidgetItem(curvename)
 
