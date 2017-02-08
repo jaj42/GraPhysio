@@ -16,7 +16,7 @@ class Reader(QtCore.QRunnable):
     def run(self):
         try:
             data = self.getdata()
-        except ValueError as e:
+        except Exception as e:
             self.sigerror.emit(e)
         else:
             self.sigdata.emit(data)
