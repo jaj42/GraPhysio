@@ -45,10 +45,12 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         filepath = QtGui.QFileDialog.getOpenFileName(parent = self,
                                                      caption = "Open CSV file",
                                                      directory = self.dircache)
-        # Strange PyQt5 API change makes it return a tuple now
-        if type(filepath) is tuple:
+        # PyQt5 API change
+        if type(filepath) is not str:
             filepath = filepath[0]
-        if not filepath: return
+
+        if not filepath:
+            return
         self.dircache = os.path.dirname(filepath)
         self.txtFile.setText(filepath)
         # Guesstimate CSV field and decimal seperators
@@ -267,13 +269,17 @@ class DlgPeriodExport(*utils.loadUiFile('periodexport.ui')):
         self.btnBrowse.clicked.connect(self.selectFile)
 
     def selectFile(self):
-        filename = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
+        filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
                                                      options = QtGui.QFileDialog.DontConfirmOverwrite,
                                                      directory = self.dircache)
-        if filename:
-            self.txtFile.setText(filename)
-            self.dircache = os.path.dirname(filename)
+        # PyQt5 API change
+        if type(filepath) is not str:
+            filepath = filepath[0]
+
+        if filepath:
+            self.txtFile.setText(filepath)
+            self.dircache = os.path.dirname(filepath)
 
     @property
     def patient(self):
