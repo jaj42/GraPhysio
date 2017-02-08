@@ -21,25 +21,27 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
         launchNewPlot = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
-        self.menuFile.addAction('&New Plot', launchNewPlot, QtCore.Qt.CTRL + QtCore.Qt.Key_N)
+        self.menuFile.addAction('&New Plot',       launchNewPlot,    QtCore.Qt.CTRL + QtCore.Qt.Key_N)
         self.menuFile.addAction('&Append to Plot', launchAppendPlot, QtCore.Qt.CTRL + QtCore.Qt.Key_A)
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
-        self.menuData.addAction('&Set sampling rate', self.launchSetSamplerate, QtCore.Qt.CTRL + QtCore.Qt.Key_S)
-        self.menuData.addAction('&Filter', self.launchFilter, QtCore.Qt.CTRL + QtCore.Qt.Key_F)
-        self.menuData.addAction('Cycle &Detection', self.launchCycleDetection, QtCore.Qt.CTRL + QtCore.Qt.Key_D)
-        self.menuData.addAction('Generate PU-&Loops', self.launchLoop, QtCore.Qt.CTRL + QtCore.Qt.Key_L)
+        self.menuData.addAction('&Set sampling rate', self.launchSetSamplerate,  QtCore.Qt.CTRL + QtCore.Qt.Key_S)
+        self.menuData.addAction('&Filter',            self.launchFilter,         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        self.menuData.addAction('Cycle &Detection',   self.launchCycleDetection, QtCore.Qt.CTRL + QtCore.Qt.Key_D)
+        self.menuData.addAction('Generate PU-&Loops', self.launchLoop,           QtCore.Qt.CTRL + QtCore.Qt.Key_L)
 
-        self.menuExport.addAction('&Series to CSV', self.exportCsv)
-        self.menuExport.addAction('&Time info to CSV', self.exportPeriod)
+        self.menuExport.addAction('&Series to CSV',     self.exportCsv)
+        self.menuExport.addAction('&Time info to CSV',  self.exportPeriod)
         self.menuExport.addAction('&Cycle info to CSV', self.exportCycles)
-        self.menuExport.addAction('&Loop Data', self.exportLoops)
+        self.menuExport.addAction('&Loop Data',         self.exportLoops)
 
         self.haserror.connect(self.displayError)
 
     def launchLoop(self):
         sourcewidget = self.tabWidget.currentWidget()
+        if sourcewidget is None:
+            return
         dlgSetupPU = dialogs.DlgSetupPULoop(sourcewidget, parent = self)
         if not dlgSetupPU.exec_(): return
 
@@ -50,15 +52,19 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             plotdata = sourcewidget.plotdata
             u = curves[uname]
             p = curves[pname]
+            subsetrange = utils.getvbrange(sourcewidget)
+            loopwidget = puplot.LoopWidget(u, p, plotdata, subsetrange=subsetrange, parent=self)
         except Exception as e:
-            self.haserror.emit('Could not create PU loops: {}', e)
+            msg = 'Could not create PU loops: {}'.format(e)
+            self.haserror.emit(msg)
             return
 
-        subsetrange = utils.getvbrange(sourcewidget)
-
-        loopwidget = puplot.LoopWidget(u, p, plotdata, subsetrange=subsetrange, parent=self)
         tabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(plotdata.name))
         self.tabWidget.setCurrentIndex(tabindex)
+
+    def launchSetSamplerate(self):
+        plotwidget = self.tabWidget.currentWidget()
+        plotwidget.askSamplerate()
 
     def launchCycleDetection(self):
         dlgCycles = dialogs.DlgCycleDetection(parent = self)
@@ -66,12 +72,12 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         choices = dlgCycles.result
         plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
-            curve = plotwidget.curves[curvename]
-            plotwidget.addFeet(curve, utils.FootType(choice))
-
-    def launchSetSamplerate(self):
-        plotwidget = self.tabWidget.currentWidget()
-        plotwidget.askSamplerate()
+            try:
+                curve = plotwidget.curves[curvename]
+                plotwidget.addFeet(curve, utils.FootType(choice))
+            except Exception as e:
+                msg = "{}: {}".format(curvename, e)
+                self.haserror.emit(msg)
 
     def launchFilter(self):
         dlgFilter = dialogs.DlgFilter(parent = self)
@@ -79,15 +85,19 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         choices = dlgFilter.result
         plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
-            curve = plotwidget.curves[curvename]
-            plotwidget.addFiltered(curve, choice)
+            try:
+                curve = plotwidget.curves[curvename]
+                plotwidget.addFiltered(curve, choice)
+            except Exception as e:
+                msg = "{}: {}".format(curvename, e)
+                self.haserror.emit(msg)
 
     def launchReadData(self, newwidget=True):
         if newwidget:
             title = "New Plot"
             try:
                 self.hasdata.disconnect()
-            except TypeError:
+            except:
                 pass
             finally:
                 self.hasdata.connect(self.createNewPlotWithData)
@@ -95,10 +105,11 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             title = "Append to Plot"
             try:
                 self.hasdata.disconnect()
-            except TypeError:
+            except:
                 pass
             finally:
                 self.hasdata.connect(self.appendToPlotWithData)
+
         dlgNewplot = dialogs.DlgNewPlot(parent=self, title=title, directory=self.dircache)
         if not dlgNewplot.exec_(): return
         csvrequest = dlgNewplot.result
