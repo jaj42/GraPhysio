@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
-import scipy.signal as signal
+from scipy import signal, interpolate
 
 
 Filter = namedtuple('Filter', ['type', 'parameters'])
@@ -26,16 +26,18 @@ tfsphygmo = TF(sphygmonum, sphygmoden, name='Sphygmo TF')
 
 TFs = {tfsphygmo.name : tfsphygmo}
 
+interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
 Filters = {'Lowpass filter' : Filter(type='lp', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
            'Savitzky-Golay' : Filter(type='savgol', parameters=[Parameter('Window length (s)', float), Parameter('Polynomial order', int)]),
+           'Resample' : Filter(type='resample', parameters=[Parameter('New sampling rate (Hz)', int)]),
+           'Cubic interpolation' : Filter(type='interpolate', parameters=[Parameter('New sampling rate (Hz)', int)]),
            'Sphygmo TF' : Filter(type='tf', parameters=[])}
 
 def filter(curve, filtname, typefullfiller):
     samplerate = curve.samplerate
     oldseries = curve.series.dropna()
     if samplerate is None:
-        print("Samplerate is not set and could not be inferred.", file=sys.stderr)
-        return None
+        raise TypeError "Samplerate is not set and could not be inferred."
 
     try:
         filt = Filters[filtname]
@@ -67,6 +69,24 @@ def filter(curve, filtname, typefullfiller):
         filtered = signal.lfilter(b, a, oldseries)
         newname = "{}-lowpass".format(oldseries.name)
         newseries = pd.Series(filtered, index=oldseries.index, name=newname)
+    elif filt.type == 'resample' or filt.type == 'interpolate':
+        if filt.type == 'resample':
+            method = 'linear'
+        else:
+            method = 'cubic'
+        newsamplerate, = parameters
+        npoints = len(oldseries) * newsamplerate / samplerate
+        numericidx = oldseries.index.astype(np.int64)
+        f = interpolate.interp1d(numericidx, oldseries.values, kind=method)
+        newx = np.linspace(numericidx[1], numericidx[-1], num=npoints)
+        if type(oldseries.index) is pd.tseries.index.DatetimeIndex:
+            newidx = pd.to_datetime(newx, unit = 'ns')
+        else:
+            newidx = newx
+        resampled = f(newx)
+        newname = "{}-{}Hz".format(oldseries.name, newsamplerate)
+        newseries = pd.Series(resampled, index=newidx, name=newname)
+        # XXX set new sample rate in curve
     else:
         newseries = None
     return newseries
