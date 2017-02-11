@@ -37,7 +37,7 @@ def filter(curve, filtname, typefullfiller):
     samplerate = curve.samplerate
     oldseries = curve.series.dropna()
     if samplerate is None:
-        raise TypeError "Samplerate is not set and could not be inferred."
+        raise TypeError("Samplerate is not set and could not be inferred.")
 
     try:
         filt = Filters[filtname]
@@ -95,8 +95,7 @@ def findPressureFeet(curve):
     series = curve.series.dropna()
     samplerate = curve.samplerate
     if samplerate is None:
-        print("Samplerate is not set and could not be inferred.", file=sys.stderr)
-        return pd.Series()
+        raise TypeError("Samplerate is not set and could not be inferred.")
 
     fstderiv = series.diff().shift(-1)
     sndderiv = fstderiv.diff().shift(-1)
