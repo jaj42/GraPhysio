@@ -49,6 +49,7 @@ class Reader(QtCore.QRunnable):
                 data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield], unit = 'ns')
             else:
                 data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield], format = dtformat)
+            data['nsdatetime'] = data['nsdatetime'].astype(np.int64)
             data = data.set_index('nsdatetime')
 
         # Coerce all columns to numeric and remove empty columns
@@ -57,8 +58,11 @@ class Reader(QtCore.QRunnable):
         data = data.dropna(axis='rows', how='all')
         data = data.sort_index()
 
-        # Provide a gross estimation of the sampling rate based on the index
-        samplerate = estimateSampleRate(data)
+        if self.csvrequest.xisdate:
+            # Provide a gross estimation of the sampling rate based on the index
+            samplerate = estimateSampleRate(data)
+        else:
+            samplerate = None
 
         # Don't try requested fields that are empty
         fields = [f for f in self.csvrequest.yfields if f in data.columns]
@@ -66,14 +70,13 @@ class Reader(QtCore.QRunnable):
         plotdata = utils.PlotData(data       = data,
                                   fields     = fields,
                                   samplerate = samplerate,
+                                  xisdate    = self.csvrequest.xisdate,
                                   filepath   = self.csvrequest.filepath)
         return plotdata
 
 
 def estimateSampleRate(series):
-    if type(series.index) != pd.tseries.index.DatetimeIndex:
-        return None
     idx = series.index.values
-    timedelta = (idx[-1] - idx[0]) / np.timedelta64(1, 's')
+    timedelta = (idx[-1] - idx[0]) * 1e-9
     fs = len(idx) / timedelta
     return int(round(fs))

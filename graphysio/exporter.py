@@ -19,7 +19,7 @@ class TsExporter():
         self.patientcache = parent.plotdata.name
 
     def updaterange(self):
-        self.xmin, self.xmax = utils.getvbrange(self.parent)
+        self.xmin, self.xmax = self.parent.vbrange
 
     def seriestocsv(self):
         filename = "{}-subset.csv".format(self.patientcache)
@@ -27,11 +27,15 @@ class TsExporter():
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
                                                      directory = defaultpath)
+        # PyQt5 API change
+        if type(filepath) is not str:
+            filepath = filepath[0]
+
         if not filepath: return
         self.dircache = os.path.dirname(filepath)
         self.updaterange()
         data = self.plotdata.data.ix[self.xmin : self.xmax]
-        datanona = data.dropna(how = 'all', subset = self.plotdata.yfields)
+        datanona = data.dropna(how = 'all', subset = self.plotdata.fields)
         datanona.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
 
     def periodstocsv(self):
@@ -64,6 +68,10 @@ class TsExporter():
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
                                                      directory = defaultpath)
+        # PyQt5 API change
+        if type(filepath) is not str:
+            filepath = filepath[0]
+
         if not filepath: return
         self.dircache = os.path.dirname(filepath)
         feetitems = self.parent.feetitems.values()

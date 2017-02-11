@@ -7,7 +7,7 @@ import pyqtgraph as pg
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import algorithms, exporter, utils, legend
+from graphysio import algorithms, exporter, utils, dialogs, legend
 
 class PlotWidget(pg.PlotWidget):
     def __init__(self, plotdata, parent=None):
@@ -93,7 +93,7 @@ class PlotWidget(pg.PlotWidget):
             return
 
     def addFiltered(self, oldcurve, filtername):
-        newseries = algorithms.filter(oldcurve, filtername, utils.fullfillType)
+        newseries = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
         if newseries is not None:
             newcurve = self.addCurve(series = newseries,
                                      pen    = oldcurve.pen.lighter())
@@ -120,6 +120,12 @@ class PlotWidget(pg.PlotWidget):
         if isok:
             self.plotdata.samplerate = Fs
 
+    @property
+    def vbrange(plotwidget):
+        vbrange = plotwidget.vb.viewRange()
+        xmin, xmax = map(int, vbrange[0])
+        return (xmin, xmax)
+
 
 class CurveItem(pg.PlotDataItem):
     def __init__(self, series, plotdata, pen=QtGui.QColor(QtCore.Qt.black), *args, **kwargs):
@@ -128,8 +134,8 @@ class CurveItem(pg.PlotDataItem):
         self.feetitem = None
         self._samplerate = None
         self.pen = pen
-        super().__init__(x    = self.series.index.astype(np.int64),
-                         y    = self.series.values.astype(np.float64),
+        super().__init__(x    = self.series.index,
+                         y    = self.series.values,
                          name = self.series.name,
                          pen  = self.pen,
                          antialias = True,
@@ -153,9 +159,8 @@ class FeetItem(pg.ScatterPlotItem):
         self.selected = []
         self.curve = curve
         self._name = "{}-{}".format(curve.name(), namesuffix)
-        self.xisdate = type(feet.index) == pd.tseries.index.DatetimeIndex
-        super().__init__(x    = feet.index.astype(np.int64),
-                         y    = feet.values.astype(np.float64),
+        super().__init__(x    = feet.index,
+                         y    = feet.values,
                          pen  = pen,
                          *args, **kwargs)
 
@@ -165,8 +170,6 @@ class FeetItem(pg.ScatterPlotItem):
     @property
     def feet(self):
         time = [point.pos().x() for point in self.points()]
-        if self.xisdate:
-            time = pd.to_datetime(time, unit='ns')
 
         # Sometimes points are a bit off due to rounding errors
         indices = [self.curve.series.index.get_loc(t, method='nearest') for t in time]
@@ -208,7 +211,7 @@ def pressureFeetItem(curve):
 
 
 def velocityFeetItems(curve):
-    starts, stops = algorithms.findFlowCycles(curve.series)
+    starts, stops = algorithms.findFlowCycles(curve)
     startitem = FeetItem(starts, curve, namesuffix='velstart', symbol='t')
     stopitem  = FeetItem(stops,  curve, namesuffix='velstop',  symbol='s')
     return (startitem, stopitem)

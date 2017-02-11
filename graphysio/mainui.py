@@ -1,4 +1,4 @@
-import sys,csv,os
+import sys, csv, os
 from functools import partial
 
 import pandas as pd
@@ -52,7 +52,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             plotdata = sourcewidget.plotdata
             u = curves[uname]
             p = curves[pname]
-            subsetrange = utils.getvbrange(sourcewidget)
+            subsetrange = sourcewidget.vbrange
             loopwidget = puplot.LoopWidget(u, p, plotdata, subsetrange=subsetrange, parent=self)
         except Exception as e:
             msg = 'Could not create PU loops: {}'.format(e)

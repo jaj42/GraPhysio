@@ -65,10 +65,12 @@ class PlotData():
     def __init__(self, data = None,
                        fields = [],
                        samplerate = None,
+                       xisdate = False,
                        filepath  = ""):
         self.data = data
         self.fields = fields
         self.samplerate = samplerate
+        self.xisdate = xisdate
         self.filepath = filepath
 
     @property
@@ -81,9 +83,6 @@ class PlotData():
         folder = os.path.dirname(self.filepath)
         return folder
 
-    @property
-    def xisdate(self):
-        return type(self.data.index) == pd.tseries.index.DatetimeIndex
 
 # https://stackoverflow.com/questions/5478351/python-time-measure-function
 def Timing(f):
@@ -107,33 +106,9 @@ def Colors():
     ]
     return cycle(qtcolors)
 
-def getvbrange(plotwidget):
-    vbrange = plotwidget.vb.viewRange()
-    xmin, xmax = vbrange[0]
-    if plotwidget.plotdata.xisdate:
-        xmin = pd.to_datetime(xmin, unit='ns')
-        xmax = pd.to_datetime(xmax, unit='ns')
-    else:
-        xmin, xmax = int(xmin), int(xmax)
-    return (xmin, xmax)
-
 curPath = os.path.dirname(os.path.abspath(__file__))
 uiBasePath = os.path.join(curPath, 'ui')
 def loadUiFile(uiFile):
     uiPath = os.path.join(uiBasePath, uiFile)
     uiClasses = loadUiType(uiPath)
     return uiClasses
-
-def fullfillType(param):
-    if param.type is str:
-        value, isok = QtGui.QInputDialog.getText(None, 'Enter value', param.description)
-    elif param.type is int:
-        value, isok = QtGui.QInputDialog.getInt(None, 'Enter value', param.description)
-    elif param.type is float:
-        value, isok = QtGui.QInputDialog.getDouble(None, 'Enter value', param.description, decimals=3)
-    else:
-        return None
-    if isok:
-        return value
-    else:
-        return None

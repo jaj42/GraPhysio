@@ -6,8 +6,8 @@ import pandas as pd
 from scipy import signal, interpolate
 
 
-Filter = namedtuple('Filter', ['type', 'parameters'])
-Parameter = namedtuple('Parameter', ['description', 'type'])
+Filter = namedtuple('Filter', ['name', 'parameters'])
+Parameter = namedtuple('Parameter', ['description', 'request'])
 
 class TF(object):
     def __init__(self, num, den, name=''):
@@ -27,34 +27,31 @@ tfsphygmo = TF(sphygmonum, sphygmoden, name='Sphygmo TF')
 TFs = {tfsphygmo.name : tfsphygmo}
 
 interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
-Filters = {'Lowpass filter' : Filter(type='lp', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
-           'Savitzky-Golay' : Filter(type='savgol', parameters=[Parameter('Window length (s)', float), Parameter('Polynomial order', int)]),
-           'Resample' : Filter(type='resample', parameters=[Parameter('New sampling rate (Hz)', int)]),
-           'Cubic interpolation' : Filter(type='interpolate', parameters=[Parameter('New sampling rate (Hz)', int)]),
-           'Sphygmo TF' : Filter(type='tf', parameters=[])}
+Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
+           'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
+           'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
+           'Sphygmo TF' : Filter(name='tf', parameters=[])}
 
-def filter(curve, filtname, typefullfiller):
+def filter(curve, filtname, paramgetter):
+    if filtname == 'None' or filtname is None:
+        return None
+
     samplerate = curve.samplerate
     oldseries = curve.series.dropna()
     if samplerate is None:
         raise TypeError("Samplerate is not set and could not be inferred.")
 
-    try:
-        filt = Filters[filtname]
-    except KeyError:
-        return None
+    filt = Filters[filtname]
+    parameters = map(paramgetter, filt.parameters)
 
-    parameters = map(typefullfiller, filt.parameters)
-
-    if filt.type == 'tf':
+    if filt.name == 'tf':
         tf = TFs[filtname]
         b, a = tf.discretize(samplerate)
         filtered = signal.lfilter(b, a, oldseries)
         newname = "{}-{}".format(oldseries.name, tf.name)
         newseries = pd.Series(filtered, index=oldseries.index, name=newname)
-    elif filt.type == 'savgol':
+    elif filt.name == 'savgol':
         window, order = parameters
-        # Get the closest odd integer for the window
         window = np.floor(window * samplerate)
         if not window % 2:
             # window is even, we need odd
@@ -62,33 +59,26 @@ def filter(curve, filtname, typefullfiller):
         filtered = signal.savgol_filter(oldseries, int(window), order)
         newname = "{}-{}".format(oldseries.name, 'filtered')
         newseries = pd.Series(filtered, index=oldseries.index, name=newname)
-    elif filt.type == 'lp':
+    elif filt.name == 'lowpass':
         Fc, order = parameters
         Wn = Fc * 2 / samplerate
         b, a = signal.butter(order, Wn)
         filtered = signal.lfilter(b, a, oldseries)
         newname = "{}-lowpass".format(oldseries.name)
         newseries = pd.Series(filtered, index=oldseries.index, name=newname)
-    elif filt.type == 'resample' or filt.type == 'interpolate':
-        if filt.type == 'resample':
-            method = 'linear'
-        else:
-            method = 'cubic'
-        newsamplerate, = parameters
+    elif filt.name == 'interp':
+        newsamplerate, method = parameters
         npoints = len(oldseries) * newsamplerate / samplerate
-        numericidx = oldseries.index.astype(np.int64)
-        f = interpolate.interp1d(numericidx, oldseries.values, kind=method)
-        newx = np.linspace(numericidx[1], numericidx[-1], num=npoints)
-        if type(oldseries.index) is pd.tseries.index.DatetimeIndex:
-            newidx = pd.to_datetime(newx, unit = 'ns')
-        else:
-            newidx = newx
-        resampled = f(newx)
+        oldidx = oldseries.index
+        f = interpolate.interp1d(oldidx, oldseries.values, kind=method)
+        newidx = np.linspace(oldidx[1], oldidx[-1], num=npoints)
+        resampled = f(newidx)
         newname = "{}-{}Hz".format(oldseries.name, newsamplerate)
         newseries = pd.Series(resampled, index=newidx, name=newname)
         # XXX set new sample rate in curve
     else:
-        newseries = None
+        raise TypeError("Unknown filter.")
+
     return newseries
 
 def findPressureFeet(curve):
@@ -120,25 +110,25 @@ def findPressureFeet(curve):
     try:
         risingStops = risingStops[risingStops > risingStarts[0]]
     except IndexError as e:
-        print("No foot detected: {}".format(e), file=sys.stderr)
-        return pd.Series()
+        raise TypeError("No foot detected: {}".format(e))
 
     def locateMaxima():
         for start, stop in zip(risingStarts, risingStops):
             idxstart = sndderiv.index.values[start]
             idxstop  = sndderiv.index.values[stop]
             try:
-                maximum = sndderiv[idxstart:idxstop].idxmax()
+                maximum = sndderiv.ix[idxstart:idxstop].idxmax()
             except ValueError as e:
-                print("local maximum error: {} [{} - {}]".format(e, idxstart, idxstop), file=sys.stderr)
+                print("local maximum error: {} [{} - {}] in [{} - {}]".format(e, idxstart, idxstop, sndderiv.index[0], sndderiv.index[-1]), file=sys.stderr)
                 continue
             else:
                 yield maximum
 
     return series[list(locateMaxima())]
 
-def findFlowCycles(series):
-    series = series.dropna()
+def findFlowCycles(curve):
+    series = curve.series.dropna()
+    samplerate = curve.samplerate
     bincycles = (series > series.min()).astype(int)
     idxstarts, = (bincycles.diff().shift(-1) > 0).nonzero()
     idxstops,  = (bincycles.diff() < 0).nonzero()
@@ -149,18 +139,16 @@ def findFlowCycles(series):
     try:
         cycleStops = cycleStops[cycleStops.index > cycleStarts.index[0]]
     except IndexError as e:
-        print("No cycle detected: {}".format(e), file=sys.stderr)
-        return (pd.Series(), pd.Series())
+        raise TypeError("No cycle detected: {}".format(e))
 
-    # Filter noise cycles which are shorter than 240ms
-    if type(series.index) == pd.tseries.index.DatetimeIndex:
-        minSystoleLength = pd.Timedelta('200ms')
-        def notShortCycles():
-            for (startidx, stopidx) in zip(cycleStarts.index, cycleStops.index):
-                if stopidx - startidx >= minSystoleLength:
-                    yield (startidx, stopidx)
-        (startidx, stopidx) = zip(*notShortCycles())
-        cycleStarts = cycleStarts[list(startidx)]
-        cycleStops = cycleStops[list(stopidx)]
+    # Filter noise cycles which are shorter than 200ms
+    minSystoleLength = 2e6 * samplerate
+    def notShortCycles():
+        for (startidx, stopidx) in zip(cycleStarts.index, cycleStops.index):
+            if stopidx - startidx >= minSystoleLength:
+                yield (startidx, stopidx)
+    startidx, stopidx = zip(*notShortCycles())
+    cycleStarts = cycleStarts[list(startidx)]
+    cycleStops = cycleStops[list(stopidx)]
 
     return (cycleStarts, cycleStops)

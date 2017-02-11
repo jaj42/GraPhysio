@@ -180,12 +180,8 @@ class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
 
         for n, curvename in enumerate(plotframe.curves.keys()):
             combo = QtGui.QComboBox()
-            combo.addItems(['Pressure', 'Velocity', 'None'])
+            combo.addItems(['None', 'Pressure', 'Velocity'])
             curveitem = QtGui.QTableWidgetItem(curvename)
-
-            # Preselect velocity based on the field name
-            if curvename.lower().find('vel') >= 0:
-                combo.setCurrentIndex(1)
 
             self.table.insertRow(n)
             self.table.setItem(n, 0, curveitem)
@@ -296,3 +292,24 @@ class DlgPeriodExport(*utils.loadUiFile('periodexport.ui')):
     @property
     def filepath(self):
         return self.txtFile.text()
+
+def askUserValue(param):
+    if param.request is str:
+        value, isok = QtGui.QInputDialog.getText(None, 'Enter value', param.description)
+    elif param.request is int:
+        value, isok = QtGui.QInputDialog.getInt(None, 'Enter value', param.description)
+    elif param.request is float:
+        value, isok = QtGui.QInputDialog.getDouble(None, 'Enter value', param.description, decimals=3)
+    elif param.request is bool:
+        request = ['True', 'False']
+        tmpvalue, isok = QtGui.QInputDialog.getItem(None, 'Enter value', param.description, request, editable=False)
+        value = True if tmpvalue == 'True' else False
+    elif type(param.request) is list:
+        value, isok = QtGui.QInputDialog.getItem(None, 'Enter value', param.description, param.request, editable=False)
+    else:
+        raise TypeError("Unknown request type")
+
+    if isok:
+        return value
+    else:
+        return None
