@@ -93,24 +93,28 @@ def findPressureFeet(curve):
     # Remove deceleration peaks
     sndderiv = sndderiv * (fstderiv > 0)
 
-    # Find pulse rising edge
-    winsum   = int(samplerate / 4)
-    winquant = int(samplerate * 3)
-    sndderivsq  = sndderiv ** 2
-    integral = sndderivsq.rolling(window=winsum,center=True).sum()
-    thres    = integral.rolling(window=winquant).quantile(.7)
-    thres    = thres.fillna(method='backfill')
-    risings = (integral > thres).astype(int)
+    def performWindowing(sumcoef = 4, quantcoef = 3):
+        # Find pulse rising edge
+        winsum   = int(samplerate / sumcoef)
+        winquant = int(samplerate * quantcoef)
+        sndderivsq  = sndderiv ** 2
+        integral = sndderivsq.rolling(window=winsum, center=True).sum()
+        thres = integral.rolling(window=winquant).quantile(.7)
+        thres = thres.fillna(method='backfill')
+        risings = (integral > thres).astype(int)
+        risingvar = risings.diff()
+        risingStarts, = (risingvar > 0).nonzero()
+        risingStops,  = (risingvar < 0).nonzero()
+        return (risingStarts, risingStops)
 
-    risingvar = risings.diff()
-    risingStarts, = (risingvar > 0).nonzero()
-    risingStops,  = (risingvar < 0).nonzero()
-
-    # Handle the case where we start near a foot
-    try:
-        risingStops = risingStops[risingStops > risingStarts[0]]
-    except IndexError as e:
-        raise TypeError("No foot detected: {}".format(e))
+    for quantcoef in [3, 2, 1]:
+        risingStarts, risingStops = performWindowing(quantcoef=quantcoef)
+        try:
+            risingStops = risingStops[risingStops > risingStarts[0]]
+            break
+        except IndexError as e:
+            if quantcoef == 1:
+                raise TypeError("No foot detected: {}".format(e))
 
     def locateMaxima():
         for start, stop in zip(risingStarts, risingStops):
