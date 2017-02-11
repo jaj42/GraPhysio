@@ -75,11 +75,11 @@ def filter(curve, filtname, paramgetter):
         resampled = f(newidx)
         newname = "{}-{}Hz".format(oldseries.name, newsamplerate)
         newseries = pd.Series(resampled, index=newidx, name=newname)
-        # XXX set new sample rate in curve
+        samplerate = newsamplerate
     else:
         raise TypeError("Unknown filter.")
 
-    return newseries
+    return (newseries, samplerate)
 
 def findPressureFeet(curve):
     series = curve.series.dropna()

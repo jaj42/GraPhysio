@@ -66,15 +66,12 @@ class PlotWidget(pg.PlotWidget):
         if pen is None:
             pen = next(self.colors)
 
-        try:
-            curve = CurveItem(series   = series,
-                              plotdata = self.plotdata,
-                              pen      = pen)
-        except ValueError as e:
-            self.parent.haserror.emit(e)
-        else:
-            self.addItem(curve)
-            self.legend.addItem(curve, curve.name())
+        curve = CurveItem(series   = series,
+                          plotdata = self.plotdata,
+                          pen      = pen)
+        self.addItem(curve)
+        self.legend.addItem(curve, curve.name())
+        return curve
 
     def addFeet(self, curve, foottype):
         if foottype is utils.FootType.pressure:
@@ -93,10 +90,11 @@ class PlotWidget(pg.PlotWidget):
             return
 
     def addFiltered(self, oldcurve, filtername):
-        newseries = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
+        newseries, newsamplerate = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
         if newseries is not None:
             newcurve = self.addCurve(series = newseries,
                                      pen    = oldcurve.pen.lighter())
+            newcurve.samplerate = newsamplerate
 
     def sigPointClicked(self, curve, points):
         point = points[0] # keep the first point
