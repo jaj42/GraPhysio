@@ -34,17 +34,17 @@ class Reader(QtCore.QRunnable):
         if self.csvrequest.xisdate:
             dtformat = self.csvrequest.datetime_format
             if dtformat == '<seconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield] * 1e9, unit = 'ns')
+                timestamp = pd.to_datetime(data[self.csvrequest.datefield] * 1e9, unit = 'ns')
             elif dtformat == '<milliseconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield] * 1e6, unit = 'ns')
+                timestamp = pd.to_datetime(data[self.csvrequest.datefield] * 1e6, unit = 'ns')
             elif dtformat == '<microseconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield] * 1e3, unit = 'ns')
+                timestamp = pd.to_datetime(data[self.csvrequest.datefield] * 1e3, unit = 'ns')
             elif dtformat == '<nanoseconds>':
-                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield], unit = 'ns')
+                timestamp = pd.to_datetime(data[self.csvrequest.datefield], unit = 'ns')
             else:
-                data['nsdatetime'] = pd.to_datetime(data[self.csvrequest.datefield], format = dtformat)
-            data['nsdatetime'] = data['nsdatetime'].astype(np.int64)
-            data = data.set_index('nsdatetime')
+                timestamp = pd.to_datetime(data[self.csvrequest.datefield], format = dtformat)
+            timestamp = timestamp.astype(np.int64)
+            data = data.set_index([timestamp])
 
         # Coerce all columns to numeric and remove empty columns
         pdtonum = partial(pd.to_numeric, errors='coerce')
