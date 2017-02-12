@@ -124,8 +124,8 @@ class PlotWidget(pg.PlotWidget):
                 self.hiddenitems.append(item)
 
     @property
-    def vbrange(plotwidget):
-        vbrange = plotwidget.vb.viewRange()
+    def vbrange(self):
+        vbrange = self.vb.viewRange()
         xmin, xmax = map(int, vbrange[0])
         return (xmin, xmax)
 

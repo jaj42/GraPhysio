@@ -18,9 +18,6 @@ class TsExporter():
         self.dircache = parent.plotdata.folder
         self.patientcache = parent.plotdata.name
 
-    def updaterange(self):
-        self.xmin, self.xmax = self.parent.vbrange
-
     def seriestocsv(self):
         filename = "{}-subset.csv".format(self.patientcache)
         defaultpath = os.path.join(self.dircache, filename)
@@ -31,19 +28,24 @@ class TsExporter():
         if type(filepath) is not str:
             filepath = filepath[0]
 
-        if not filepath: return
+        if not filepath:
+            return
         self.dircache = os.path.dirname(filepath)
-        self.updaterange()
-        data = self.plotdata.data.ix[self.xmin : self.xmax]
+        xmin, xmax = self.parent.vbrange
+        data = self.plotdata.data.ix[xmin:xmax]
+        series = [curve.series for curve in self.parent.curves.values()]
+        data = pd.concat(series, axis=1).sort_index()
+        data['datetime'] = pd.to_datetime(data.index, unit = 'ns')
         data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
 
     def periodstocsv(self):
-        self.updaterange()
-        dlg = DlgPeriodExport(begin   = self.xmin,
-                              end     = self.xmax,
+        xmin, xmax = self.parent.vbrange
+        dlg = DlgPeriodExport(begin   = xmin,
+                              end     = xmax,
                               patient = self.patientcache,
                               directory = self.dircache)
-        if not dlg.exec_(): return
+        if not dlg.exec_():
+            return
         self.patientcache = dlg.patient
         self.dircache = os.path.dirname(dlg.filepath)
 
@@ -56,8 +58,8 @@ class TsExporter():
             writer = csv.DictWriter(csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL)
             if not fileappend: writer.writeheader()
             writer.writerow({'patient'  : dlg.patient,
-                             'begin'    : self.xmin,
-                             'end'      : self.xmax,
+                             'begin'    : xmin,
+                             'end'      : xmax,
                              'periodid' : dlg.periodname,
                              'comment'  : dlg.comment})
 

@@ -31,7 +31,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuData.addAction('Cycle &Detection',   self.launchCycleDetection, QtCore.Qt.CTRL + QtCore.Qt.Key_D)
         self.menuData.addAction('Generate PU-&Loops', self.launchLoop,           QtCore.Qt.CTRL + QtCore.Qt.Key_L)
 
-        self.menuExport.addAction('&Series to CSV',     self.exportCsv)
+        self.menuExport.addAction('&Series to CSV',     self.exportSeries)
         self.menuExport.addAction('&Time info to CSV',  self.exportPeriod)
         self.menuExport.addAction('&Cycle info to CSV', self.exportCycles)
         self.menuExport.addAction('&Loop Data',         self.exportLoops)
@@ -140,14 +140,14 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
 
-    def exportCsv(self):
+    def exportSeries(self):
         plotwidget = self.tabWidget.currentWidget()
         if plotwidget is None:
             return
-        try:
-            plotwidget.exporter.seriestocsv()
-        except AttributeError:
-            self.haserror.emit('Method not available for this plot.')
+        #try:
+        plotwidget.exporter.seriestocsv()
+        #except AttributeError:
+        #    self.haserror.emit('Method not available for this plot.')
 
     def exportPeriod(self):
         plotwidget = self.tabWidget.currentWidget()
