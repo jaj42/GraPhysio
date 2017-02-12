@@ -293,6 +293,43 @@ class DlgPeriodExport(*utils.loadUiFile('periodexport.ui')):
     def filepath(self):
         return self.txtFile.text()
 
+class DlgCurveSelection(*utils.loadUiFile('curveselect.ui')):
+    def __init__(self, visible=[], hidden=[], parent=None):
+        super().__init__(parent=parent)
+        self.setupUi(self)
+
+        self.okButton.clicked.connect(self.accept)
+        self.cancelButton.clicked.connect(self.reject)
+
+        hiddenhash = {curve.name(): curve for curve in hidden}
+        self.curvehash = {curve.name(): curve for curve in visible}
+        self.curvehash.update(hiddenhash)
+
+        for curve in visible:
+            self.addCurve(curve.name(), checked=True)
+        for curve in hidden:
+            self.addCurve(curve.name(), checked=False)
+
+    def addCurve(self, name, checked):
+        item = QtGui.QListWidgetItem()
+        item.setText(name)
+        item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
+        if checked:
+            item.setCheckState(QtCore.Qt.Checked)
+        else:
+            item.setCheckState(QtCore.Qt.Unchecked)
+        self.lstCurves.addItem(item)
+
+    @property
+    def result(self):
+        items = self.lstCurves.findItems("", QtCore.Qt.MatchContains)
+        ischecked = lambda item: not (item.checkState() == QtCore.Qt.Unchecked)
+        checked = list(filter(ischecked, items))
+        unchecked = [item for item in items if item not in checked]
+        visible = [self.curvehash[item.text()] for item in checked]
+        invisible = [self.curvehash[item.text()] for item in unchecked]
+        return (visible, invisible)
+
 def askUserValue(param):
     if param.request is str:
         value, isok = QtGui.QInputDialog.getText(None, 'Enter value', param.description)

@@ -14,6 +14,7 @@ class PlotWidget(pg.PlotWidget):
         self.parent = parent
         self.plotdata = plotdata
         self.colors = utils.Colors()
+        self.hiddenitems = []
 
         if self.plotdata.xisdate:
             axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
@@ -33,7 +34,6 @@ class PlotWidget(pg.PlotWidget):
         allSeries = (self.plotdata.data[c] for c in self.plotdata.fields)
         for series in allSeries:
             self.addCurve(series)
-
 
     def appendData(self, newplotdata):
         # Make sure indices are compatible
@@ -117,6 +117,25 @@ class PlotWidget(pg.PlotWidget):
                                              value = initvalue, min = 1)
         if isok:
             self.plotdata.samplerate = Fs
+
+    def showCurveList(self):
+        dlgCurveSelection = dialogs.DlgCurveSelection(parent=self, visible=self.listDataItems(), hidden=self.hiddenitems)
+        if not dlgCurveSelection.exec_(): return
+        visible, invisible = dlgCurveSelection.result
+        newvisible = [item for item in visible if item not in self.listDataItems()]
+        newinvisible = [item for item in invisible if item not in self.hiddenitems]
+        self.hiddenitems = invisible
+        for item in newvisible:
+            self.addItem(item)
+            self.legend.addItem(item, item.name())
+            if item in self.hiddenitems:
+                self.hiddenitems.remove(item)
+
+        for item in newinvisible:
+            self.removeItem(item)
+            self.legend.removeItem(item.name())
+            if item not in self.hiddenitems:
+                self.hiddenitems.append(item)
 
     @property
     def vbrange(plotwidget):

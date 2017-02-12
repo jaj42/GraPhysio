@@ -27,6 +27,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addAction('&Quit', self.fileQuit, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
         self.menuData.addAction('&Set sampling rate', self.launchSetSamplerate,  QtCore.Qt.CTRL + QtCore.Qt.Key_S)
+        self.menuData.addAction('Visible &Curves',    self.launchCurveList,      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
         self.menuData.addAction('&Filter',            self.launchFilter,         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
         self.menuData.addAction('Cycle &Detection',   self.launchCycleDetection, QtCore.Qt.CTRL + QtCore.Qt.Key_D)
         self.menuData.addAction('Generate PU-&Loops', self.launchLoop,           QtCore.Qt.CTRL + QtCore.Qt.Key_L)
@@ -62,9 +63,16 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         tabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(plotdata.name))
         self.tabWidget.setCurrentIndex(tabindex)
 
+    def launchCurveList(self):
+        plotwidget = self.tabWidget.currentWidget()
+        plotwidget.showCurveList()
+
     def launchSetSamplerate(self):
         plotwidget = self.tabWidget.currentWidget()
-        plotwidget.askSamplerate()
+        try:
+            plotwidget.askSamplerate()
+        except AttributeError:
+            self.haserror.emit('Method not available for this plot.')
 
     def launchCycleDetection(self):
         dlgCycles = dialogs.DlgCycleDetection(parent = self)
@@ -140,7 +148,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         try:
             plotwidget.exporter.seriestocsv()
         except AttributeError:
-            self.haserror.emit('Method available for this plot.')
+            self.haserror.emit('Method not available for this plot.')
 
     def exportPeriod(self):
         plotwidget = self.tabWidget.currentWidget()
@@ -149,7 +157,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         try:
             plotwidget.exporter.periodstocsv()
         except AttributeError:
-            self.haserror.emit('Method available for this plot.')
+            self.haserror.emit('Method not available for this plot.')
 
     def exportCycles(self):
         plotwidget = self.tabWidget.currentWidget()
@@ -157,7 +165,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         try:
             plotwidget.exporter.cyclepointstocsv()
         except AttributeError:
-            self.haserror.emit('Method available for this plot.')
+            self.haserror.emit('Method not available for this plot.')
 
     def exportLoops(self):
         plotwidget = self.tabWidget.currentWidget()
@@ -165,7 +173,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         try:
             plotwidget.exporter.exportloops()
         except AttributeError:
-            self.haserror.emit('Method available for this plot.')
+            self.haserror.emit('Method not available for this plot.')
 
     def fileQuit(self):
         self.close()
