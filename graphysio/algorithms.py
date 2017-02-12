@@ -30,6 +30,7 @@ interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
 Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
            'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
            'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
+           'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum velocity (cm/s)', int)]),
            'Sphygmo TF' : Filter(name='tf', parameters=[])}
 
 def filter(curve, filtname, paramgetter):
@@ -73,6 +74,12 @@ def filter(curve, filtname, paramgetter):
         newname = "{}-{}Hz".format(oldseries.name, newsamplerate)
         newseries = pd.Series(resampled, index=newidx, name=newname)
         samplerate = newsamplerate
+    elif filt.name == 'dopplercut':
+        minvel, = parameters
+        notlow, = (oldseries < minvel).nonzero()
+        newname = "{}-{}+".format(oldseries.name, minvel)
+        newseries = oldseries.rename(newname)
+        newseries.iloc[notlow] = 0
     else:
         raise TypeError("Unknown filter.")
 
