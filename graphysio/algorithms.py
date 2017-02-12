@@ -20,18 +20,18 @@ class TF(object):
         (dnum, dden, dt) = signal.cont2discrete(sys, 1 / samplerate)
         return (np.squeeze(dnum), np.squeeze(dden))
 
-sphygmonum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873.0713084, 218273825.541909, 6489400920.14402]
-sphygmoden = [1, 180.289425270434, 174563.510125383, 17057258.6774222, 555352944.277185, 6493213494.43661]
-tfsphygmo = TF(sphygmonum, sphygmoden, name='Sphygmo TF')
+pulseheartnum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873.0713084, 218273825.541909, 6489400920.14402]
+pulseheartden = [1, 180.289425270434, 174563.510125383, 17057258.6774222, 555352944.277185, 6493213494.43661]
+tfpulseheart = TF(pulseheartnum, pulseheartden, name='PulseHeart TF')
 
-TFs = {tfsphygmo.name : tfsphygmo}
+TFs = {tfpulseheart.name : tfpulseheart}
 
 interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
 Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
            'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
            'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum velocity (cm/s)', int)]),
-           'Sphygmo TF' : Filter(name='tf', parameters=[])}
+           'PulseHeart TF' : Filter(name='tf', parameters=[])}
 
 def filter(curve, filtname, paramgetter):
     samplerate = curve.samplerate

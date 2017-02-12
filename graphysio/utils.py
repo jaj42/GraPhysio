@@ -50,7 +50,7 @@ class CsvRequest():
 class PlotData():
     def __init__(self, data = None,
                        fields = [],
-                       filepath  = ""):
+                       filepath = ""):
         self.data = data
         self.fields = fields
         self.filepath = filepath
