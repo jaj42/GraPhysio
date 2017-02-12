@@ -87,8 +87,8 @@ class PlotWidget(pg.PlotWidget):
     def addFiltered(self, oldcurve, filtername):
         newseries, newsamplerate = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
         if newseries is not None:
-            newcurve = self.addCurve(series = newseries,
-                                     pen    = oldcurve.pen.lighter())
+            #newcurve = self.addCurve(series=newseries, pen=oldcurve.pen.lighter())
+            newcurve = self.addCurve(series=newseries)
             newcurve.samplerate = newsamplerate
 
     def sigPointClicked(self, curve, points):
@@ -136,24 +136,13 @@ class CurveItem(pg.PlotDataItem):
         self.plotdata = plotdata
         self.feetitem = None
         self.pen = pen
-        self._samplerate = utils.estimateSampleRate(self.series)
+        self.samplerate = utils.estimateSampleRate(self.series)
         super().__init__(x    = self.series.index,
                          y    = self.series.values,
                          name = self.series.name,
                          pen  = self.pen,
                          antialias = True,
                          *args, **kwargs)
-
-    def setSamplerate(self, samplerate):
-        self._samplerate = samplerate
-
-    def getSamplerate(self):
-        if self._samplerate is not None:
-            return self._samplerate
-        else:
-            return self.plotdata.samplerate
-
-    samplerate = property(getSamplerate, setSamplerate)
 
 
 class FeetItem(pg.ScatterPlotItem):

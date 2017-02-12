@@ -54,14 +54,10 @@ class Reader(QtCore.QRunnable):
         data = data.dropna(axis='rows', how='all')
         data = data.sort_index()
 
-        # Provide an estimation of the sampling rate based on the index
-        samplerate = utils.estimateSampleRate(data)
-
         # Don't try requested fields that are empty
         fields = [f for f in self.csvrequest.yfields if f in data.columns]
 
         plotdata = utils.PlotData(data       = data,
                                   fields     = fields,
-                                  samplerate = samplerate,
                                   filepath   = self.csvrequest.filepath)
         return plotdata

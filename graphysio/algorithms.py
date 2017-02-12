@@ -142,8 +142,9 @@ def findFlowCycles(curve):
     except IndexError as e:
         raise TypeError("No cycle detected: {}".format(e))
 
-    # Filter noise cycles which are shorter than 200ms
-    minSystoleLength = 2e6 * samplerate
+    # Filter noise cycles which are shorter than 150ms
+    #startidx, stopidx = zip(*zip(cycleStarts.index, cycleStops.index))
+    minSystoleLength = 15e5 * samplerate
     def notShortCycles():
         for (startidx, stopidx) in zip(cycleStarts.index, cycleStops.index):
             if stopidx - startidx >= minSystoleLength:

@@ -50,11 +50,9 @@ class CsvRequest():
 class PlotData():
     def __init__(self, data = None,
                        fields = [],
-                       samplerate = None,
                        filepath  = ""):
         self.data = data
         self.fields = fields
-        self.samplerate = samplerate
         self.filepath = filepath
 
     @property
