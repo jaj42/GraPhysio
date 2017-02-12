@@ -106,16 +106,6 @@ class PlotWidget(pg.PlotWidget):
             for curve in self.feetitems.values():
                 curve.removeSelection()
 
-    def askSamplerate(self):
-        initvalue = self.plotdata.samplerate
-        if initvalue is None:
-            initvalue = 100
-
-        Fs, isok = QtGui.QInputDialog.getInt(self.parent, 'Enter sampling rate', 'Sampling rate in Hz',
-                                             value = initvalue, min = 1)
-        if isok:
-            self.plotdata.samplerate = Fs
-
     def showCurveList(self):
         dlgCurveSelection = dialogs.DlgCurveSelection(parent=self, visible=self.listDataItems(), hidden=self.hiddenitems)
         if not dlgCurveSelection.exec_(): return

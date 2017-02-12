@@ -26,7 +26,6 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.fileQuit, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
-        self.menuData.addAction('&Set sampling rate', self.launchSetSamplerate,  QtCore.Qt.CTRL + QtCore.Qt.Key_S)
         self.menuData.addAction('Visible &Curves',    self.launchCurveList,      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
         self.menuData.addAction('&Filter',            self.launchFilter,         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
         self.menuData.addAction('Cycle &Detection',   self.launchCycleDetection, QtCore.Qt.CTRL + QtCore.Qt.Key_D)
@@ -66,13 +65,6 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
     def launchCurveList(self):
         plotwidget = self.tabWidget.currentWidget()
         plotwidget.showCurveList()
-
-    def launchSetSamplerate(self):
-        plotwidget = self.tabWidget.currentWidget()
-        try:
-            plotwidget.askSamplerate()
-        except AttributeError:
-            self.haserror.emit('Method not available for this plot.')
 
     def launchCycleDetection(self):
         dlgCycles = dialogs.DlgCycleDetection(parent = self)
