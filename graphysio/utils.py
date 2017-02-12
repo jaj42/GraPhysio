@@ -12,11 +12,6 @@ class FootType(Enum):
     pressure = 'Pressure'
     velocity = 'Velocity'
 
-class FilterType(Enum):
-    none      = 'None'
-    tfcombi   = 'TF Combi'
-    tfsphygmo = 'TF Sphygmo'
-
 class CsvRequest():
     def __init__(self, filepath  = "",
                        seperator = ",",
