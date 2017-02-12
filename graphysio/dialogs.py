@@ -160,7 +160,6 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         self.csvrequest.decimal = self.txtDecimal.currentText()
         self.csvrequest.datetime_format = self.txtDateTime.currentText()
         self.csvrequest.droplines = self.spnLinedrop.value()
-        self.csvrequest.loadall = not self.chkLoadNotAll.isChecked()
         self.accept()
 
 

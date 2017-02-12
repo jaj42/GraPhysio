@@ -25,7 +25,6 @@ class CsvRequest():
                        yfields = [],
                        xisdate = False,
                        droplines = 0,
-                       loadall = False,
                        samplerate = None,
                        datetime_format = "%Y-%m-%d %H:%M:%S,%f"):
         self.filepath = filepath
@@ -33,7 +32,6 @@ class CsvRequest():
         self.decimal = decimal
         self.xfield  = xfield
         self.yfields = yfields
-        self.loadall = loadall
         self.datetime_format = datetime_format
         self.xisdate = xisdate
         self.droplines = droplines

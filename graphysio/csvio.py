@@ -22,15 +22,9 @@ class Reader(QtCore.QRunnable):
             self.sigdata.emit(data)
 
     def getdata(self):
-        if self.csvrequest.loadall:
-            # usecols = None loads all columns
-            usecols = None
-        else:
-            usecols = self.csvrequest.fields
-
         data = pd.read_csv(self.csvrequest.filepath,
                            sep       = self.csvrequest.seperator,
-                           usecols   = usecols,
+                           usecols   = self.csvrequest.fields,
                            decimal   = self.csvrequest.decimal,
                            index_col = False,
                            skiprows  = self.csvrequest.droplines,

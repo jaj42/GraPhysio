@@ -141,16 +141,6 @@
        </item>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="QCheckBox" name="chkLoadNotAll">
-       <property name="text">
-        <string>Load only selected Series</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
@@ -235,13 +225,6 @@
          <widget class="QComboBox" name="lstVX">
           <property name="maxCount">
            <number>4</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>(Check to interpret as Date/Time)</string>
           </property>
          </widget>
         </item>
