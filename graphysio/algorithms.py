@@ -34,7 +34,7 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
 
 def filter(curve, filtname, paramgetter):
     samplerate = curve.samplerate
-    oldseries = curve.series.dropna()
+    oldseries = curve.series
     if samplerate is None:
         raise TypeError("Samplerate is not set and could not be inferred.")
 
@@ -79,7 +79,7 @@ def filter(curve, filtname, paramgetter):
     return (newseries, samplerate)
 
 def findPressureFeet(curve):
-    series = curve.series.dropna()
+    series = curve.series
     samplerate = curve.samplerate
     if samplerate is None:
         raise TypeError("Samplerate is not set and could not be inferred.")
@@ -128,7 +128,7 @@ def findPressureFeet(curve):
     return series[list(locateMaxima())]
 
 def findFlowCycles(curve):
-    series = curve.series.dropna()
+    series = curve.series
     samplerate = curve.samplerate
     bincycles = (series > series.min()).astype(int)
     idxstarts, = (bincycles.diff().shift(-1) > 0).nonzero()

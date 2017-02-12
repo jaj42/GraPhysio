@@ -31,18 +31,20 @@ class Reader(QtCore.QRunnable):
                            encoding  = 'latin1',
                            engine    = 'c')
 
-        if self.csvrequest.xisdate:
+        if self.csvrequest.generatex:
+            data.index = 1e9 * data.index / self.csvrequest.samplerate
+        else:
             dtformat = self.csvrequest.datetime_format
             if dtformat == '<seconds>':
-                timestamp = pd.to_datetime(data[self.csvrequest.datefield] * 1e9, unit = 'ns')
+                timestamp = pd.to_datetime(data[self.csvrequest.dtfield] * 1e9, unit = 'ns')
             elif dtformat == '<milliseconds>':
-                timestamp = pd.to_datetime(data[self.csvrequest.datefield] * 1e6, unit = 'ns')
+                timestamp = pd.to_datetime(data[self.csvrequest.dtfield] * 1e6, unit = 'ns')
             elif dtformat == '<microseconds>':
-                timestamp = pd.to_datetime(data[self.csvrequest.datefield] * 1e3, unit = 'ns')
+                timestamp = pd.to_datetime(data[self.csvrequest.dtfield] * 1e3, unit = 'ns')
             elif dtformat == '<nanoseconds>':
-                timestamp = pd.to_datetime(data[self.csvrequest.datefield], unit = 'ns')
+                timestamp = pd.to_datetime(data[self.csvrequest.dtfield], unit = 'ns')
             else:
-                timestamp = pd.to_datetime(data[self.csvrequest.datefield], format = dtformat)
+                timestamp = pd.to_datetime(data[self.csvrequest.dtfield], format = dtformat)
             timestamp = timestamp.astype(np.int64)
             data = data.set_index([timestamp])
 
@@ -52,11 +54,8 @@ class Reader(QtCore.QRunnable):
         data = data.dropna(axis='rows', how='all')
         data = data.sort_index()
 
-        if self.csvrequest.xisdate:
-            # Provide a gross estimation of the sampling rate based on the index
-            samplerate = utils.estimateSampleRate(data)
-        else:
-            samplerate = None
+        # Provide an estimation of the sampling rate based on the index
+        samplerate = utils.estimateSampleRate(data)
 
         # Don't try requested fields that are empty
         fields = [f for f in self.csvrequest.yfields if f in data.columns]
@@ -64,6 +63,5 @@ class Reader(QtCore.QRunnable):
         plotdata = utils.PlotData(data       = data,
                                   fields     = fields,
                                   samplerate = samplerate,
-                                  xisdate    = self.csvrequest.xisdate,
                                   filepath   = self.csvrequest.filepath)
         return plotdata

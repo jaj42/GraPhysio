@@ -16,33 +16,26 @@ class CsvRequest():
     def __init__(self, filepath  = "",
                        seperator = ",",
                        decimal   = ".",
-                       xfield  = None,
+                       dtfield  = None,
                        yfields = [],
-                       xisdate = False,
+                       datetime_format = "%Y-%m-%d %H:%M:%S,%f",
                        droplines = 0,
-                       samplerate = None,
-                       datetime_format = "%Y-%m-%d %H:%M:%S,%f"):
+                       generatex = False,
+                       samplerate = None):
         self.filepath = filepath
         self.seperator = seperator
         self.decimal = decimal
-        self.xfield  = xfield
+        self.dtfield = dtfield
         self.yfields = yfields
         self.datetime_format = datetime_format
-        self.xisdate = xisdate
         self.droplines = droplines
+        self.generatex = generatex
         self.samplerate = samplerate
 
     @property
     def fields(self):
-        xfields = [] if self.xfield is None else [self.xfield]
-        return xfields + self.yfields
-
-    @property
-    def datefield(self):
-        if not self.xisdate:
-            return None
-        else:
-            return self.xfield
+        dtfields = [] if self.dtfield is None else [self.dtfield]
+        return dtfields + self.yfields
 
     @property
     def name(self):
@@ -58,12 +51,10 @@ class PlotData():
     def __init__(self, data = None,
                        fields = [],
                        samplerate = None,
-                       xisdate = False,
                        filepath  = ""):
         self.data = data
         self.fields = fields
         self.samplerate = samplerate
-        self.xisdate = xisdate
         self.filepath = filepath
 
     @property

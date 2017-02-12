@@ -116,8 +116,6 @@ class PULoop(object):
     def __init__(self, u, p):
         self.__angles = None
         self.__cardpoints = None
-        u = u.dropna()
-        p = p.dropna()
         # Ensure both arrays have the same length
         maxidx = min(len(u), len(p)) - 1
         self.u = u.values[0:maxidx]

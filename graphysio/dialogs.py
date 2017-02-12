@@ -102,7 +102,6 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         selection = self.lstVAll.selectedIndexes()
         rowindex = selection[0].row()
         row = self.lstAll.takeRow(rowindex)
-        self.itemCheckable(row, True)
         self.lstX.appendRow(row)
 
     def moveToY(self):
@@ -117,7 +116,6 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
             row = self.lstX.takeRow(0)
         except IndexError:
             return
-        self.itemCheckable(row, False)
         self.lstAll.appendRow(row)
 
     def delFromY(self):
@@ -128,26 +126,9 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
             row = rowindexes[0].row()
             self.lstAll.appendRow(self.lstY.takeRow(row))
 
-    def itemCheckable(self, row, checkable):
-            field = row[0]
-            if checkable:
-                field.setFlags(field.flags() | QtCore.Qt.ItemIsUserCheckable)
-                field.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)
-            else:
-                field.setFlags(field.flags() ^ QtCore.Qt.ItemIsUserCheckable)
-                field.setData(None, QtCore.Qt.CheckStateRole)
-
     def loadPlot(self):
         yRows = [i.text() for i in self.lstY.findItems("", QtCore.Qt.MatchContains)]
         xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
-        xState = [i.checkState() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
-        for s in xState:
-            self.csvrequest.xisdate = s > QtCore.Qt.Unchecked
-            break
-        if len(xRows) > 0:
-            self.csvrequest.xfield = xRows[0]
-        else:
-            self.csvrequest.xfield = None
 
         seperator = self.txtSep.currentText()
         if seperator == '<tab>':
@@ -155,6 +136,13 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         else:
             self.csvrequest.seperator = seperator
 
+        self.csvrequest.generatex = (self.chkGenX.checkState() > QtCore.Qt.Unchecked)
+        if self.csvrequest.generatex:
+            self.csvrequest.dtfield = None
+        else:
+            self.csvrequest.dtfield = xRows[0]
+
+        self.csvrequest.samplerate = self.spnFs.value()
         self.csvrequest.yfields = yRows
         self.csvrequest.filepath = self.txtFile.text()
         self.csvrequest.decimal = self.txtDecimal.currentText()

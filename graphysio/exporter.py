@@ -35,8 +35,7 @@ class TsExporter():
         self.dircache = os.path.dirname(filepath)
         self.updaterange()
         data = self.plotdata.data.ix[self.xmin : self.xmax]
-        datanona = data.dropna(how = 'all', subset = self.plotdata.fields)
-        datanona.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
+        data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
 
     def periodstocsv(self):
         self.updaterange()

@@ -16,10 +16,7 @@ class PlotWidget(pg.PlotWidget):
         self.colors = utils.Colors()
         self.hiddenitems = []
 
-        if self.plotdata.xisdate:
-            axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
-        else:
-            axisItems = None
+        axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
 
         super().__init__(parent=parent, axisItems=axisItems, background='w')
 
@@ -108,7 +105,8 @@ class PlotWidget(pg.PlotWidget):
 
     def showCurveList(self):
         dlgCurveSelection = dialogs.DlgCurveSelection(parent=self, visible=self.listDataItems(), hidden=self.hiddenitems)
-        if not dlgCurveSelection.exec_(): return
+        if not dlgCurveSelection.exec_():
+            return
         visible, invisible = dlgCurveSelection.result
         newvisible = [item for item in visible if item not in self.listDataItems()]
         newinvisible = [item for item in invisible if item not in self.hiddenitems]
@@ -134,11 +132,11 @@ class PlotWidget(pg.PlotWidget):
 
 class CurveItem(pg.PlotDataItem):
     def __init__(self, series, plotdata, pen=QtGui.QColor(QtCore.Qt.black), *args, **kwargs):
-        self.series = series
+        self.series = series.dropna()
         self.plotdata = plotdata
         self.feetitem = None
-        self._samplerate = None
         self.pen = pen
+        self._samplerate = utils.estimateSampleRate(self.series)
         super().__init__(x    = self.series.index,
                          y    = self.series.values,
                          name = self.series.name,
