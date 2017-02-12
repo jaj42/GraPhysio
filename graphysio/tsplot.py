@@ -35,13 +35,18 @@ class PlotWidget(pg.PlotWidget):
         for series in allSeries:
             self.addCurve(series)
 
-    def appendData(self, newplotdata):
+    def appendData(self, newplotdata, dorealign):
         # Make sure indices are compatible
         newidxtype = type(newplotdata.data.index)
         oldidxtype = type(self.plotdata.data.index)
         if oldidxtype is not newidxtype:
             self.parent.haserror.emit("Index type mismatch: {} vs. {}".format(newidxtype, oldidxtype))
             return
+
+        # Timeshift new curves to make the beginnings coincide
+        if dorealign:
+            offset = self.plotdata.data.index[0] - newplotdata.data.index[0]
+            newplotdata.data.index += offset
 
         # Merge plotdata.data with current
         self.plotdata.data = pd.concat([self.plotdata.data, newplotdata.data], axis=1).sort_index()

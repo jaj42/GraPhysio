@@ -110,3 +110,9 @@ def loadUiFile(uiFile):
     uiPath = os.path.join(uiBasePath, uiFile)
     uiClasses = loadUiType(uiPath)
     return uiClasses
+
+def estimateSampleRate(series):
+    idx = series.index.values
+    timedelta = (idx[-1] - idx[0]) * 1e-9
+    fs = len(idx) / timedelta
+    return int(round(fs))

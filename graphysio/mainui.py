@@ -93,6 +93,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         choices = dlgFilter.result
         plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
+            if choice == 'None':
+                continue
             try:
                 curve = plotwidget.curves[curvename]
                 plotwidget.addFiltered(curve, choice)
@@ -132,7 +134,12 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         if plotwidget is None:
             self.haserror.emit('No plot selected.')
             return
-        plotwidget.appendData(plotdata)
+
+        qmsg = "Timeshift new curves to make the beginnings coincide?"
+        reply = QtGui.QMessageBox.question(self, 'Append to plot', qmsg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        dorealign = (reply == QtGui.QMessageBox.Yes)
+
+        plotwidget.appendData(plotdata, dorealign)
         self.statusBar.showMessage("Loading... done")
 
     def createNewPlotWithData(self, plotdata):

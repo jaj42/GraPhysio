@@ -33,9 +33,6 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Sphygmo TF' : Filter(name='tf', parameters=[])}
 
 def filter(curve, filtname, paramgetter):
-    if filtname == 'None' or filtname is None:
-        return None
-
     samplerate = curve.samplerate
     oldseries = curve.series.dropna()
     if samplerate is None:

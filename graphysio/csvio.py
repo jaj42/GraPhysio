@@ -54,7 +54,7 @@ class Reader(QtCore.QRunnable):
 
         if self.csvrequest.xisdate:
             # Provide a gross estimation of the sampling rate based on the index
-            samplerate = estimateSampleRate(data)
+            samplerate = utils.estimateSampleRate(data)
         else:
             samplerate = None
 
@@ -67,10 +67,3 @@ class Reader(QtCore.QRunnable):
                                   xisdate    = self.csvrequest.xisdate,
                                   filepath   = self.csvrequest.filepath)
         return plotdata
-
-
-def estimateSampleRate(series):
-    idx = series.index.values
-    timedelta = (idx[-1] - idx[0]) * 1e-9
-    fs = len(idx) / timedelta
-    return int(round(fs))

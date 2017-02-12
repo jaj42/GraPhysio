@@ -53,9 +53,9 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
                 # XXX Only keep visible cycles. Need to optimize.
                 continue
 
-            loopu = u[ubegin:uend]
+            loopu = u.ix[ubegin:uend]
             duration = (uend - ubegin) * 2
-            loopp = p[pf:pf+duration]
+            loopp = p.ix[pf:pf+duration]
             self.loops.append(PULoop(loopu, loopp))
 
         if len(self.loops) > 0:
