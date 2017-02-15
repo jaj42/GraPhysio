@@ -144,10 +144,10 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         plotwidget = self.tabWidget.currentWidget()
         if plotwidget is None:
             return
-        #try:
-        plotwidget.exporter.seriestocsv()
-        #except AttributeError:
-        #    self.haserror.emit('Method not available for this plot.')
+        try:
+            plotwidget.exporter.seriestocsv()
+        except AttributeError:
+            self.haserror.emit('Method not available for this plot.')
 
     def exportPeriod(self):
         plotwidget = self.tabWidget.currentWidget()

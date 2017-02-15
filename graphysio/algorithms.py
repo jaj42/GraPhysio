@@ -112,6 +112,7 @@ def findPressureFeet(curve):
         return (risingStarts, risingStops)
 
     for quantcoef in [3, 2, 1]:
+        # Try again with smaller window if we find nothing
         risingStarts, risingStops = performWindowing(quantcoef=quantcoef)
         try:
             risingStops = risingStops[risingStops > risingStarts[0]]
@@ -132,7 +133,8 @@ def findPressureFeet(curve):
             else:
                 yield maximum
 
-    return series[list(locateMaxima())]
+    cycleStarts = series[list(locateMaxima())]
+    return cycleStarts
 
 def findFlowCycles(curve):
     series = curve.series
@@ -150,7 +152,6 @@ def findFlowCycles(curve):
         raise TypeError("No cycle detected: {}".format(e))
 
     # Filter noise cycles which are shorter than 150ms
-    #startidx, stopidx = zip(*zip(cycleStarts.index, cycleStops.index))
     minSystoleLength = 15e5 * samplerate
     def notShortCycles():
         for (startidx, stopidx) in zip(cycleStarts.index, cycleStops.index):

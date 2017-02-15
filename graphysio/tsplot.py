@@ -1,5 +1,5 @@
 import sys
-from enum import Enum
+from itertools import cycle, islice
 
 import numpy as np
 import pandas as pd
@@ -69,25 +69,20 @@ class PlotWidget(pg.PlotWidget):
         return curve
 
     def addFeet(self, curve, foottype):
-        if foottype is utils.FootType.pressure:
-            feet = pressureFeetItem(curve)
-            curve.feetitem = feet
-            feet.sigClicked.connect(self.sigPointClicked)
-            self.addItem(feet)
-        elif foottype is utils.FootType.velocity:
-            starts, stops = velocityFeetItems(curve)
-            curve.feetitem = (starts, stops)
-            starts.sigClicked.connect(self.sigPointClicked)
-            self.addItem(starts)
-            stops.sigClicked.connect(self.sigPointClicked)
-            self.addItem(stops)
+        if foottype is utils.FootType.velocity:
+            starts, stops = algorithms.findFlowCycles(curve)
         else:
-            return
+            starts = algorithms.findPressureFeet(curve)
+            stops = None
+
+        feet = FeetItem(curve, starts, stops)
+        curve.feetitem = feet
+        feet.sigClicked.connect(self.sigPointClicked)
+        self.addItem(feet)
 
     def addFiltered(self, oldcurve, filtername):
         newseries, newsamplerate = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
         if newseries is not None:
-            #newcurve = self.addCurve(series=newseries, pen=oldcurve.pen.lighter())
             newcurve = self.addCurve(series=newseries)
             newcurve.samplerate = newsamplerate
 
@@ -146,27 +141,47 @@ class CurveItem(pg.PlotDataItem):
 
 
 class FeetItem(pg.ScatterPlotItem):
-    def __init__(self, feet, curve, namesuffix='feet', *args, **kwargs):
-        pen = curve.opts['pen']
+    symPoint, symStart, symStop = ('o', 't', 's')
+
+    def __init__(self, curve, starts, stops=None, namesuffix='feet', *args, **kwargs):
         self.selected = []
         self.curve = curve
+        self.hasstops = (stops is not None)
+        pen = curve.opts['pen']
         self._name = "{}-{}".format(curve.name(), namesuffix)
-        super().__init__(x    = feet.index,
-                         y    = feet.values,
-                         pen  = pen,
+        if stops is None:
+            symbols = [self.symPoint]
+            feet = starts
+        else:
+            symbols = [self.symStart, self.symStop]
+            feet = pd.concat([starts, stops]).sort_index()
+
+        symlist = list(islice(cycle(symbols), len(feet)))
+        super().__init__(x      = feet.index,
+                         y      = feet.values,
+                         pen    = pen,
+                         symbol = symlist,
                          *args, **kwargs)
 
     def name(self):
         return self._name
 
     @property
-    def feet(self):
-        time = [point.pos().x() for point in self.points()]
-
+    def starts(self):
+        time = [point.pos().x() for point in self.points() if point.symbol() in [self.symPoint, self.symStart]]
         # Sometimes points are a bit off due to rounding errors
         indices = [self.curve.series.index.get_loc(t, method='nearest') for t in time]
         elements = self.curve.series.iloc[indices]
+        return elements.rename(self.name())
 
+    @property
+    def stops(self):
+        if not self.hasstops:
+            return None
+        time = [point.pos().x() for point in self.points() if point.symbol() == self.symStop]
+        # Sometimes points are a bit off due to rounding errors
+        indices = [self.curve.series.index.get_loc(t, method='nearest') for t in time]
+        elements = self.curve.series.iloc[indices]
         return elements.rename(self.name())
 
     def isPointSelected(self, point):
@@ -190,23 +205,12 @@ class FeetItem(pg.ScatterPlotItem):
             except ValueError as e:
                 print("Point not found: {}".format(e), file=sys.stderr)
                 continue
-        self.setData(pos = [(p.pos().x(), p.pos().y()) for p in datapoints])
+        spots = [{'pos' : p.pos(), 'symbol' : p.symbol()} for p in datapoints]
+        self.setData(spots = spots)
         self.selected = []
 
     def removeSelection(self):
         return self.removePoints(self.selected)
-
-
-def pressureFeetItem(curve):
-    feet = algorithms.findPressureFeet(curve)
-    return FeetItem(feet, curve)
-
-
-def velocityFeetItems(curve):
-    starts, stops = algorithms.findFlowCycles(curve)
-    startitem = FeetItem(starts, curve, namesuffix='velstart', symbol='t')
-    stopitem  = FeetItem(stops,  curve, namesuffix='velstop',  symbol='s')
-    return (startitem, stopitem)
 
 
 class TimeAxisItem(pg.AxisItem):

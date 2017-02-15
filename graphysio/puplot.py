@@ -19,10 +19,10 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         super().__init__(parent=parent)
         self.setupUi(self)
 
-        xmin, xmax = subsetrange
+        self.xmin, self.xmax = subsetrange
         self.parent = parent
-
         self.plotdata = plotdata
+
         self.exporter = exporter.PuExporter(self)
 
         self.btnPrev.clicked.connect(self.prevloop)
@@ -40,27 +40,40 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         plotitem.addItem(self.scatteritem)
         plotitem.addItem(self.curveitem)
 
-        if p.feetitem is None or u.feetitem is None:
-            self.parent.haserror.emit('No feet for this curve')
-            return
-
-        pfeet = p.feetitem.feet.index
-        uperiods = [fi.feet.index for fi in u.feetitem]
-
-        u = u.series; p = p.series
-        for ubegin, uend, pf in zip(*uperiods, pfeet):
-            if ubegin < xmin or uend > xmax:
-                # XXX Only keep visible cycles. Need to optimize.
-                continue
-
-            loopu = u.ix[ubegin:uend]
-            duration = (uend - ubegin) * 2
-            loopp = p.ix[pf:pf+duration]
-            self.loops.append(PULoop(loopu, loopp))
+        self.initloopdata(u, p)
 
         if len(self.loops) > 0:
             self.lblTot.setText(str(len(self.loops)))
             self.renderloop(0)
+
+    def initloopdata(self, u, p):
+        if p.feetitem is None or u.feetitem is None:
+            self.parent.haserror.emit('No feet for this curve')
+            return
+
+        pfeet   = p.feetitem.starts.index
+        ubegins = u.feetitem.starts.index
+
+        uendseries = u.feetitem.stops
+
+        if uendseries is None:
+            _, *tailbegins = ubegins
+            periods = zip(ubegins, tailbegins)
+            tdiff = lambda t: t[1] - t[0]
+            durations = map(tdiff, periods)
+        else:
+            uends = uendseries.index
+            durations = uends - ubegins
+
+        us = u.series; ps = p.series
+        for ubegin, pfoot, duration in zip(ubegins, pfeet, durations):
+            if ubegin < self.xmin or ubegin > self.xmax:
+                # XXX Only keep visible cycles. Need to optimize.
+                continue
+
+            loopu = us.ix[ubegin:ubegin+duration]
+            loopp = ps.ix[pfoot:pfoot+duration]
+            self.loops.append(PULoop(loopu, loopp))
 
     def renderloop(self, idx=None):
         if idx is None:
