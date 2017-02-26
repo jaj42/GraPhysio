@@ -52,7 +52,7 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             self.parent.haserror.emit('No feet for this curve')
             return
 
-        def clip(self, vec):
+        def clip(vec):
             # Only keep visible data based on subsetrange
             cond = (vec > self.xmin) & (vec < self.xmax)
             return vec[cond]
@@ -67,6 +67,9 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             tdiff = lambda t: t[1] - t[0]
             durations = map(tdiff, periods)
         else:
+            while uends[0] < ubegins[0]:
+                # Handle the case where we start in the middle of a cycle
+                uends = uends[1:]
             durations = uends - ubegins
 
         us = u.series; ps = p.series
