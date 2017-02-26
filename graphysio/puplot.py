@@ -46,31 +46,31 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             self.lblTot.setText(str(len(self.loops)))
             self.renderloop(0)
 
+
     def initloopdata(self, u, p):
         if p.feetitem is None or u.feetitem is None:
             self.parent.haserror.emit('No feet for this curve')
             return
 
-        pfeet   = p.feetitem.starts.index
-        ubegins = u.feetitem.starts.index
+        def clip(self, vec):
+            # Only keep visible data based on subsetrange
+            cond = (vec > self.xmin) & (vec < self.xmax)
+            return vec[cond]
 
-        uendseries = u.feetitem.stops
+        pfeet   = clip(p.feetitem.starts.index)
+        ubegins = clip(u.feetitem.starts.index)
+        uends   = clip(u.feetitem.stops.index) if u.feetitem.stops is not None else None
 
-        if uendseries is None:
+        if uends is None:
             _, *tailbegins = ubegins
             periods = zip(ubegins, tailbegins)
             tdiff = lambda t: t[1] - t[0]
             durations = map(tdiff, periods)
         else:
-            uends = uendseries.index
             durations = uends - ubegins
 
         us = u.series; ps = p.series
         for ubegin, pfoot, duration in zip(ubegins, pfeet, durations):
-            if ubegin < self.xmin or ubegin > self.xmax:
-                # XXX Only keep visible cycles. Need to optimize.
-                continue
-
             loopu = us.ix[ubegin:ubegin+duration]
             loopp = ps.ix[pfoot:pfoot+duration]
             self.loops.append(PULoop(loopu, loopp))
