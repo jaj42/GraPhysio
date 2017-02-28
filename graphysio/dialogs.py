@@ -144,7 +144,7 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
             self.csvrequest.seperator = seperator
 
         self.csvrequest.generatex = (self.chkGenX.checkState() > QtCore.Qt.Unchecked)
-        if self.csvrequest.generatex:
+        if self.csvrequest.generatex or len(xRows) < 1:
             self.csvrequest.dtfield = None
         else:
             self.csvrequest.dtfield = xRows[0]

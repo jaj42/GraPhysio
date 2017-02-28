@@ -92,27 +92,28 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             curloop = self.loops[idx]
         except IndexError as e:
             self.parent.haserror.emit('Missing loop: {}'.format(e))
-        else:
-            self.lblIdx.setText(str(idx + 1))
+            return 
 
-            round1 = partial(round, ndigits=1)
-            alpha, beta, gala = map(round1, curloop.angles)
-            self.lblAlpha.setText(str(alpha))
-            self.lblBeta.setText(str(beta))
-            self.lblGala.setText(str(gala))
+        self.lblIdx.setText(str(idx + 1))
 
-            card = curloop.cardpoints
-            cardx, cardy = zip(*card)
+        round1 = partial(round, ndigits=1)
+        alpha, beta, gala = map(round1, curloop.angles)
+        self.lblAlpha.setText(str(alpha))
+        self.lblBeta.setText(str(beta))
+        self.lblGala.setText(str(gala))
 
-            # Set visible range with quadratic aspect ratio
-            bottomleft = QtCore.QPointF(card.A.x, card.A.y)
-            size = max(card.B.x - card.A.x, card.C.y - card.A.y)
-            qsize = QtCore.QSizeF(size, size)
-            rect = QtCore.QRectF(bottomleft, qsize)
-            self.graphicsView.setRange(rect=rect)
+        card = curloop.cardpoints
+        cardx, cardy = zip(*card)
 
-            self.curveitem.setData(curloop.u, curloop.p, pen=self.pen)
-            self.scatteritem.setData(np.array(cardx), np.array(cardy))
+        # Set visible range with quadratic aspect ratio
+        bottomleft = QtCore.QPointF(card.A.x, card.A.y)
+        size = max(card.B.x - card.A.x, card.C.y - card.A.y)
+        qsize = QtCore.QSizeF(size, size)
+        rect = QtCore.QRectF(bottomleft, qsize)
+        self.graphicsView.setRange(rect=rect)
+
+        self.curveitem.setData(curloop.u, curloop.p, pen=self.pen)
+        self.scatteritem.setData(np.array(cardx), np.array(cardy))
         
     def prevloop(self):
         idx = self.curidx - 1
