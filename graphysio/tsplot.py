@@ -171,9 +171,8 @@ class FeetItem(pg.ScatterPlotItem):
     @property
     def starts(self):
         time = [point.pos().x() for point in self.points() if point.symbol() in [self.symPoint, self.symStart]]
-        # Sometimes points are a bit off due to rounding errors
-        indices = [self.curve.series.index.get_loc(t, method='nearest') for t in time]
-        elements = self.curve.series.iloc[indices]
+        indices = np.array(time, dtype=np.int64)
+        elements = self.curve.series.ix[indices]
         return elements.rename(self.name())
 
     @property
@@ -181,9 +180,8 @@ class FeetItem(pg.ScatterPlotItem):
         if not self.hasstops:
             return None
         time = [point.pos().x() for point in self.points() if point.symbol() == self.symStop]
-        # Sometimes points are a bit off due to rounding errors
-        indices = [self.curve.series.index.get_loc(t, method='nearest') for t in time]
-        elements = self.curve.series.iloc[indices]
+        indices = np.array(time, dtype=np.int64)
+        elements = self.curve.series.ix[indices]
         return elements.rename(self.name())
 
     def isPointSelected(self, point):

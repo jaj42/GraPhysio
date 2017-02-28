@@ -32,7 +32,7 @@ class Reader(QtCore.QRunnable):
                            engine    = 'c')
 
         if self.csvrequest.generatex:
-            data.index = 1e9 * data.index / self.csvrequest.samplerate
+            data.index = (1e9 * data.index / self.csvrequest.samplerate).astype(np.int64)
         else:
             dtformat = self.csvrequest.datetime_format
             if dtformat == '<seconds>':
