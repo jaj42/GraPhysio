@@ -69,7 +69,9 @@ class PlotWidget(pg.PlotWidget):
         return curve
 
     def addFeet(self, curve, foottype):
-        if foottype is utils.FootType.velocity:
+        if foottype is utils.FootType.none:
+            return
+        elif foottype is utils.FootType.velocity:
             starts, stops = algorithms.findFlowCycles(curve)
         else:
             starts = algorithms.findPressureFeet(curve)
