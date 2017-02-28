@@ -71,16 +71,13 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         uends   = clip(u.feetitem.stops.index) if u.feetitem.stops is not None else None
 
         if uends is None:
-            _, *tailbegins = ubegins
-            periods = zip(ubegins, tailbegins)
-            tdiff = lambda t: t[1] - t[0]
-            durations = map(tdiff, periods)
-        else:
-            # Handle the case where we start in the middle of a cycle
-            while uends[0] <= ubegins[0]:
-                uends = uends[1:]
-            ubegins, uends = truncatevec([ubegins, uends])
-            durations = uends - ubegins
+            uends = ubegins[1:]
+
+        # Handle the case where we start in the middle of a cycle
+        while uends[0] <= ubegins[0]:
+            uends = uends[1:]
+        ubegins, uends = truncatevec([ubegins, uends])
+        durations = uends - ubegins
 
         us = u.series; ps = p.series
         for ubegin, pfoot, duration in zip(ubegins, pfeet, durations):
