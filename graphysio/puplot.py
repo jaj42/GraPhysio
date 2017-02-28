@@ -14,6 +14,15 @@ Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
 Angles    = namedtuple('Angles', ['alpha', 'beta', 'gala'])
 
 
+
+def truncatevec(vecs):
+    # Ensure all vectors have the same length by truncating the end
+    # Not feeling so well about this function
+    lengths = map(len, vecs)
+    maxidx = min(lengths) - 1
+    newvecs = [vec[0:maxidx] for vec in vecs]
+    return newvecs
+
 class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
     def __init__(self, u, p, plotdata, subsetrange=None, parent=None):
         super().__init__(parent=parent)
@@ -67,9 +76,10 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             tdiff = lambda t: t[1] - t[0]
             durations = map(tdiff, periods)
         else:
-            while uends[0] < ubegins[0]:
-                # Handle the case where we start in the middle of a cycle
+            # Handle the case where we start in the middle of a cycle
+            while uends[0] <= ubegins[0]:
                 uends = uends[1:]
+            ubegins, uends = truncatevec([ubegins, uends])
             durations = uends - ubegins
 
         us = u.series; ps = p.series
@@ -132,10 +142,7 @@ class PULoop(object):
     def __init__(self, u, p):
         self.__angles = None
         self.__cardpoints = None
-        # Ensure both arrays have the same length
-        maxidx = min(len(u), len(p)) - 1
-        self.u = u.values[0:maxidx]
-        self.p = p.values[0:maxidx]
+        self.u, self.p = truncatevec([u.values, p.values])
 
     @property
     def cardpoints(self):
