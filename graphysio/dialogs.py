@@ -35,6 +35,7 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         self.btnToY.clicked.connect(self.moveToY)
         self.btnRemoveX.clicked.connect(self.delFromX)
         self.btnRemoveY.clicked.connect(self.delFromY)
+        self.lstVX.currentIndexChanged.connect(self.xChanged)
 
     @property
     def result(self):
@@ -96,6 +97,12 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
                 valueitem = QtGui.QStandardItem(value)
                 self.lstAll.appendRow([keyitem, valueitem])
         self.lstAll.sort(0)
+
+    def xChanged(self, newtext):
+        if self.lstX.rowCount() > 0:
+            self.chkGenX.setCheckState(QtCore.Qt.Unchecked)
+        else:
+            self.chkGenX.setCheckState(QtCore.Qt.Checked)
 
     def moveToX(self):
         if self.lstX.rowCount() > 0: return # Only allow one element allowed for X.
@@ -325,9 +332,9 @@ def askUserValue(param):
     elif param.request is float:
         value, isok = QtGui.QInputDialog.getDouble(None, 'Enter value', param.description, decimals=3)
     elif param.request is bool:
-        request = ['True', 'False']
+        request = ['Yes', 'No']
         tmpvalue, isok = QtGui.QInputDialog.getItem(None, 'Enter value', param.description, request, editable=False)
-        value = True if tmpvalue == 'True' else False
+        value = (tmpvalue == 'Yes')
     elif type(param.request) is list:
         value, isok = QtGui.QInputDialog.getItem(None, 'Enter value', param.description, param.request, editable=False)
     else:
