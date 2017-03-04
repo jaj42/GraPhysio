@@ -104,6 +104,7 @@ class PuExporter():
             tmpdict = {'alpha' : alpha, 'beta' : beta, 'gamma' : gamma}
             data.append(tmpdict)
         df = pd.DataFrame(data)
+        df.index += 1
         filename = "{}-loopdata.csv".format(self.basename)
         outfile = os.path.join(self.outdir, filename)
         df.to_csv(outfile)
