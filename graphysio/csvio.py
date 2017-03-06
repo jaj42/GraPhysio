@@ -26,8 +26,8 @@ class Reader(QtCore.QRunnable):
                            sep       = self.csvrequest.seperator,
                            usecols   = self.csvrequest.fields,
                            decimal   = self.csvrequest.decimal,
-                           index_col = False,
                            skiprows  = self.csvrequest.droplines,
+                           index_col = False,
                            encoding  = 'latin1',
                            engine    = 'c')
 

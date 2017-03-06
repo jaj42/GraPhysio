@@ -62,7 +62,7 @@ def filter(curve, filtname, paramgetter):
         Wn = Fc * 2 / samplerate
         b, a = signal.butter(order, Wn)
         filtered = signal.lfilter(b, a, oldseries)
-        newname = "{}-lowpass".format(oldseries.name)
+        newname = "{}-lowpass{}".format(oldseries.name, Fc)
         newseries = pd.Series(filtered, index=oldseries.index, name=newname)
     elif filt.name == 'interp':
         newsamplerate, method = parameters
@@ -118,8 +118,7 @@ def findPressureFeet(curve):
             risingStops = risingStops[risingStops > risingStarts[0]]
             break
         except IndexError as e:
-            if quantcoef == 1:
-                raise TypeError("No foot detected: {}".format(e))
+            raise TypeError("No foot detected: {}".format(e))
 
     def locateMaxima():
         for start, stop in zip(risingStarts, risingStops):
