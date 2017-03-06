@@ -12,7 +12,6 @@ from graphysio import algorithms, exporter, utils, dialogs, legend
 class PlotWidget(pg.PlotWidget):
     def __init__(self, plotdata, parent=None):
         self.parent = parent
-        self.plotdata = plotdata
         self.colors = utils.Colors()
         self.hiddenitems = []
 
@@ -26,28 +25,23 @@ class PlotWidget(pg.PlotWidget):
         self.vb = self.getViewBox()
         self.vb.setMouseMode(self.vb.RectMode)
 
-        self.exporter = exporter.TsExporter(self)
+        self.exporter = exporter.TsExporter(self, plotdata.name)
 
-        allSeries = (self.plotdata.data[c] for c in self.plotdata.fields)
+        allSeries = (plotdata.data[c] for c in plotdata.fields)
         for series in allSeries:
             self.addCurve(series)
 
     def appendData(self, newplotdata, dorealign):
         # Timeshift new curves to make the beginnings coincide
         if dorealign:
-            offset = self.plotdata.data.index[0] - newplotdata.data.index[0]
+            begins = (curve.series.index[0] for curve in self.curves.values() if len(curve.series.index) > 0)
+            offset = min(begins) - newplotdata.data.index[0]
             newplotdata.data.index += offset
 
-        # Merge plotdata.data with current
-        self.plotdata.data = pd.concat([self.plotdata.data, newplotdata.data], axis=1).sort_index()
-
         # addCurve() everything in new fields
-        allSeries = (self.plotdata.data[c] for c in newplotdata.fields)
+        allSeries = (newplotdata.data[c] for c in newplotdata.fields)
         for series in allSeries:
             self.addCurve(series)
-
-        # Merge fields
-        self.plotdata.fields = list(set(self.plotdata.fields) | set(newplotdata.fields))
 
     @property
     def curves(self):
@@ -61,9 +55,8 @@ class PlotWidget(pg.PlotWidget):
         if pen is None:
             pen = next(self.colors)
 
-        curve = CurveItem(series   = series,
-                          plotdata = self.plotdata,
-                          pen      = pen)
+        curve = CurveItem(series = series,
+                          pen    = pen)
         self.addItem(curve)
         self.legend.addItem(curve, curve.name())
         return curve
@@ -128,9 +121,8 @@ class PlotWidget(pg.PlotWidget):
 
 
 class CurveItem(pg.PlotDataItem):
-    def __init__(self, series, plotdata, pen=QtGui.QColor(QtCore.Qt.black), *args, **kwargs):
+    def __init__(self, series, pen=QtGui.QColor(QtCore.Qt.black), *args, **kwargs):
         self.series = series.dropna()
-        self.plotdata = plotdata
         self.feetitem = None
         self.pen = pen
         self.samplerate = utils.estimateSampleRate(self.series)

@@ -39,9 +39,12 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.haserror.connect(self.displayError)
 
     def launchLoop(self):
-        sourcewidget = self.tabWidget.currentWidget()
+        tabindex = self.tabWidget.currentIndex()
+        sourcewidget = self.tabWidget.widget(tabindex)
+
         if sourcewidget is None:
             return
+
         dlgSetupPU = dialogs.DlgSetupPULoop(sourcewidget, parent = self)
         if not dlgSetupPU.exec_(): return
 
@@ -49,18 +52,18 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
         try:
             curves = sourcewidget.curves
-            plotdata = sourcewidget.plotdata
             u = curves[uname]
             p = curves[pname]
             subsetrange = sourcewidget.vbrange
-            loopwidget = puplot.LoopWidget(u, p, plotdata, subsetrange=subsetrange, parent=self)
+            loopwidget = puplot.LoopWidget(u, p, subsetrange, parent=self)
         except Exception as e:
             msg = 'Could not create PU loops: {}'.format(e)
             self.haserror.emit(msg)
             return
 
-        tabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(plotdata.name))
-        self.tabWidget.setCurrentIndex(tabindex)
+        oldname = self.tabWidget.tabText(tabindex)
+        newtabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(oldname))
+        self.tabWidget.setCurrentIndex(newtabindex)
 
     def launchCurveList(self):
         plotwidget = self.tabWidget.currentWidget()

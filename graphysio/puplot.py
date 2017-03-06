@@ -24,15 +24,14 @@ def truncatevec(vecs):
     return newvecs
 
 class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
-    def __init__(self, u, p, plotdata, subsetrange=None, parent=None):
+    def __init__(self, u, p, subsetrange, parent):
         super().__init__(parent=parent)
         self.setupUi(self)
 
         self.xmin, self.xmax = subsetrange
         self.parent = parent
-        self.plotdata = plotdata
 
-        self.exporter = exporter.PuExporter(self)
+        self.exporter = exporter.PuExporter(self, p.name())
 
         self.btnPrev.clicked.connect(self.prevloop)
         self.btnNext.clicked.connect(self.nextloop)

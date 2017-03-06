@@ -11,16 +11,14 @@ from graphysio.dialogs import DlgPeriodExport
 class TsExporter():
     periodfields = ['patient', 'begin', 'end', 'periodid', 'comment']
 
-    def __init__(self, parent):
+    def __init__(self, parent, name):
         self.parent = parent
-        self.viewbox = parent.vb
-        self.plotdata = parent.plotdata
-        self.dircache = parent.plotdata.folder
-        self.patientcache = parent.plotdata.name
+        self.name = name
+        self.outdir = os.path.expanduser('~')
 
     def seriestocsv(self):
-        filename = "{}-subset.csv".format(self.patientcache)
-        defaultpath = os.path.join(self.dircache, filename)
+        filename = "{}-subset.csv".format(self.name)
+        defaultpath = os.path.join(self.outdir, filename)
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
                                                      directory = defaultpath)
@@ -30,9 +28,9 @@ class TsExporter():
 
         if not filepath:
             return
-        self.dircache = os.path.dirname(filepath)
+
+        self.outdir = os.path.dirname(filepath)
         xmin, xmax = self.parent.vbrange
-        data = self.plotdata.data.ix[xmin:xmax]
         series = [curve.series for curve in self.parent.curves.values()]
         data = pd.concat(series, axis=1).sort_index()
         data['datetime'] = pd.to_datetime(data.index, unit = 'ns')
@@ -42,12 +40,12 @@ class TsExporter():
         xmin, xmax = self.parent.vbrange
         dlg = DlgPeriodExport(begin   = xmin,
                               end     = xmax,
-                              patient = self.patientcache,
-                              directory = self.dircache)
+                              patient = self.name,
+                              directory = self.outdir)
         if not dlg.exec_():
             return
-        self.patientcache = dlg.patient
-        self.dircache = os.path.dirname(dlg.filepath)
+        self.name = dlg.patient
+        self.outdir = os.path.dirname(dlg.filepath)
 
         if os.path.exists(dlg.filepath):
             fileappend = True
@@ -64,8 +62,8 @@ class TsExporter():
                              'comment'  : dlg.comment})
 
     def cyclepointstocsv(self):
-        filename = "{}-feet.csv".format(self.patientcache)
-        defaultpath = os.path.join(self.dircache, filename)
+        filename = "{}-feet.csv".format(self.name)
+        defaultpath = os.path.join(self.outdir, filename)
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
                                                      directory = defaultpath)
@@ -74,7 +72,7 @@ class TsExporter():
             filepath = filepath[0]
 
         if not filepath: return
-        self.dircache = os.path.dirname(filepath)
+        self.outdir = os.path.dirname(filepath)
         feetitems = self.parent.feetitems.values()
         feetidx = [pd.Series(item.feet.index) for item in feetitems]
         feetnames = [item.feet.name for item in feetitems]
@@ -82,14 +80,14 @@ class TsExporter():
         df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
 
 class PuExporter():
-    def __init__(self, parent):
+    def __init__(self, parent, name):
         self.parent = parent
-        self.basename = parent.plotdata.name
-        self.outdir = None
+        self.name = name
+        self.outdir = os.path.expanduser('~')
 
     def exportloops(self):
         outdirtmp = QtGui.QFileDialog.getExistingDirectory(caption = "Export to",
-                                                             directory = self.parent.plotdata.folder)
+                                                             directory = self.outdir)
         if outdirtmp:
             self.outdir = outdirtmp
         self.writetable()
