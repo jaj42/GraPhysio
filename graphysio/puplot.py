@@ -13,8 +13,6 @@ Point     = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
 Angles    = namedtuple('Angles', ['alpha', 'beta', 'gala'])
 
-
-
 def truncatevec(vecs):
     # Ensure all vectors have the same length by truncating the end
     # Not feeling so well about this function
@@ -28,8 +26,14 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         super().__init__(parent=parent)
         self.setupUi(self)
 
-        self.xmin, self.xmax = subsetrange
+        if u.samplerate != p.samplerate:
+            raise TypeError('Sampling rates do not match {} vs {}'.format(u.samplerate, p.samplerate))
+
+        if p.feetitem is None or u.feetitem is None:
+            raise TypeError('Missing feet data')
+
         self.parent = parent
+        self.xmin, self.xmax = subsetrange
 
         self.exporter = exporter.PuExporter(self, p.name())
 
@@ -56,10 +60,6 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
 
 
     def initloopdata(self, u, p):
-        if p.feetitem is None or u.feetitem is None:
-            self.parent.haserror.emit('No feet for this curve')
-            return
-
         def clip(vec):
             # Only keep visible data based on subsetrange
             cond = (vec > self.xmin) & (vec < self.xmax)
@@ -87,11 +87,8 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
     def renderloop(self, idx=None):
         if idx is None:
             idx = self.curidx
-        try:
-            curloop = self.loops[idx]
-        except IndexError as e:
-            self.parent.haserror.emit('Missing loop: {}'.format(e))
-            return 
+
+        curloop = self.loops[idx]
 
         self.lblIdx.setText(str(idx + 1))
 
