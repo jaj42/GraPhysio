@@ -31,6 +31,7 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
            'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum velocity (cm/s)', int)]),
+           'Affine scale' : Filter(name='affine', parameters=[Parameter('a (y=ax+b)', float), Parameter('b (y=ax+b)', float)]),
            'PulseHeart TF' : Filter(name='tf', parameters=[])}
 
 def filter(curve, filtname, paramgetter):
@@ -47,6 +48,11 @@ def filter(curve, filtname, paramgetter):
         b, a = tf.discretize(samplerate)
         filtered = signal.lfilter(b, a, oldseries)
         newname = "{}-{}".format(oldseries.name, tf.name)
+        newseries = pd.Series(filtered, index=oldseries.index, name=newname)
+    elif filt.name == 'affine':
+        a, b = parameters
+        filtered = a * oldseries + b
+        newname = "{}-{}-{}-{}".format(oldseries.name, 'affine', a, b)
         newseries = pd.Series(filtered, index=oldseries.index, name=newname)
     elif filt.name == 'savgol':
         window, order = parameters
