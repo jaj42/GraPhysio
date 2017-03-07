@@ -22,74 +22,90 @@ class TF(object):
 
 pulseheartnum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873.0713084, 218273825.541909, 6489400920.14402]
 pulseheartden = [1, 180.289425270434, 174563.510125383, 17057258.6774222, 555352944.277185, 6493213494.43661]
-tfpulseheart = TF(pulseheartnum, pulseheartden, name='PulseHeart TF')
+tfpulseheart = TF(pulseheartnum, pulseheartden, name='HeartPulse')
 
-TFs = {tfpulseheart.name : tfpulseheart}
-
+tfs = {tfpulseheart.name : tfpulseheart}
 interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
+
 Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
            'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
            'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum velocity (cm/s)', int)]),
            'Affine scale' : Filter(name='affine', parameters=[Parameter('a (y=ax+b)', float), Parameter('b (y=ax+b)', float)]),
-           'PulseHeart TF' : Filter(name='tf', parameters=[])}
+           'Transfer function' : Filter(name='tf', parameters=[Parameter('Transfer function', list(tfs.keys()))])}
+
+def _savgol(series, samplerate, parameters):
+    window, order = parameters
+    window = np.floor(window * samplerate)
+    if not window % 2:
+        # window is even, we need odd
+        window += 1
+    filtered = signal.savgol_filter(series, int(window), order)
+    newname = "{}-{}".format(series.name, 'filtered')
+    newseries = pd.Series(filtered, index=series.index, name=newname)
+    return (newseries, samplerate)
+
+def _affine(series, samplerate, parameters):
+    a, b = parameters
+    filtered = a * series + b
+    newname = "{}-{}-{}-{}".format(series.name, 'affine', a, b)
+    newseries = pd.Series(filtered, index=series.index, name=newname)
+    return (newseries, samplerate)
+
+def _tf(series, samplerate, parameters):
+    filtname, = parameters
+    tf = tfs[filtname]
+    b, a = tf.discretize(samplerate)
+    filtered = signal.lfilter(b, a, series)
+    newname = "{}-{}".format(series.name, tf.name)
+    newseries = pd.Series(filtered, index=series.index, name=newname)
+    return (newseries, samplerate)
+
+def _lowpass(series, samplerate, parameters):
+    Fc, order = parameters
+    Wn = Fc * 2 / samplerate
+    b, a = signal.butter(order, Wn)
+    filtered = signal.lfilter(b, a, series)
+    newname = "{}-lp{}".format(series.name, Fc)
+    newseries = pd.Series(filtered, index=series.index, name=newname)
+    return (newseries, samplerate)
+
+def _interp(series, samplerate, parameters):
+    newsamplerate, method = parameters
+    npoints = len(series) * newsamplerate / samplerate
+    oldidx = series.index
+    f = interpolate.interp1d(oldidx, series.values, kind=method)
+    newidx = np.linspace(oldidx[1], oldidx[-1], num=npoints)
+    resampled = f(newidx)
+    newname = "{}-{}Hz".format(series.name, newsamplerate)
+    newseries = pd.Series(resampled, index=newidx, name=newname)
+    return (newseries, newsamplerate)
+
+def _dopplercut(series, samplerate, parameters):
+    minvel, = parameters
+    notlow, = (series < minvel).nonzero()
+    newname = "{}-{}+".format(series.name, minvel)
+    newseries = series.rename(newname)
+    newseries.iloc[notlow] = 0
+    return (newseries, samplerate)
+
+filtfuncs = {'savgol'     : _savgol,
+             'affine'     : _affine,
+             'tf'         : _tf,
+             'lowpass'    : _lowpass,
+             'interp'     : _interp,
+             'dopplercut' : _dopplercut}
 
 def filter(curve, filtname, paramgetter):
     samplerate = curve.samplerate
-    oldseries = curve.series
+    series = curve.series
     if samplerate is None:
         raise TypeError("Samplerate is not set and could not be inferred.")
 
     filt = Filters[filtname]
     parameters = map(paramgetter, filt.parameters)
 
-    if filt.name == 'tf':
-        tf = TFs[filtname]
-        b, a = tf.discretize(samplerate)
-        filtered = signal.lfilter(b, a, oldseries)
-        newname = "{}-{}".format(oldseries.name, tf.name)
-        newseries = pd.Series(filtered, index=oldseries.index, name=newname)
-    elif filt.name == 'affine':
-        a, b = parameters
-        filtered = a * oldseries + b
-        newname = "{}-{}-{}-{}".format(oldseries.name, 'affine', a, b)
-        newseries = pd.Series(filtered, index=oldseries.index, name=newname)
-    elif filt.name == 'savgol':
-        window, order = parameters
-        window = np.floor(window * samplerate)
-        if not window % 2:
-            # window is even, we need odd
-            window += 1
-        filtered = signal.savgol_filter(oldseries, int(window), order)
-        newname = "{}-{}".format(oldseries.name, 'filtered')
-        newseries = pd.Series(filtered, index=oldseries.index, name=newname)
-    elif filt.name == 'lowpass':
-        Fc, order = parameters
-        Wn = Fc * 2 / samplerate
-        b, a = signal.butter(order, Wn)
-        filtered = signal.lfilter(b, a, oldseries)
-        newname = "{}-lowpass{}".format(oldseries.name, Fc)
-        newseries = pd.Series(filtered, index=oldseries.index, name=newname)
-    elif filt.name == 'interp':
-        newsamplerate, method = parameters
-        npoints = len(oldseries) * newsamplerate / samplerate
-        oldidx = oldseries.index
-        f = interpolate.interp1d(oldidx, oldseries.values, kind=method)
-        newidx = np.linspace(oldidx[1], oldidx[-1], num=npoints)
-        resampled = f(newidx)
-        newname = "{}-{}Hz".format(oldseries.name, newsamplerate)
-        newseries = pd.Series(resampled, index=newidx, name=newname)
-        samplerate = newsamplerate
-    elif filt.name == 'dopplercut':
-        minvel, = parameters
-        notlow, = (oldseries < minvel).nonzero()
-        newname = "{}-{}+".format(oldseries.name, minvel)
-        newseries = oldseries.rename(newname)
-        newseries.iloc[notlow] = 0
-    else:
-        raise TypeError("Unknown filter.")
-
-    return (newseries, samplerate)
+    return filtfuncs[filt.name](series, samplerate, parameters)
 
 def findPressureFeet(curve):
     series = curve.series
@@ -157,12 +173,13 @@ def findFlowCycles(curve):
         raise TypeError("No cycle detected: {}".format(e))
 
     # Filter noise cycles which are shorter than 150ms
-    minSystoleLength = 15e5 * samplerate
-    def notShortCycles():
-        for (startidx, stopidx) in zip(cycleStarts.index, cycleStops.index):
-            if stopidx - startidx >= minSystoleLength:
-                yield (startidx, stopidx)
-    startidx, stopidx = zip(*notShortCycles())
+    #minSystoleLength = 15e5 * samplerate
+    #def notShortCycles():
+    #    for (startidx, stopidx) in zip(cycleStarts.index, cycleStops.index):
+    #        if stopidx - startidx >= minSystoleLength:
+    #            yield (startidx, stopidx)
+    #startidx, stopidx = zip(*notShortCycles())
+    startidx, stopidx = zip(*zip(cycleStarts.index, cycleStops.index))
     cycleStarts = cycleStarts[list(startidx)]
     cycleStops = cycleStops[list(stopidx)]
 
