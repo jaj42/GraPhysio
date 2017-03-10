@@ -34,6 +34,7 @@ class TsExporter():
         series = [curve.series for curve in self.parent.curves.values()]
         data = pd.concat(series, axis=1).sort_index()
         data['datetime'] = pd.to_datetime(data.index, unit = 'ns')
+        data = data.ix[xmin:xmax]
         data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
 
     def periodstocsv(self):

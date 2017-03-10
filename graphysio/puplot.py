@@ -17,7 +17,7 @@ def truncatevec(vecs):
     # Ensure all vectors have the same length by truncating the end
     # Not feeling so well about this function
     lengths = map(len, vecs)
-    maxidx = min(lengths) - 1
+    maxidx = min(lengths)
     newvecs = [vec[0:maxidx] for vec in vecs]
     return newvecs
 
@@ -28,9 +28,6 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
 
         if u.samplerate != p.samplerate:
             raise TypeError('Sampling rates do not match {} vs {}'.format(u.samplerate, p.samplerate))
-
-        if p.feetitem is None or u.feetitem is None:
-            raise TypeError('Missing feet data')
 
         self.parent = parent
         self.xmin, self.xmax = subsetrange
@@ -65,9 +62,18 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             cond = (vec > self.xmin) & (vec < self.xmax)
             return vec[cond]
 
-        pfeet   = clip(p.feetitem.starts.index)
-        ubegins = clip(u.feetitem.starts.index)
-        uends   = clip(u.feetitem.stops.index) if u.feetitem.stops is not None else None
+        # Handle missing feet (use the whole signal)
+        if u.feetitem is None:
+            ubegins = np.array([u.series.index[0]])
+            uends   = np.array([u.series.index[-1]])
+        else:
+            ubegins = clip(u.feetitem.starts.index)
+            uends   = clip(u.feetitem.stops.index) if u.feetitem.stops is not None else None
+
+        if p.feetitem is None:
+            pfeet = np.array([p.series.index[0]])
+        else:
+            pfeet = clip(p.feetitem.starts.index)
 
         if uends is None:
             uends = ubegins[1:]
