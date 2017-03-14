@@ -31,6 +31,7 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
            'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum velocity (cm/s)', int)]),
+           'Fill NaNs' : Filter(name='fillnan', parameters=[]),
            'Affine scale' : Filter(name='affine', parameters=[Parameter('a (y=ax+b)', float), Parameter('b (y=ax+b)', float)]),
            'Transfer function' : Filter(name='tf', parameters=[Parameter('Transfer function', list(tfs.keys()))])}
 
@@ -89,12 +90,18 @@ def _dopplercut(series, samplerate, parameters):
     newseries.iloc[notlow] = 0
     return (newseries, samplerate)
 
+def _fillnan(series, samplerate, parameters):
+    newseries = series.interpolate(method='index', limit_direction='both')
+    newname = "{}-nona".format(series.name)
+    return (newseries.rename(newname), samplerate)
+
 filtfuncs = {'savgol'     : _savgol,
              'affine'     : _affine,
              'tf'         : _tf,
              'lowpass'    : _lowpass,
              'interp'     : _interp,
-             'dopplercut' : _dopplercut}
+             'dopplercut' : _dopplercut,
+             'fillnan'    : _fillnan}
 
 def filter(curve, filtname, paramgetter):
     samplerate = curve.samplerate
@@ -108,7 +115,7 @@ def filter(curve, filtname, paramgetter):
     return filtfuncs[filt.name](series, samplerate, parameters)
 
 def findPressureFeet(curve):
-    series = curve.series
+    series = curve.series.dropna()
     samplerate = curve.samplerate
     if samplerate is None:
         raise TypeError("Samplerate is not set and could not be inferred.")
@@ -158,7 +165,7 @@ def findPressureFeet(curve):
     return cycleStarts
 
 def findFlowCycles(curve):
-    series = curve.series
+    series = curve.series.dropna()
     samplerate = curve.samplerate
     bincycles = (series > series.min()).astype(int)
     idxstarts, = (bincycles.diff().shift(-1) > 0).nonzero()

@@ -122,7 +122,7 @@ class PlotWidget(pg.PlotWidget):
 
 class CurveItem(pg.PlotDataItem):
     def __init__(self, series, pen=QtGui.QColor(QtCore.Qt.black), *args, **kwargs):
-        self.series = series.dropna()
+        self.series = series
         self.feetitem = None
         self.pen = pen
         self.samplerate = utils.estimateSampleRate(self.series)
