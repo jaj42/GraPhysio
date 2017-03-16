@@ -50,13 +50,19 @@
      <string>Export</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuData">
+   <widget class="QMenu" name="menuCurves">
     <property name="title">
-     <string>Data</string>
+     <string>Curves</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuSelection">
+    <property name="title">
+     <string>Selection</string>
     </property>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuData"/>
+   <addaction name="menuCurves"/>
+   <addaction name="menuSelection"/>
    <addaction name="menuExport"/>
   </widget>
   <action name="actNewplot">

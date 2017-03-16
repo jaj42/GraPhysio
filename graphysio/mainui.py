@@ -26,10 +26,12 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
-        self.menuData.addAction('Visible &Curves',    self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
-        self.menuData.addAction('&Filter',            self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
-        self.menuData.addAction('Cycle &Detection',   self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
-        self.menuData.addAction('Generate PU-&Loops', self.errguard(self.launchLoop),           QtCore.Qt.CTRL + QtCore.Qt.Key_L)
+        self.menuCurves.addAction('Visible &Curves',    self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
+        self.menuCurves.addAction('&Filter',            self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        self.menuCurves.addAction('Cycle &Detection',   self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
+
+        self.menuSelection.addAction('As new plot', self.errguard(self.launchNewPlotFromSelection))
+        self.menuSelection.addAction('Generate PU-&Loops', self.errguard(self.launchLoop), QtCore.Qt.CTRL + QtCore.Qt.Key_L)
 
         self.menuExport.addAction('&Series to CSV',     self.errguard(self.exportSeries))
         self.menuExport.addAction('&Time info to CSV',  self.errguard(self.exportPeriod))
@@ -140,6 +142,22 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         tabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
+
+    def launchNewPlotFromSelection(self):
+        oldtabindex = self.tabWidget.currentIndex()
+        oldname = self.tabWidget.tabText(oldtabindex)
+        sourcewidget = self.tabWidget.widget(oldtabindex)
+        xmin, xmax = sourcewidget.vbrange
+
+        newname = '{}-sub'.format(oldname)
+        plotdata = utils.PlotData(name=newname)
+
+        plotwidget = tsplot.PlotWidget(plotdata=plotdata, parent=self)
+        newtabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
+        for c in sourcewidget.curves.values():
+            series = c.series.ix[xmin:xmax]
+            plotwidget.addCurve(series)
+        self.tabWidget.setCurrentIndex(newtabindex)
 
     def exportSeries(self):
         plotwidget = self.tabWidget.currentWidget()

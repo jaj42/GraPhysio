@@ -50,14 +50,19 @@ class CsvRequest():
 class PlotData():
     def __init__(self, data = None,
                        fields = [],
-                       filepath = ""):
+                       filepath = "",
+                       name = None):
         self.data = data
         self.fields = fields
         self.filepath = filepath
+        self._name = name
 
     @property
     def name(self):
-        name, _ = os.path.splitext(os.path.basename(self.filepath))
+        if self._name is not None:
+            name = self._name
+        else:
+            name, _ = os.path.splitext(os.path.basename(self.filepath))
         return name
 
     @property

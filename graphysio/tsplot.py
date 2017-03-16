@@ -31,7 +31,7 @@ class PlotWidget(pg.PlotWidget):
         for series in allSeries:
             self.addCurve(series)
 
-    def appendData(self, newplotdata, dorealign):
+    def appendData(self, newplotdata, dorealign=False):
         # Timeshift new curves to make the beginnings coincide
         if dorealign:
             begins = (curve.series.index[0] for curve in self.curves.values() if len(curve.series.index) > 0)
