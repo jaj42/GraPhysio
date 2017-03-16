@@ -31,6 +31,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuCurves.addAction('Cycle &Detection',   self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
 
         self.menuSelection.addAction('As new plot', self.errguard(self.launchNewPlotFromSelection))
+        self.menuSelection.addAction('Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))
         self.menuSelection.addAction('Generate PU-&Loops', self.errguard(self.launchLoop), QtCore.Qt.CTRL + QtCore.Qt.Key_L)
 
         self.menuExport.addAction('&Series to CSV',     self.errguard(self.exportSeries))
@@ -158,6 +159,29 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             series = c.series.ix[xmin:xmax]
             plotwidget.addCurve(series)
         self.tabWidget.setCurrentIndex(newtabindex)
+
+    def launchAppendToPlotFromSelection(self):
+        ntabs = self.tabWidget.count()
+        tabnames = [self.tabWidget.tabText(idx) for idx in range(ntabs)]
+        desttabname, ok = QtGui.QInputDialog.getItem(self, 'Select destination', 'Destination plot', tabnames, editable=False)
+        if not ok:
+            return
+        destidx = tabnames.index(desttabname)
+        destwidget = self.tabWidget.widget(destidx)
+
+        qmsg = "Timeshift new curves to make the beginnings coincide?"
+        reply = QtGui.QMessageBox.question(self, 'Append to plot', qmsg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        dorealign = (reply == QtGui.QMessageBox.Yes)
+
+        oldtabindex = self.tabWidget.currentIndex()
+        oldname = self.tabWidget.tabText(oldtabindex)
+        sourcewidget = self.tabWidget.widget(oldtabindex)
+        xmin, xmax = sourcewidget.vbrange
+
+        for c in sourcewidget.curves.values():
+            series = c.series.ix[xmin:xmax]
+            destwidget.addCurve(series, dorealign=dorealign)
+        self.tabWidget.setCurrentIndex(destidx)
 
     def exportSeries(self):
         plotwidget = self.tabWidget.currentWidget()

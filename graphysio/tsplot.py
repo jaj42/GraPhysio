@@ -32,16 +32,9 @@ class PlotWidget(pg.PlotWidget):
             self.addCurve(series)
 
     def appendData(self, newplotdata, dorealign=False):
-        # Timeshift new curves to make the beginnings coincide
-        if dorealign:
-            begins = (curve.series.index[0] for curve in self.curves.values() if len(curve.series.index) > 0)
-            offset = min(begins) - newplotdata.data.index[0]
-            newplotdata.data.index += offset
-
-        # addCurve() everything in new fields
         allSeries = (newplotdata.data[c] for c in newplotdata.fields)
         for series in allSeries:
-            self.addCurve(series)
+            self.addCurve(series, dorealign=dorealign)
 
     @property
     def curves(self):
@@ -51,9 +44,15 @@ class PlotWidget(pg.PlotWidget):
     def feetitems(self):
         return {item.name() : item for item in self.listDataItems() if isinstance(item, FeetItem)}
 
-    def addCurve(self, series, pen=None):
+    def addCurve(self, series, pen=None, dorealign=False):
         if pen is None:
             pen = next(self.colors)
+
+        # Timeshift new curves to make the beginnings coincide
+        if dorealign:
+            begins = (curve.series.index[0] for curve in self.curves.values() if len(curve.series.index) > 0)
+            offset = min(begins) - series.index[0]
+            series.index += offset
 
         curve = CurveItem(series = series,
                           pen    = pen)
