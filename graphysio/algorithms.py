@@ -32,6 +32,7 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum velocity (cm/s)', int)]),
            'Fill NaNs' : Filter(name='fillnan', parameters=[]),
+           'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
            'Affine scale' : Filter(name='affine', parameters=[Parameter('a (y=ax+b)', float), Parameter('b (y=ax+b)', float)]),
            'Transfer function' : Filter(name='tf', parameters=[Parameter('Transfer function', list(tfs.keys()))])}
 
@@ -95,12 +96,21 @@ def _fillnan(series, samplerate, parameters):
     newname = "{}-nona".format(series.name)
     return (newseries.rename(newname), samplerate)
 
+def _pscale(series, samplerate, parameters):
+    sys, dia, mean = parameters
+    detrend = series - series.mean()
+    scaled = detrend * (sys - dia) / (series.max() - series.min())
+    newseries = scaled + mean
+    newname = "{}-pscale".format(series.name)
+    return (newseries.rename(newname), samplerate)
+
 filtfuncs = {'savgol'     : _savgol,
              'affine'     : _affine,
              'tf'         : _tf,
              'lowpass'    : _lowpass,
              'interp'     : _interp,
              'dopplercut' : _dopplercut,
+             'pscale'     : _pscale,
              'fillnan'    : _fillnan}
 
 def filter(curve, filtname, paramgetter):

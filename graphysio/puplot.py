@@ -55,7 +55,6 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             self.lblTot.setText(str(len(self.loops)))
             self.renderloop(0)
 
-
     def initloopdata(self, u, p):
         def clip(vec):
             # Only keep visible data based on subsetrange
