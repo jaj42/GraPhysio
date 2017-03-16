@@ -21,22 +21,33 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
         launchNewPlot = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
-        self.menuFile.addAction('&New Plot',       launchNewPlot,    QtCore.Qt.CTRL + QtCore.Qt.Key_N)
-        self.menuFile.addAction('&Append to Plot', launchAppendPlot, QtCore.Qt.CTRL + QtCore.Qt.Key_A)
+        self.menuFile.addAction('&New Plot',       self.errguard(launchNewPlot),    QtCore.Qt.CTRL + QtCore.Qt.Key_N)
+        self.menuFile.addAction('&Append to Plot', self.errguard(launchAppendPlot), QtCore.Qt.CTRL + QtCore.Qt.Key_A)
         self.menuFile.addSeparator()
-        self.menuFile.addAction('&Quit', self.fileQuit, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
+        self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
-        self.menuData.addAction('Visible &Curves',    self.launchCurveList,      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
-        self.menuData.addAction('&Filter',            self.launchFilter,         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
-        self.menuData.addAction('Cycle &Detection',   self.launchCycleDetection, QtCore.Qt.CTRL + QtCore.Qt.Key_D)
-        self.menuData.addAction('Generate PU-&Loops', self.launchLoop,           QtCore.Qt.CTRL + QtCore.Qt.Key_L)
+        self.menuData.addAction('Visible &Curves',    self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
+        self.menuData.addAction('&Filter',            self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        self.menuData.addAction('Cycle &Detection',   self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
+        self.menuData.addAction('Generate PU-&Loops', self.errguard(self.launchLoop),           QtCore.Qt.CTRL + QtCore.Qt.Key_L)
 
-        self.menuExport.addAction('&Series to CSV',     self.exportSeries)
-        self.menuExport.addAction('&Time info to CSV',  self.exportPeriod)
-        self.menuExport.addAction('&Cycle info to CSV', self.exportCycles)
-        self.menuExport.addAction('&Loop Data',         self.exportLoops)
+        self.menuExport.addAction('&Series to CSV',     self.errguard(self.exportSeries))
+        self.menuExport.addAction('&Time info to CSV',  self.errguard(self.exportPeriod))
+        self.menuExport.addAction('&Cycle info to CSV', self.errguard(self.exportCycles))
+        self.menuExport.addAction('&Loop Data',         self.errguard(self.exportLoops))
 
         self.haserror.connect(self.displayError)
+
+    def errguard(self, f):
+        # Lift exceptions to UI reported errors
+        def wrapped():
+            try:
+                f()
+            except Exception as e:
+                # Re-raise errors here for DEBUG
+                #raise e
+                self.haserror.emit(e)
+        return wrapped
 
     def launchLoop(self):
         tabindex = self.tabWidget.currentIndex()
@@ -50,16 +61,11 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
         uname, pname = dlgSetupPU.result
 
-        try:
-            curves = sourcewidget.curves
-            u = curves[uname]
-            p = curves[pname]
-            subsetrange = sourcewidget.vbrange
-            loopwidget = puplot.LoopWidget(u, p, subsetrange, parent=self)
-        except Exception as e:
-            msg = 'Could not create PU loops: {}'.format(e)
-            self.haserror.emit(msg)
-            return
+        curves = sourcewidget.curves
+        u = curves[uname]
+        p = curves[pname]
+        subsetrange = sourcewidget.vbrange
+        loopwidget = puplot.LoopWidget(u, p, subsetrange, parent=self)
 
         oldname = self.tabWidget.tabText(tabindex)
         newtabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(oldname))
@@ -75,12 +81,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         choices = dlgCycles.result
         plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
-            try:
-                curve = plotwidget.curves[curvename]
-                plotwidget.addFeet(curve, utils.FootType(choice))
-            except Exception as e:
-                msg = "{}: {}".format(curvename, e)
-                self.haserror.emit(msg)
+            curve = plotwidget.curves[curvename]
+            plotwidget.addFeet(curve, utils.FootType(choice))
 
     def launchFilter(self):
         dlgFilter = dialogs.DlgFilter(parent = self)
@@ -90,12 +92,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         for curvename, choice in choices.items():
             if choice == 'None':
                 continue
-            try:
-                curve = plotwidget.curves[curvename]
-                plotwidget.addFiltered(curve, choice)
-            except Exception as e:
-                msg = "{}: {}".format(curvename, e)
-                self.haserror.emit(msg)
+            curve = plotwidget.curves[curvename]
+            plotwidget.addFiltered(curve, choice)
 
     def launchReadData(self, newwidget=True):
         if newwidget:
