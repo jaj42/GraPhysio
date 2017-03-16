@@ -140,19 +140,26 @@ def findPressureFeet(curve):
         risingStops,  = (risingvar < 0).nonzero()
         return (risingStarts, risingStops)
 
+    found = False
     for quantcoef in [3, 2, 1]:
         # Try again with smaller window if we find nothing
         risingStarts, risingStops = performWindowing(quantcoef=quantcoef)
         try:
             risingStops = risingStops[risingStops > risingStarts[0]]
+            found = True
             break
         except IndexError as e:
-            raise TypeError("No foot detected: {}".format(e))
+            continue
+
+    # Last resort: find one foot on the whole series
+    if not found:
+        risingStarts = [0]
+        risingStops  = [len(sndderiv.index) - 1]
 
     def locateMaxima():
         for start, stop in zip(risingStarts, risingStops):
-            idxstart = sndderiv.index.values[start]
-            idxstop  = sndderiv.index.values[stop]
+            idxstart = sndderiv.index[start]
+            idxstop  = sndderiv.index[stop]
             try:
                 maximum = sndderiv.ix[idxstart:idxstop].idxmax()
             except ValueError as e:
