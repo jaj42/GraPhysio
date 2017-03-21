@@ -187,34 +187,36 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         plotwidget = self.tabWidget.currentWidget()
         if plotwidget is None:
             return
-        try:
+        if hasattr(plotwidget.exporter, 'seriestocsv'):
             plotwidget.exporter.seriestocsv()
-        except AttributeError:
+        else:
             self.haserror.emit('Method not available for this plot.')
 
     def exportPeriod(self):
         plotwidget = self.tabWidget.currentWidget()
         if plotwidget is None:
             return
-        try:
+        if hasattr(plotwidget.exporter, 'periodstocsv'):
             plotwidget.exporter.periodstocsv()
-        except AttributeError:
+        else:
             self.haserror.emit('Method not available for this plot.')
 
     def exportCycles(self):
         plotwidget = self.tabWidget.currentWidget()
-        if plotwidget is None: return
-        try:
+        if plotwidget is None:
+            return
+        if hasattr(plotwidget.exporter, 'cyclepointstocsv'):
             plotwidget.exporter.cyclepointstocsv()
-        except AttributeError:
+        else:
             self.haserror.emit('Method not available for this plot.')
 
     def exportLoops(self):
         plotwidget = self.tabWidget.currentWidget()
-        if plotwidget is None: return
-        try:
+        if plotwidget is None:
+            return
+        if hasattr(plotwidget.exporter, 'exportloops'):
             plotwidget.exporter.exportloops()
-        except AttributeError:
+        else:
             self.haserror.emit('Method not available for this plot.')
 
     def fileQuit(self):
