@@ -104,7 +104,7 @@ class PuExporter():
             data.append(tmpdict)
         df = pd.DataFrame(data)
         df.index += 1
-        filename = "{}-loopdata.csv".format(self.basename)
+        filename = "{}-loopdata.csv".format(self.name)
         outfile = os.path.join(self.outdir, filename)
         df.to_csv(outfile)
 
@@ -113,6 +113,6 @@ class PuExporter():
             return
         for n, loop in enumerate(self.parent.loops):
             df = pd.DataFrame({'u' : loop.u, 'p' : loop.p})
-            filename = "{}-{}.csv".format(self.basename, n)
+            filename = "{}-{}.csv".format(self.name, n)
             outfile = os.path.join(self.outdir, filename)
             df.to_csv(outfile)
