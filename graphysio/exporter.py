@@ -22,13 +22,12 @@ class TsExporter():
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
                                                      directory = defaultpath)
-        # PyQt5 API change
         if type(filepath) is not str:
+            # PyQt5 API change
             filepath = filepath[0]
-
         if not filepath:
+            # Cancel pressed
             return
-
         self.outdir = os.path.dirname(filepath)
         xmin, xmax = self.parent.vbrange
         series = [curve.series for curve in self.parent.curves.values()]
@@ -68,11 +67,12 @@ class TsExporter():
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
                                                      directory = defaultpath)
-        # PyQt5 API change
         if type(filepath) is not str:
+            # PyQt5 API change
             filepath = filepath[0]
-
-        if not filepath: return
+        if not filepath:
+            # Cancel pressed
+            return
         self.outdir = os.path.dirname(filepath)
         feetitems = self.parent.feetitems.values()
         feetidx = [pd.Series(item.feet.index) for item in feetitems]
@@ -88,9 +88,11 @@ class PuExporter():
 
     def exportloops(self):
         outdirtmp = QtGui.QFileDialog.getExistingDirectory(caption = "Export to",
-                                                             directory = self.outdir)
-        if outdirtmp:
-            self.outdir = outdirtmp
+                                                           directory = self.outdir)
+        if not outdirtmp:
+            # Cancel pressed
+            return
+        self.outdir = outdirtmp
         self.writetable()
         self.writeloops()
 
@@ -113,6 +115,6 @@ class PuExporter():
             return
         for n, loop in enumerate(self.parent.loops):
             df = pd.DataFrame({'u' : loop.u, 'p' : loop.p})
-            filename = "{}-{}.csv".format(self.name, n)
+            filename = "{}-{}.csv".format(self.name, n+1)
             outfile = os.path.join(self.outdir, filename)
             df.to_csv(outfile)
