@@ -24,17 +24,21 @@ pulseheartnum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873
 pulseheartden = [1, 180.289425270434, 174563.510125383, 17057258.6774222, 555352944.277185, 6493213494.43661]
 tfpulseheart = TF(pulseheartnum, pulseheartden, name='HeartPulse')
 
-tfs = {tfpulseheart.name : tfpulseheart}
+TFs = {tfpulseheart.name : tfpulseheart}
 interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
 
 Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
            'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
            'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
-           'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum velocity (cm/s)', int)]),
+           'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
            'Fill NaNs' : Filter(name='fillnan', parameters=[]),
            'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
-           'Affine scale' : Filter(name='affine', parameters=[Parameter('a (y=ax+b)', float), Parameter('b (y=ax+b)', float)]),
-           'Transfer function' : Filter(name='tf', parameters=[Parameter('Transfer function', list(tfs.keys()))])}
+           'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])}
+
+def updateTFs():
+    tflist = list(TFs.keys())
+    Filters['Transfer function'] = Filter(name='tf', parameters=[Parameter('Transfer function', tflist)])
+updateTFs()
 
 def _savgol(series, samplerate, parameters):
     window, order = parameters
@@ -56,7 +60,7 @@ def _affine(series, samplerate, parameters):
 
 def _tf(series, samplerate, parameters):
     filtname, = parameters
-    tf = tfs[filtname]
+    tf = TFs[filtname]
     b, a = tf.discretize(samplerate)
     filtered = signal.lfilter(b, a, series)
     newname = "{}-{}".format(series.name, tf.name)
@@ -171,7 +175,7 @@ def findPressureFeet(curve):
             idxstart = sndderiv.index[start]
             idxstop  = sndderiv.index[stop]
             try:
-                maximum = sndderiv.ix[idxstart:idxstop].idxmax()
+                maximum = sndderiv.loc[idxstart:idxstop].idxmax()
             except ValueError as e:
                 print("local maximum error: {} [{} - {}] in [{} - {}]".format(e, idxstart, idxstop, sndderiv.index[0], sndderiv.index[-1]), file=sys.stderr)
                 continue
