@@ -163,7 +163,7 @@ class FeetItem(pg.ScatterPlotItem):
     def starts(self):
         time = [point.pos().x() for point in self.points() if point.symbol() in [self.symPoint, self.symStart]]
         indices = np.array(time, dtype=np.int64)
-        elements = self.curve.series.ix[indices]
+        elements = self.curve.series.loc[indices]
         return elements.rename(self.name())
 
     @property
@@ -172,7 +172,7 @@ class FeetItem(pg.ScatterPlotItem):
             return None
         time = [point.pos().x() for point in self.points() if point.symbol() == self.symStop]
         indices = np.array(time, dtype=np.int64)
-        elements = self.curve.series.ix[indices]
+        elements = self.curve.series.loc[indices]
         return elements.rename(self.name())
 
     def isPointSelected(self, point):

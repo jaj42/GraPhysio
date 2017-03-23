@@ -85,8 +85,8 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
 
         us = u.series; ps = p.series
         for ubegin, pfoot, duration in zip(ubegins, pfeet, durations):
-            loopu = us.ix[ubegin:ubegin+duration]
-            loopp = ps.ix[pfoot:pfoot+duration]
+            loopu = us.loc[ubegin:ubegin+duration]
+            loopp = ps.loc[pfoot:pfoot+duration]
             self.loops.append(PULoop(loopu, loopp))
 
     def renderloop(self, idx=None):
