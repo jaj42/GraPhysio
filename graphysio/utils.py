@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import imp
 
@@ -108,9 +109,10 @@ def estimateSampleRate(series):
     return int(round(fs))
 
 def loadmodule():
-    filepath = QtGui.QFileDialog.getOpenFileName(caption = "Export to",
+    defaultdir = os.path.expanduser('~')
+    filepath = QtGui.QFileDialog.getOpenFileName(caption = "Import module",
                                                  filter  = "Python files (*.py)",
-                                                 directory = '~')
+                                                 directory = defaultdir)
     if type(filepath) is not str:
         # PyQt5 API change
         filepath = filepath[0]
@@ -121,7 +123,11 @@ def loadmodule():
     folder, filename = os.path.split(filepath)
     modulename, _ = os.path.splitext(filename)
     f, filename, description = imp.find_module(modulename, [folder])
+
+    bcbak = sys.dont_write_bytecode
     try:
+        sys.dont_write_bytecode = True
         imp.load_module('graphysio.plugin', f, filename, description)
     finally:
+        sys.dont_write_bytecode = bcbak
         f.close()
