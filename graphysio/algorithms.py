@@ -81,7 +81,7 @@ def _interp(series, samplerate, parameters):
     npoints = len(series) * newsamplerate / samplerate
     oldidx = series.index
     f = interpolate.interp1d(oldidx, series.values, kind=method)
-    newidx = np.linspace(oldidx[1], oldidx[-1], num=npoints)
+    newidx = np.linspace(oldidx[0], oldidx[-1], num=npoints)
     resampled = f(newidx)
     newname = "{}-{}Hz".format(series.name, newsamplerate)
     newseries = pd.Series(resampled, index=newidx, name=newname)
