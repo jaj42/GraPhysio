@@ -1,5 +1,6 @@
 import os
 import time
+import imp
 
 from enum import Enum
 from itertools import cycle
@@ -105,3 +106,22 @@ def estimateSampleRate(series):
     timedelta = (idx[-1] - idx[0]) * 1e-9
     fs = len(idx) / timedelta
     return int(round(fs))
+
+def loadmodule():
+    filepath = QtGui.QFileDialog.getOpenFileName(caption = "Export to",
+                                                 filter  = "Python files (*.py)",
+                                                 directory = '~')
+    if type(filepath) is not str:
+        # PyQt5 API change
+        filepath = filepath[0]
+    if not filepath:
+        # Cancel pressed
+        return
+
+    folder, filename = os.path.split(filepath)
+    modulename, _ = os.path.splitext(filename)
+    f, filename, description = imp.find_module(modulename, [folder])
+    try:
+        imp.load_module('graphysio.plugin', f, filename, description)
+    finally:
+        f.close()

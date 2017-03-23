@@ -24,14 +24,16 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addAction('&New Plot',       self.errguard(launchNewPlot),    QtCore.Qt.CTRL + QtCore.Qt.Key_N)
         self.menuFile.addAction('&Append to Plot', self.errguard(launchAppendPlot), QtCore.Qt.CTRL + QtCore.Qt.Key_A)
         self.menuFile.addSeparator()
+        self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
+        self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
         self.menuCurves.addAction('Visible &Curves',    self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
         self.menuCurves.addAction('&Filter',            self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
         self.menuCurves.addAction('Cycle &Detection',   self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
 
-        self.menuSelection.addAction('As new plot', self.errguard(self.launchNewPlotFromSelection))
-        self.menuSelection.addAction('Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))
+        self.menuSelection.addAction('As &new plot', self.errguard(self.launchNewPlotFromSelection))
+        self.menuSelection.addAction('&Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))
         self.menuSelection.addAction('Generate PU-&Loops', self.errguard(self.launchLoop), QtCore.Qt.CTRL + QtCore.Qt.Key_L)
 
         self.menuExport.addAction('&Series to CSV',     self.errguard(self.exportSeries))
@@ -156,7 +158,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         plotwidget = tsplot.PlotWidget(plotdata=plotdata, parent=self)
         newtabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
         for c in sourcewidget.curves.values():
-            series = c.series.ix[xmin:xmax]
+            series = c.series.loc[xmin:xmax]
             plotwidget.addCurve(series)
         self.tabWidget.setCurrentIndex(newtabindex)
 
@@ -179,7 +181,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         xmin, xmax = sourcewidget.vbrange
 
         for c in sourcewidget.curves.values():
-            series = c.series.ix[xmin:xmax]
+            series = c.series.loc[xmin:xmax]
             destwidget.addCurve(series, dorealign=dorealign)
         self.tabWidget.setCurrentIndex(destidx)
 
