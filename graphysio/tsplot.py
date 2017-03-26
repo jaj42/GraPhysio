@@ -80,9 +80,9 @@ class PlotWidget(pg.PlotWidget):
             newcurve = self.addCurve(series=newseries)
             newcurve.samplerate = newsamplerate
         else:
-            oldcurve.setData(x = newseries.index,
-                             y = newseries.values)
+            oldcurve.series = newseries
             oldcurve.samplerate = newsamplerate
+            oldcurve.render()
 
     def sigPointClicked(self, curve, points):
         point = points[0] # keep the first point
@@ -129,12 +129,15 @@ class CurveItem(pg.PlotDataItem):
         self.feetitem = None
         self.pen = pen
         self.samplerate = utils.estimateSampleRate(self.series)
-        super().__init__(x    = self.series.index,
-                         y    = self.series.values,
-                         name = self.series.name,
+        super().__init__(name = self.series.name,
                          pen  = self.pen,
                          antialias = True,
                          *args, **kwargs)
+        self.render()
+
+    def render(self):
+        self.setData(x = self.series.index,
+                     y = self.series.values)
 
 
 class FeetItem(pg.ScatterPlotItem):
