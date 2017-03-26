@@ -138,45 +138,42 @@ class FeetItem(pg.ScatterPlotItem):
 
     def __init__(self, curve, starts, stops=None, namesuffix='feet', *args, **kwargs):
         self.selected = []
-        self.curve = curve
-        self.hasstops = (stops is not None)
         pen = curve.opts['pen']
         self._name = "{}-{}".format(curve.name(), namesuffix)
+        super().__init__(pen = pen, *args, **kwargs)
         if stops is None:
-            symbols = [self.symPoint]
-            feet = starts
+            self.starts = pd.DataFrame({'points' : starts, 'sym' : self.symPoint}, index=starts.index)
+            self.stops  = pd.DataFrame({'points' : [], 'sym' : self.symStop})
         else:
-            symbols = [self.symStart, self.symStop]
-            feet = pd.concat([starts, stops]).sort_index()
+            self.starts = pd.DataFrame({'points' : starts, 'sym' : self.symStart}, index=starts.index)
+            self.stops  = pd.DataFrame({'points' : stops, 'sym' : self.symStop}, index=stops.index)
+        self.render()
 
-        symlist = list(islice(cycle(symbols), len(feet)))
-        super().__init__(x      = feet.index,
-                         y      = feet.values,
-                         pen    = pen,
-                         symbol = symlist,
-                         *args, **kwargs)
+    def removePoints(self, points):
+        for point in points:
+            if point.symbol() in [self.symPoint, self.symStart]:
+                # should be in starts
+                nidx = self.starts.index.get_loc(point.pos().x(), method='nearest')
+                idx = self.starts.index[nidx]
+                self.starts.drop(idx, inplace=True)
+            elif point.symbol() == self.symStop:
+                # should be in stops
+                nidx = self.stops.index.get_loc(point.pos().x(), method='nearest')
+                idx = self.stops.index[nidx]
+                self.stops.drop(idx, inplace=True)
+            else:
+                # should not happen
+                pass
+        self.selected = []
 
-    def name(self):
-        return self._name
-
-    @property
-    def starts(self):
-        time = [point.pos().x() for point in self.points() if point.symbol() in [self.symPoint, self.symStart]]
-        indices = np.array(time, dtype=np.int64)
-        elements = self.curve.series.loc[indices]
-        return elements.rename(self.name())
-
-    @property
-    def stops(self):
-        if not self.hasstops:
-            return None
-        time = [point.pos().x() for point in self.points() if point.symbol() == self.symStop]
-        indices = np.array(time, dtype=np.int64)
-        elements = self.curve.series.loc[indices]
-        return elements.rename(self.name())
+    def render(self):
+        feet = pd.concat([self.starts, self.stops])
+        self.setData(x = feet.index.values,
+                     y = feet['points'].values,
+                     symbol = feet['sym'].values)
 
     def isPointSelected(self, point):
-        return point in self.selected
+        return (point in self.selected)
 
     def selectPoint(self, point):
         if not self.isPointSelected(point):
@@ -188,20 +185,13 @@ class FeetItem(pg.ScatterPlotItem):
             self.selected.remove(point)
         point.resetBrush()
 
-    def removePoints(self, points):
-        datapoints = self.points().tolist()
-        for point in points:
-            try:
-                datapoints.remove(point)
-            except ValueError as e:
-                print("Point not found: {}".format(e), file=sys.stderr)
-                continue
-        spots = [{'pos' : p.pos(), 'symbol' : p.symbol()} for p in datapoints]
-        self.setData(spots = spots)
-        self.selected = []
-
     def removeSelection(self):
-        return self.removePoints(self.selected)
+        self.removePoints(self.selected)
+        self.render()
+
+    def name(self):
+        # Method needed for compat with CurveItem
+        return self._name
 
 
 class TimeAxisItem(pg.AxisItem):
