@@ -164,7 +164,6 @@ class FeetItem(pg.ScatterPlotItem):
             else:
                 # should not happen
                 pass
-        self.selected = []
 
     def render(self):
         feet = pd.concat([self.starts, self.stops])
@@ -187,6 +186,7 @@ class FeetItem(pg.ScatterPlotItem):
 
     def removeSelection(self):
         self.removePoints(self.selected)
+        self.selected = []
         self.render()
 
     def name(self):
