@@ -95,13 +95,18 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
     def launchFilter(self):
         dlgFilter = dialogs.DlgFilter(parent = self)
         if not dlgFilter.exec_(): return
-        createnew, choices = dlgFilter.result
+        createnew, curvechoices, feetchoices = dlgFilter.result
         plotwidget = self.tabWidget.currentWidget()
-        for curvename, choice in choices.items():
+        for curvename, choice in curvechoices.items():
             if choice == 'None':
                 continue
             curve = plotwidget.curves[curvename]
             plotwidget.filterCurve(curve, choice, asnew=createnew)
+        for feetname, choice in feetchoices.items():
+            if choice == 'None':
+                continue
+            feet = plotwidget.feetitems[feetname]
+            plotwidget.filterFeet(feet, choice)
 
     def launchReadData(self, newwidget=True):
         if newwidget:

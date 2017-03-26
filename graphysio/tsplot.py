@@ -84,6 +84,12 @@ class PlotWidget(pg.PlotWidget):
             oldcurve.samplerate = newsamplerate
             oldcurve.render()
 
+    def filterFeet(self, feetitem, filtername):
+        starts, stops = algorithms.filterFeet(feetitem, filtername, dialogs.askUserValue)
+        feetitem.starts = starts
+        feetitem.stops = stops
+        feetitem.render()
+
     def sigPointClicked(self, curve, points):
         point = points[0] # keep the first point
         if not curve.isPointSelected(point):

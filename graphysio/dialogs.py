@@ -201,25 +201,42 @@ class DlgFilter(*utils.loadUiFile('filter.ui')):
         if plotframe is None:
             return
 
-        for n, curvename in enumerate(plotframe.curves.keys()):
-            combo = QtGui.QComboBox()
+        def fillTable(items, itemtype, filters):
+            rowoffset = self.table.rowCount()
+            for n, itemname in enumerate(items):
+                combo = QtGui.QComboBox()
 
-            combo.addItems(['None'])
-            filters = list(algorithms.Filters.keys())
-            combo.addItems(filters)
+                combo.addItems(['None'])
+                filternames = list(filters.keys())
+                combo.addItems(filternames)
 
-            curveitem = QtGui.QTableWidgetItem(curvename)
+                curveitem = QtGui.QTableWidgetItem(itemname)
 
-            self.table.insertRow(n)
-            self.table.setItem(n, 0, curveitem)
-            self.table.setCellWidget(n, 1, combo)
-            self.choices[curvename] = combo
+                idx = rowoffset + n
+                self.table.insertRow(idx)
+                self.table.setItem(idx, 0, curveitem)
+                self.table.setCellWidget(idx, 1, combo)
+                self.choices[itemname] = (combo, itemtype)
+
+        curves = list(plotframe.curves.keys())
+        feet = list(plotframe.feetitems.keys())
+
+        fillTable(curves, 'curve', algorithms.Filters)
+        fillTable(feet, 'feet', algorithms.FeetFilters)
 
     @property
     def result(self):
-        filthash = {curve: combo.currentText() for (curve, combo) in self.choices.items()}
-        newcurve = (self.chkNewcurve.checkState() > QtCore.Qt.Unchecked)
-        return (newcurve, filthash)
+        feetfilters = {}
+        curvefilters = {}
+        for itemname, value in self.choices.items():
+            combo, itemtype = value
+            if itemtype == 'feet':
+                feetfilters[itemname] = combo.currentText()
+            else:
+                curvefilters[itemname] = combo.currentText()
+
+        createnew = (self.chkNewcurve.checkState() > QtCore.Qt.Unchecked)
+        return (createnew, curvefilters, feetfilters)
 
 
 class DlgSetupPULoop(*utils.loadUiFile('setuppuloop.ui')):

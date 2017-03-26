@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name = 'graphysio',
-      version = '0.81',
+      version = '0.82',
       description = 'Graphical visualization of physiologic time series',
       url = 'https://github.com/jaj42/graphysio',
       author = 'Jona JOACHIM',

@@ -35,6 +35,8 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
            'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])}
 
+FeetFilters = {'Short cycles' : Filter(name='shortcycles', parameters=[Parameter('Minimum duration (ms)', int)])}
+
 def updateTFs():
     tflist = list(TFs.keys())
     Filters['Transfer function'] = Filter(name='tf', parameters=[Parameter('Transfer function', tflist)])
@@ -128,6 +130,25 @@ def filter(curve, filtname, paramgetter):
 
     return filtfuncs[filt.name](series, samplerate, parameters)
 
+def filterFeet(feet, filtname, paramgetter):
+    filt = FeetFilters[filtname]
+    parameters = map(paramgetter, filt.parameters)
+
+    if filt.name == 'shortcycles':
+        if len(feet.stops) < 1:
+            # No stop information
+            return feet
+        msMinDuration, = parameters
+        minCycleLength = msMinDuration * 1e6 # Transform ms to ns
+        cycleDurations = [stop - start for start, stop in zip(feet.starts.index, feet.stops.index)]
+        boolidx = list(map(lambda d: d >= minCycleLength, cycleDurations))
+        newstarts = feet.starts.loc[boolidx]
+        newstops = feet.stops.loc[boolidx]
+    else:
+        errmsg = 'Unknown filter: {}'.format(filtname)
+        raise ValueError()
+    return (newstarts, newstops)
+
 def findPressureFeet(curve):
     series = curve.series.dropna()
     samplerate = curve.samplerate
@@ -200,13 +221,6 @@ def findFlowCycles(curve):
     except IndexError as e:
         raise TypeError("No cycle detected: {}".format(e))
 
-    # Filter noise cycles which are shorter than 150ms
-    #minSystoleLength = 15e5 * samplerate
-    #def notShortCycles():
-    #    for (startidx, stopidx) in zip(cycleStarts.index, cycleStops.index):
-    #        if stopidx - startidx >= minSystoleLength:
-    #            yield (startidx, stopidx)
-    #startidx, stopidx = zip(*notShortCycles())
     startidx, stopidx = zip(*zip(cycleStarts.index, cycleStops.index))
     cycleStarts = cycleStarts[list(startidx)]
     cycleStops = cycleStops[list(stopidx)]
