@@ -74,11 +74,15 @@ class PlotWidget(pg.PlotWidget):
         feet.sigClicked.connect(self.sigPointClicked)
         self.addItem(feet)
 
-    def addFiltered(self, oldcurve, filtername):
+    def filterCurve(self, oldcurve, filtername, asnew=False):
         newseries, newsamplerate = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
-        if newseries is not None:
+        if asnew:
             newcurve = self.addCurve(series=newseries)
             newcurve.samplerate = newsamplerate
+        else:
+            oldcurve.setData(x = newseries.index,
+                             y = newseries.values)
+            oldcurve.samplerate = newsamplerate
 
     def sigPointClicked(self, curve, points):
         point = points[0] # keep the first point

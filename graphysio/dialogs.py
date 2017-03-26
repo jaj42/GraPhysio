@@ -217,7 +217,9 @@ class DlgFilter(*utils.loadUiFile('filter.ui')):
 
     @property
     def result(self):
-        return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
+        filthash = {curve: combo.currentText() for (curve, combo) in self.choices.items()}
+        newcurve = (self.chkNewcurve.checkState() > QtCore.Qt.Unchecked)
+        return (newcurve, filthash)
 
 
 class DlgSetupPULoop(*utils.loadUiFile('setuppuloop.ui')):

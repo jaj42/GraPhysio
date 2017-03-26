@@ -24,6 +24,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="chkNewcurve">
+     <property name="text">
+      <string>Create new curve</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QPushButton" name="okButton">
