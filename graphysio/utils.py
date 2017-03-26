@@ -131,3 +131,7 @@ def loadmodule():
     finally:
         sys.dont_write_bytecode = bcbak
         f.close()
+
+def getshell(ui=None):
+    import IPython
+    IPython.embed(ui=ui)
