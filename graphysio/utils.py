@@ -7,6 +7,7 @@ from enum import Enum
 from itertools import cycle
 
 import pandas as pd
+import numpy as np
 from pyqtgraph.Qt import QtGui, loadUiType
 
 class FootType(Enum):
@@ -103,9 +104,9 @@ def loadUiFile(uiFile):
     return uiClasses
 
 def estimateSampleRate(series):
-    idx = series.index.values
-    timedelta = (idx[-1] - idx[0]) * 1e-9
-    fs = len(idx) / timedelta
+    intervals = np.diff(series.index)
+    # 1e9 to account for ns -> Hz
+    fs = 1e9 / np.median(intervals)
     return int(round(fs))
 
 def loadmodule():

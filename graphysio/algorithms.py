@@ -137,16 +137,16 @@ def filterFeet(feet, filtname, paramgetter):
     if filt.name == 'shortcycles':
         if len(feet.stops) < 1:
             # No stop information
-            return feet
+            raise ValueError('No stop feet')
         msMinDuration, = parameters
         minCycleLength = msMinDuration * 1e6 # Transform ms to ns
-        cycleDurations = [stop - start for start, stop in zip(feet.starts.index, feet.stops.index)]
+        cycleDurations = (stop - start for start, stop in zip(feet.starts.index, feet.stops.index))
         boolidx = list(map(lambda d: d >= minCycleLength, cycleDurations))
         newstarts = feet.starts.loc[boolidx]
         newstops = feet.stops.loc[boolidx]
     else:
         errmsg = 'Unknown filter: {}'.format(filtname)
-        raise ValueError()
+        raise ValueError(errmsg)
     return (newstarts, newstops)
 
 def findPressureFeet(curve):
