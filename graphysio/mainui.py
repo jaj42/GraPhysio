@@ -32,8 +32,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
         self.menuCurves.addAction('Visible &Curves',    self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
-        self.menuCurves.addAction('&Filter',            self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
         self.menuCurves.addAction('Cycle &Detection',   self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
+        self.menuCurves.addAction('&Filter',            self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
 
         self.menuSelection.addAction('As &new plot', self.errguard(self.launchNewPlotFromSelection))
         self.menuSelection.addAction('&Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))

@@ -101,8 +101,8 @@ class PuExporter():
             return
         data = []
         for loop in self.parent.loops:
-            alpha, beta, gamma = loop.angles
-            tmpdict = {'alpha' : alpha, 'beta' : beta, 'gamma' : gamma}
+            alpha, beta, gala = loop.angles
+            tmpdict = {'alpha' : alpha, 'beta' : beta, 'gala' : gala}
             data.append(tmpdict)
         df = pd.DataFrame(data)
         df.index += 1
