@@ -83,7 +83,7 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         ubegins, uends = truncatevec([ubegins, uends])
         durations = uends - ubegins
 
-        us = u.series.dropna(); ps = p.series.dropna()
+        us = u.series; ps = p.series
         for ubegin, pfoot, duration in zip(ubegins, pfeet, durations):
             loopu = us.loc[ubegin:ubegin+duration]
             loopp = ps.loc[pfoot:pfoot+duration]
