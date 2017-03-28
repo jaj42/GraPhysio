@@ -80,10 +80,10 @@ def _lowpass(series, samplerate, parameters):
 
 def _interp(series, samplerate, parameters):
     newsamplerate, method = parameters
-    npoints = len(series) * newsamplerate / samplerate
     oldidx = series.index
     f = interpolate.interp1d(oldidx, series.values, kind=method)
-    newidx = np.linspace(oldidx[0], oldidx[-1], num=npoints, endpoint=False)
+    step = 1e9 / newsamplerate # 1e9 to convert Hz to ns
+    newidx = np.arange(oldidx[0], oldidx[-1], step, dtype=np.int64)
     resampled = f(newidx)
     newname = "{}-{}Hz".format(series.name, newsamplerate)
     newseries = pd.Series(resampled, index=newidx, name=newname)
