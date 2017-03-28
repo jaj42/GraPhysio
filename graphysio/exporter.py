@@ -34,7 +34,7 @@ class TsExporter():
         data = pd.concat(series, axis=1).sort_index()
         data['datetime'] = pd.to_datetime(data.index, unit = 'ns')
         data = data.loc[xmin:xmax]
-        data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
+        data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index=False)
 
     def periodstocsv(self):
         xmin, xmax = self.parent.vbrange
@@ -117,4 +117,4 @@ class PuExporter():
             df = pd.DataFrame({'u' : loop.u, 'p' : loop.p})
             filename = "{}-{}.csv".format(self.name, n+1)
             outfile = os.path.join(self.outdir, filename)
-            df.to_csv(outfile)
+            df.to_csv(outfile, index=False)
