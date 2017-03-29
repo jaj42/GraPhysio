@@ -97,8 +97,6 @@ class PuExporter():
         self.writeloops()
 
     def writetable(self):
-        if self.outdir is None:
-            return
         data = []
         for loop in self.parent.loops:
             alpha, beta, gala = loop.angles
@@ -112,8 +110,6 @@ class PuExporter():
         df.to_csv(filepath, index_label='idx')
 
     def writeloops(self):
-        if self.outdir is None:
-            return
         for n, loop in enumerate(self.parent.loops):
             df = loop.df
             filename = "{}-{}.csv".format(self.name, n+1)
