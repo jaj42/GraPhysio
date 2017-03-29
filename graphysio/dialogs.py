@@ -182,6 +182,8 @@ class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
             self.table.setCellWidget(n, 1, combo)
             self.choices[curvename] = combo
 
+        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+
     @property
     def result(self):
         return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
