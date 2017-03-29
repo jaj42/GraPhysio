@@ -102,19 +102,21 @@ class PuExporter():
         data = []
         for loop in self.parent.loops:
             alpha, beta, gala = loop.angles
-            tmpdict = {'alpha' : alpha, 'beta' : beta, 'gala' : gala}
+            delay = loop.offset / 1e6
+            tmpdict = {'alpha' : alpha, 'beta' : beta, 'gala' : gala, 'delay' : delay}
             data.append(tmpdict)
         df = pd.DataFrame(data)
         df.index += 1
         filename = "{}-loopdata.csv".format(self.name)
-        outfile = os.path.join(self.outdir, filename)
-        df.to_csv(outfile)
+        filepath = os.path.join(self.outdir, filename)
+        df.to_csv(filepath, index_label='idx')
 
     def writeloops(self):
         if self.outdir is None:
             return
         for n, loop in enumerate(self.parent.loops):
-            df = pd.DataFrame({'u' : loop.u, 'p' : loop.p})
+            df = loop.df
             filename = "{}-{}.csv".format(self.name, n+1)
-            outfile = os.path.join(self.outdir, filename)
-            df.to_csv(outfile, index=False)
+            filepath = os.path.join(self.outdir, filename)
+            df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
+            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index=False)

@@ -153,13 +153,13 @@ class PULoop(object):
         # Realign pressure and flow
         offset = p.index[0] - u.index[0]
         u.index += offset
+        self.offset = abs(offset)
 
         df = pd.concat([u, p], axis=1)
-        df = df.interpolate(method='index')
+        self.df = df.interpolate(method='index')
 
         self.u = df[u.name]
         self.p = df[p.name]
-        self.offset = abs(offset)
 
     @property
     def cardpoints(self):
