@@ -26,9 +26,6 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         super().__init__(parent=parent)
         self.setupUi(self)
 
-        if u.samplerate != p.samplerate:
-            raise TypeError('Sampling rates do not match {} vs {}'.format(u.samplerate, p.samplerate))
-
         self.parent = parent
         self.xmin, self.xmax = subsetrange
 
@@ -55,38 +52,46 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             self.lblTot.setText(str(len(self.loops)))
             self.renderloop(0)
 
-    def initloopdata(self, u, p):
+    def getDurations(self, series, feetitem):
         def clip(vec):
             # Only keep visible data based on subsetrange
             cond = (vec > self.xmin) & (vec < self.xmax)
             return vec[cond]
 
-        # Handle missing feet (use the whole signal)
-        if u.feetitem is None:
-            ubegins = np.array([u.series.index[0]])
-            uends   = np.array([u.series.index[-1]])
+        if feetitem is None or feetitem.starts.size < 1:
+            # We have no feet, treat the whole signal as one cycle
+            begins = series.head(1).index.values
+            ends = series.tail(1).index.values
+        elif feetitem.stops.size < 1:
+            # We have no stops, starts serve as stops for previous cycle
+            begins = feetitem.starts.index.values
+            ends = np.append(begins[1:], series.index[-1])
         else:
-            ubegins = clip(u.feetitem.starts.index)
-            uends   = clip(u.feetitem.stops.index) if u.feetitem.stops is not None else None
+            begins = feetitem.starts.index.values
+            ends = feetitem.stops.index.values
 
-        if p.feetitem is None:
-            pfeet = np.array([p.series.index[0]])
-        else:
-            pfeet = clip(p.feetitem.starts.index)
-
-        if uends is None:
-            uends = ubegins[1:]
+        # Only draw currently visible data
+        begins, ends = map(clip, [begins, ends])
 
         # Handle the case where we start in the middle of a cycle
-        while uends[0] <= ubegins[0]:
-            uends = uends[1:]
-        ubegins, uends = truncatevec([ubegins, uends])
-        durations = uends - ubegins
+        while ends[0] <= begins[0]:
+            ends = ends[1:]
 
+        begins, ends = truncatevec([begins, ends])
+        durations = ends - begins
+
+        return (begins, durations)
+
+    def initloopdata(self, u, p):
         us = u.series; ps = p.series
-        for ubegin, pfoot, duration in zip(ubegins, pfeet, durations):
+        ubegins, udurations = self.getDurations(us, u.feetitem)
+        pbegins, pdurations = self.getDurations(ps, p.feetitem)
+
+        durations = (min(pd, ud) for pd, ud in zip(udurations, pdurations))
+
+        for ubegin, pbegin, duration in zip(ubegins, pbegins, durations):
             loopu = us.loc[ubegin:ubegin+duration]
-            loopp = ps.loc[pfoot:pfoot+duration]
+            loopp = ps.loc[pbegin:pbegin+duration]
             self.loops.append(PULoop(loopu, loopp))
 
     def renderloop(self, idx=None):
@@ -113,7 +118,7 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         rect = QtCore.QRectF(bottomleft, qsize)
         self.graphicsView.setRange(rect=rect)
 
-        self.curveitem.setData(curloop.u, curloop.p, pen=self.pen)
+        self.curveitem.setData(curloop.u.values, curloop.p.values, pen=self.pen)
         self.scatteritem.setData(np.array(cardx), np.array(cardy))
         
     def prevloop(self):
@@ -141,16 +146,26 @@ class PULoop(object):
     def __init__(self, u, p):
         self.__angles = None
         self.__cardpoints = None
-        self.u, self.p = truncatevec([u.values, p.values])
+
+        # Realign pressure and flow
+        offset = p.index[0] - u.index[0]
+        u.index += offset
+
+        df = pd.concat([u, p], axis=1)
+        df = df.interpolate(method='index')
+
+        self.u = df[u.name]
+        self.p = df[p.name]
+        self.offset = abs(offset)
 
     @property
     def cardpoints(self):
         if self.__cardpoints is None:
             idxpmax = self.p.argmax()
             idxvmax = self.u.argmax()
-            A = Point(self.u[0], self.p[0])
-            B = Point(self.u[idxvmax], self.p[idxvmax])
-            C = Point(self.u[idxpmax], self.p[idxpmax])
+            A = Point(self.u.iloc[0], self.p.iloc[0])
+            B = Point(self.u.loc[idxvmax], self.p.loc[idxvmax])
+            C = Point(self.u.loc[idxpmax], self.p.loc[idxpmax])
             self.__cardpoints = Cardinals(A, B, C)
         return self.__cardpoints
 
