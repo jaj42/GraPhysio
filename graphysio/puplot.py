@@ -158,8 +158,8 @@ class PULoop(object):
         df = pd.concat([u, p], axis=1)
         self.df = df.interpolate(method='index')
 
-        self.u = df[u.name]
-        self.p = df[p.name]
+        self.u = self.df[u.name]
+        self.p = self.df[p.name]
 
     @property
     def cardpoints(self):
