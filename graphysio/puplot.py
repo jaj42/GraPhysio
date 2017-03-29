@@ -102,6 +102,9 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
 
         self.lblIdx.setText(str(idx + 1))
 
+        delay = int(curloop.offset / 1e6) # ns to ms
+        self.lblDelay.setText(str(delay))
+
         round1 = partial(round, ndigits=1)
         alpha, beta, gala = map(round1, curloop.angles)
         self.lblAlpha.setText(str(alpha))
