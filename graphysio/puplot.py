@@ -13,14 +13,6 @@ Point     = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
 Angles    = namedtuple('Angles', ['alpha', 'beta', 'gala'])
 
-def truncatevec(vecs):
-    # Ensure all vectors have the same length by truncating the end
-    # Not feeling so well about this function
-    lengths = map(len, vecs)
-    maxidx = min(lengths)
-    newvecs = [vec[0:maxidx] for vec in vecs]
-    return newvecs
-
 class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
     def __init__(self, u, p, subsetrange, parent):
         super().__init__(parent=parent)
@@ -40,9 +32,12 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         self.pen = p.pen
         self.graphicsView.setBackground('w')
 
+        plotitem = self.graphicsView.getPlotItem()
+        vb = plotitem.getViewBox()
+        vb.setAspectLocked(lock=True, ratio=1)
+
         self.curveitem = pg.PlotCurveItem()
         self.scatteritem = pg.ScatterPlotItem()
-        plotitem = self.graphicsView.getPlotItem()
         plotitem.addItem(self.scatteritem)
         plotitem.addItem(self.curveitem)
 
@@ -77,7 +72,6 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         while ends[0] <= begins[0]:
             ends = ends[1:]
 
-        begins, ends = truncatevec([begins, ends])
         durations = ends - begins
 
         return (begins, durations)
@@ -113,13 +107,6 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
 
         card = curloop.cardpoints
         cardx, cardy = zip(*card)
-
-        # Set visible range with quadratic aspect ratio
-        bottomleft = QtCore.QPointF(card.A.x, card.A.y)
-        size = max(card.B.x - card.A.x, card.C.y - card.A.y)
-        qsize = QtCore.QSizeF(size, size)
-        rect = QtCore.QRectF(bottomleft, qsize)
-        self.graphicsView.setRange(rect=rect)
 
         self.curveitem.setData(curloop.u.values, curloop.p.values, pen=self.pen)
         self.scatteritem.setData(np.array(cardx), np.array(cardy))
