@@ -24,7 +24,7 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
 
         # Setup Field Table
         self.lstVAll.verticalHeader().hide()
-        self.lstVAll.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.lstVAll.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
 
         # Connect callbacks
         self.btnBrowse.clicked.connect(self.selectFile)
@@ -223,6 +223,8 @@ class DlgFilter(*utils.loadUiFile('filter.ui')):
 
         fillTable(curves, 'curve', algorithms.Filters)
         fillTable(feet, 'feet', algorithms.FeetFilters)
+
+        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
     @property
     def result(self):
