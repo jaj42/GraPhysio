@@ -53,25 +53,34 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             cond = (vec > self.xmin) & (vec < self.xmax)
             return vec[cond]
 
+        def truncatevec(vecs):
+            # Ensure all vectors have the same length by truncating the end
+            lengths = map(len, vecs)
+            maxidx = min(lengths)
+            newvecs = [vec[0:maxidx] for vec in vecs]
+            return newvecs
+
         if feetitem is None or feetitem.starts.size < 1:
             # We have no feet, treat the whole signal as one cycle
-            begins = series.head(1).index.values
-            ends = series.tail(1).index.values
+            locs = (series.index.get_loc(i, method='nearest') for i in [self.xmin, self.xmax])
+            indices = (series.index[l] for l in locs)
+            singleton = lambda x: np.array([x])
+            begins, ends = map(singleton, indices)
         elif feetitem.stops.size < 1:
             # We have no stops, starts serve as stops for previous cycle
-            begins = feetitem.starts.index.values
-            ends = np.append(begins[1:], series.index[-1])
+            begins = clip(feetitem.starts.index.values)
+            endloc = series.index.get_loc(self.xmax, method='nearest')
+            end = series.index[endloc]
+            ends = np.append(begins[1:], end)
         else:
-            begins = feetitem.starts.index.values
-            ends = feetitem.stops.index.values
-
-        # Only draw currently visible data
-        begins, ends = map(clip, [begins, ends])
+            begins = clip(feetitem.starts.index.values)
+            ends = clip(feetitem.stops.index.values)
 
         # Handle the case where we start in the middle of a cycle
         while ends[0] <= begins[0]:
             ends = ends[1:]
 
+        begins, ends = truncatevec([begins, ends])
         durations = ends - begins
 
         return (begins, durations)
@@ -81,7 +90,7 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         ubegins, udurations = self.getDurations(us, u.feetitem)
         pbegins, pdurations = self.getDurations(ps, p.feetitem)
 
-        durations = (min(pd, ud) for pd, ud in zip(udurations, pdurations))
+        durations = map(min, zip(udurations, pdurations))
 
         for ubegin, pbegin, duration in zip(ubegins, pbegins, durations):
             loopu = us.loc[ubegin:ubegin+duration]
