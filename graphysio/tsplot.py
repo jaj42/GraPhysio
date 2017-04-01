@@ -1,5 +1,6 @@
 import sys
 from itertools import cycle, islice
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -144,6 +145,41 @@ class CurveItem(pg.PlotDataItem):
     def render(self):
         self.setData(x = self.series.index,
                      y = self.series.values)
+
+    def getCyclesIndices(self, vrange=None):
+        s = self.series
+        fi = self.feetitem
+        clip = partial(utils.clip, vrange=vrange)
+        if vrange:
+            xmin, xmax = vrange
+        else:
+            xmin = s.index[0]
+            xmax = s.index[-1]
+        if fi is None or fi.starts.size < 1:
+            # We have no feet, treat the whole signal as one cycle
+            locs = (s.index.get_loc(i, method='nearest') for i in [xmin, xmax])
+            indices = (s.index[l] for l in locs)
+            begins, ends = [np.array[i] for i in indices]
+        elif fi.stops.size < 1:
+            # We have no stops, starts serve as stops for previous cycle
+            begins = clip(fi.starts.index.values)
+            endloc = s.index.get_loc(xmax, method='nearest')
+            end = s.index[endloc]
+            ends = np.append(begins[1:], end)
+        else:
+            # We have starts and stops, use them
+            begins = fi.starts.index.values
+            ends   = fi.stops.index.values
+            if vrange:
+                begins, ends = map(clip, [begins, ends])
+
+        # Handle the case where we start in the middle of a cycle
+        while ends[0] <= begins[0]:
+            ends = ends[1:]
+
+        begins, ends = utils.truncatevecs([begins, ends])
+        durations = ends - begins
+        return (begins, durations)
 
 
 class FeetItem(pg.ScatterPlotItem):

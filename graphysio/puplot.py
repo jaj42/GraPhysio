@@ -19,7 +19,7 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         self.setupUi(self)
 
         self.parent = parent
-        self.xmin, self.xmax = subsetrange
+        self.subsetrange = subsetrange
 
         self.exporter = exporter.PuExporter(self, p.name())
 
@@ -47,54 +47,13 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             self.lblTot.setText(str(len(self.loops)))
             self.renderloop(0)
 
-    def getDurations(self, series, feetitem):
-        def clip(vec):
-            # Only keep visible data based on subsetrange
-            cond = (vec > self.xmin) & (vec < self.xmax)
-            return vec[cond]
-
-        def truncatevec(vecs):
-            # Ensure all vectors have the same length by truncating the end
-            lengths = map(len, vecs)
-            maxidx = min(lengths)
-            newvecs = [vec[0:maxidx] for vec in vecs]
-            return newvecs
-
-        if feetitem is None or feetitem.starts.size < 1:
-            # We have no feet, treat the whole signal as one cycle
-            locs = (series.index.get_loc(i, method='nearest') for i in [self.xmin, self.xmax])
-            indices = (series.index[l] for l in locs)
-            singleton = lambda x: np.array([x])
-            begins, ends = map(singleton, indices)
-        elif feetitem.stops.size < 1:
-            # We have no stops, starts serve as stops for previous cycle
-            begins = clip(feetitem.starts.index.values)
-            endloc = series.index.get_loc(self.xmax, method='nearest')
-            end = series.index[endloc]
-            ends = np.append(begins[1:], end)
-        else:
-            begins = clip(feetitem.starts.index.values)
-            ends = clip(feetitem.stops.index.values)
-
-        # Handle the case where we start in the middle of a cycle
-        while ends[0] <= begins[0]:
-            ends = ends[1:]
-
-        begins, ends = truncatevec([begins, ends])
-        durations = ends - begins
-
-        return (begins, durations)
-
     def initloopdata(self, u, p):
-        us = u.series; ps = p.series
-        ubegins, udurations = self.getDurations(us, u.feetitem)
-        pbegins, pdurations = self.getDurations(ps, p.feetitem)
-
+        ubegins, udurations = u.getCyclesIndices(self.subsetrange)
+        pbegins, pdurations = p.getCyclesIndices(self.subsetrange)
         durations = map(min, zip(udurations, pdurations))
-
         for ubegin, pbegin, duration in zip(ubegins, pbegins, durations):
-            loopu = us.loc[ubegin:ubegin+duration]
-            loopp = ps.loc[pbegin:pbegin+duration]
+            loopu = u.series.loc[ubegin:ubegin+duration]
+            loopp = p.series.loc[pbegin:pbegin+duration]
             self.loops.append(PULoop(loopu, loopp))
 
     def renderloop(self, idx=None):

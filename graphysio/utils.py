@@ -133,6 +133,19 @@ def loadmodule():
         sys.dont_write_bytecode = bcbak
         f.close()
 
+def clip(vec, vrange):
+    if vrange is None:
+        return vec
+    xmin, xmax = vrange
+    cond = (vec > xmin) & (vec < xmax)
+    return vec[cond]
+
+def truncatevecs(vecs):
+    # Ensure all vectors have the same length by truncating the end
+    maxidx = min(map(len, vecs))
+    newvecs = [vec[0:maxidx] for vec in vecs]
+    return newvecs
+
 def getshell(ui=None):
     import IPython
     IPython.embed(ui=ui)

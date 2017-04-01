@@ -31,18 +31,19 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
-        self.menuCurves.addAction('Visible &Curves',    self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
-        self.menuCurves.addAction('Cycle &Detection',   self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
-        self.menuCurves.addAction('&Filter',            self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        self.menuCurves.addAction('Visible &Curves',   self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
+        self.menuCurves.addAction('Cycle &Detection',  self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
+        self.menuCurves.addAction('&Filter',           self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
 
-        self.menuSelection.addAction('As &new plot', self.errguard(self.launchNewPlotFromSelection))
+        self.menuSelection.addAction('As &new plot',          self.errguard(self.launchNewPlotFromSelection))
         self.menuSelection.addAction('&Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))
-        self.menuSelection.addAction('Generate PU-&Loops', self.errguard(self.launchLoop), QtCore.Qt.CTRL + QtCore.Qt.Key_L)
+        self.menuSelection.addAction('Generate PU-&Loops',    self.errguard(self.launchLoop), QtCore.Qt.CTRL + QtCore.Qt.Key_L)
 
-        self.menuExport.addAction('&Series to CSV',     self.errguard(self.exportSeries))
-        self.menuExport.addAction('&Time info to CSV',  self.errguard(self.exportPeriod))
-        self.menuExport.addAction('&Cycle info to CSV', self.errguard(self.exportCycles))
-        self.menuExport.addAction('&Loop Data',         self.errguard(self.exportLoops))
+        self.menuExport.addAction('&Series to CSV',              self.errguard(self.exportSeries))
+        self.menuExport.addAction('&Time info to CSV',           self.errguard(self.exportPeriod))
+        self.menuExport.addAction('&Cycle info to CSV',          self.errguard(self.exportCycleInfo))
+        self.menuExport.addAction('&Cycles to CSV directory',    self.errguard(self.exportCycles))
+        self.menuExport.addAction('&Loop Data to CSV directory', self.errguard(self.exportLoops))
 
         self.haserror.connect(self.displayError)
 
@@ -212,6 +213,15 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             self.haserror.emit('Method not available for this plot.')
 
     def exportCycles(self):
+        plotwidget = self.tabWidget.currentWidget()
+        if plotwidget is None:
+            return
+        if hasattr(plotwidget.exporter, 'cyclestocsv'):
+            plotwidget.exporter.cyclestocsv()
+        else:
+            self.haserror.emit('Method not available for this plot.')
+
+    def exportCycleInfo(self):
         plotwidget = self.tabWidget.currentWidget()
         if plotwidget is None:
             return

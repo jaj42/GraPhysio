@@ -1,4 +1,5 @@
 import os, csv
+from itertools import zip_longest
 
 import numpy as np
 import pandas as pd
@@ -60,6 +61,43 @@ class TsExporter():
                              'end'      : xmax,
                              'periodid' : dlg.periodname,
                              'comment'  : dlg.comment})
+
+    def cyclestocsv(self):
+        outdirtmp = QtGui.QFileDialog.getExistingDirectory(caption = "Export to",
+                                                           directory = self.outdir)
+        if not outdirtmp:
+            # Cancel pressed
+            return
+        self.outdir = outdirtmp
+
+        # Some non trivial manipulations to get the cycles from all
+        # curves, then reorganize to group by the n-th cycle from each
+        # curve and put those cycles into a dataframe for export.
+        def getLongest(vecs):
+            okvecs = (v for v in vecs if v is not None)
+            maxidx = max(map(len, okvecs))
+            longest = next(filter(lambda v: len(v) >= maxidx, vecs))
+            return longest
+
+        def getCurveCycles(curve):
+            cycleIdx = curve.getCyclesIndices()
+            cycles = (curve.series.loc[b:b+d] for b, d in zip(*cycleIdx))
+            return cycles
+
+        curves = self.parent.curves.values()
+        allByCurve = (getCurveCycles(curve) for curve in curves)
+        allByCycle = zip_longest(*allByCurve)
+
+        for n, cycle in enumerate(allByCycle):
+            noidxcycle = [s.reset_index(drop=True) for s in cycle if s is not None]
+            df = pd.concat(noidxcycle, axis=1)
+            datetime = pd.to_datetime(getLongest(cycle).index, unit = 'ns')
+            df.index = datetime
+
+            filename = "{}-{}.csv".format(self.name, n+1)
+            filepath = os.path.join(self.outdir, filename)
+            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
+
 
     def cyclepointstocsv(self):
         filename = "{}-feet.csv".format(self.name)
