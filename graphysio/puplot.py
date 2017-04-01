@@ -60,6 +60,10 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         if idx is None:
             idx = self.curidx
 
+        if len(self.loops) < 1:
+            # We have no loop
+            return
+
         curloop = self.loops[idx]
 
         self.lblIdx.setText(str(idx + 1))

@@ -159,7 +159,7 @@ class CurveItem(pg.PlotDataItem):
             # We have no feet, treat the whole signal as one cycle
             locs = (s.index.get_loc(i, method='nearest') for i in [xmin, xmax])
             indices = (s.index[l] for l in locs)
-            begins, ends = [np.array[i] for i in indices]
+            begins, ends = [np.array([i]) for i in indices]
         elif fi.stops.size < 1:
             # We have no stops, starts serve as stops for previous cycle
             begins = clip(fi.starts.index.values)

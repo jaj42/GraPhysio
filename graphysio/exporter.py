@@ -98,7 +98,6 @@ class TsExporter():
             filepath = os.path.join(self.outdir, filename)
             df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
 
-
     def cyclepointstocsv(self):
         filename = "{}-feet.csv".format(self.name)
         defaultpath = os.path.join(self.outdir, filename)
