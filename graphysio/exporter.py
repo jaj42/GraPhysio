@@ -89,9 +89,17 @@ class TsExporter():
         allByCycle = zip_longest(*allByCurve)
 
         for n, cycle in enumerate(allByCycle):
-            noidxcycle = [s.reset_index(drop=True) for s in cycle if s is not None]
-            df = pd.concat(noidxcycle, axis=1)
-            datetime = pd.to_datetime(getLongest(cycle).index, unit = 'ns')
+            idxstart = None
+            for s in cycle:
+                # Make all series start at the same point
+                if s is None or len(s) < 1:
+                    continue
+                if idxstart is None:
+                    idxstart = s.index[0]
+                idxdelta = s.index[0] - idxstart
+                s.index -= idxdelta
+            df = pd.concat(cycle, axis=1)
+            datetime = pd.to_datetime(df.index, unit = 'ns')
             df.index = datetime
 
             filename = "{}-{}.csv".format(self.name, n+1)
