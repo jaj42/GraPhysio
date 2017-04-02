@@ -144,7 +144,8 @@ class CurveItem(pg.PlotDataItem):
 
     def render(self):
         self.setData(x = self.series.index,
-                     y = self.series.values)
+                     y = self.series.values,
+                     connect = 'finite')
 
     def getCyclesIndices(self, vrange=None):
         s = self.series
