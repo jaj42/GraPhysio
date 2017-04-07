@@ -13,19 +13,29 @@ Point     = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
 Angles    = namedtuple('Angles', ['alpha', 'beta', 'gala'])
 
+def errguard(f):
+    # Lift exceptions to UI reported errors
+    def wrapped():
+        try:
+            f()
+        except Exception as e:
+            # Re-raise errors here for DEBUG
+            #raise e
+            utils.displayError(e)
+    return wrapped
+
 class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
     def __init__(self, u, p, subsetrange, parent):
         super().__init__(parent=parent)
         self.setupUi(self)
 
-        self.parent = parent
         self.subsetrange = subsetrange
 
         self.exporter = exporter.PuExporter(self, p.name())
 
-        self.btnPrev.clicked.connect(self.prevloop)
-        self.btnNext.clicked.connect(self.nextloop)
-        self.btnDelete.clicked.connect(self.delloop)
+        self.btnPrev.clicked.connect(errguard(self.prevloop))
+        self.btnNext.clicked.connect(errguard(self.nextloop))
+        self.btnDelete.clicked.connect(errguard(self.delloop))
 
         self.curidx = 0
         self.loops = []
@@ -59,10 +69,6 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
     def renderloop(self, idx=None):
         if idx is None:
             idx = self.curidx
-
-        if len(self.loops) < 1:
-            # We have no loop
-            return
 
         curloop = self.loops[idx]
 

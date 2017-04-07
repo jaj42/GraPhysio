@@ -45,7 +45,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuExport.addAction('&Cycles to CSV directory',    self.errguard(self.exportCycles))
         self.menuExport.addAction('&Loop Data to CSV directory', self.errguard(self.exportLoops))
 
-        self.haserror.connect(self.displayError)
+        self.haserror.connect(utils.displayError)
 
     def errguard(self, f):
         # Lift exceptions to UI reported errors
@@ -248,11 +248,3 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         w.close()
         w.deleteLater()
         del w
-
-    def displayError(self, errmsg):
-        msgbox = QtGui.QMessageBox()
-        msgbox.setWindowTitle("Error")
-        msgbox.setText(str(errmsg))
-        msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-        msgbox.setIcon(QtGui.QMessageBox.Critical)
-        msgbox.exec_()

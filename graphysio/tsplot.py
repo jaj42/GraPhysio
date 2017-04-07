@@ -28,9 +28,7 @@ class PlotWidget(pg.PlotWidget):
 
         self.exporter = exporter.TsExporter(self, plotdata.name)
 
-        allSeries = (plotdata.data[c] for c in plotdata.fields)
-        for series in allSeries:
-            self.addCurve(series)
+        self.appendData(plotdata)
 
     def appendData(self, newplotdata, dorealign=False):
         allSeries = (newplotdata.data[c] for c in newplotdata.fields)
@@ -46,6 +44,7 @@ class PlotWidget(pg.PlotWidget):
         return {item.name() : item for item in self.listDataItems() if isinstance(item, FeetItem)}
 
     def addCurve(self, series, pen=None, dorealign=False):
+        # TODO handle name clashes
         if pen is None:
             pen = next(self.colors)
 
@@ -55,8 +54,7 @@ class PlotWidget(pg.PlotWidget):
             offset = min(begins) - series.index[0]
             series.index += offset
 
-        curve = CurveItem(series = series,
-                          pen    = pen)
+        curve = CurveItem(series = series, pen = pen)
         self.addItem(curve)
         self.legend.addItem(curve, curve.name())
         return curve
@@ -110,7 +108,6 @@ class PlotWidget(pg.PlotWidget):
         visible, invisible = dlgCurveSelection.result
         newvisible = [item for item in visible if item not in self.listDataItems()]
         newinvisible = [item for item in invisible if item not in self.hiddenitems]
-        self.hiddenitems = invisible
         for item in newvisible:
             self.addItem(item)
             self.legend.addItem(item, item.name())
@@ -170,8 +167,7 @@ class CurveItem(pg.PlotDataItem):
             # We have starts and stops, use them
             begins = fi.starts.index.values
             ends   = fi.stops.index.values
-            if vrange:
-                begins, ends = map(clip, [begins, ends])
+            begins, ends = map(clip, [begins, ends])
 
         # Handle the case where we start in the middle of a cycle
         while ends[0] <= begins[0]:

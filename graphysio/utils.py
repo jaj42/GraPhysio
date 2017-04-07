@@ -149,3 +149,11 @@ def truncatevecs(vecs):
 def getshell(ui=None):
     import IPython
     IPython.embed(ui=ui)
+
+def displayError(errmsg):
+    msgbox = QtGui.QMessageBox()
+    msgbox.setWindowTitle("Error")
+    msgbox.setText(str(errmsg))
+    msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+    msgbox.setIcon(QtGui.QMessageBox.Critical)
+    msgbox.exec_()
