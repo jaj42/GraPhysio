@@ -1,4 +1,5 @@
 import pyqtgraph as pg
+
 __all__ = ['MyLegendItem']
 
 class MyLegendItem(pg.LegendItem):
@@ -9,3 +10,9 @@ class MyLegendItem(pg.LegendItem):
         p.setPen(pg.mkPen(0,0,0,255))
         p.setBrush(pg.mkBrush(255,255,255,255))
         p.drawRect(self.boundingRect())
+
+    def addItem(self, item, name):
+        # Make the line width bigger
+        pen = pg.mkPen(item.pen, width=2)
+        newitem = pg.PlotDataItem(pen=pen)
+        super().addItem(newitem, name)
