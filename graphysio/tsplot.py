@@ -110,7 +110,8 @@ class PlotWidget(pg.PlotWidget):
         newinvisible = [item for item in invisible if item not in self.hiddenitems]
         for item in newvisible:
             self.addItem(item)
-            self.legend.addItem(item, item.name())
+            if isinstance(item, pg.PlotCurveItem):
+                self.legend.addItem(item, item.name())
             if item in self.hiddenitems:
                 self.hiddenitems.remove(item)
 
@@ -127,7 +128,7 @@ class PlotWidget(pg.PlotWidget):
         return (xmin, xmax)
 
 
-class CurveItem(pg.PlotDataItem):
+class CurveItem(pg.PlotCurveItem):
     def __init__(self, series, pen=QtGui.QColor(QtCore.Qt.black), *args, **kwargs):
         self.series = series
         self.feetitem = None
@@ -140,7 +141,7 @@ class CurveItem(pg.PlotDataItem):
         self.render()
 
     def render(self):
-        self.setData(x = self.series.index,
+        self.setData(x = self.series.index.values,
                      y = self.series.values)
 
     def getCyclesIndices(self, vrange=None):
