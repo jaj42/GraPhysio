@@ -77,7 +77,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         loopwidget = puplot.LoopWidget(u, p, subsetrange, parent=self)
 
         oldname = self.tabWidget.tabText(tabindex)
-        newtabindex = self.tabWidget.addTab(loopwidget, '{}-loops'.format(oldname))
+        newtabindex = self.tabWidget.addTab(loopwidget, '{}-{}-loops'.format(oldname, p.name()))
         self.tabWidget.setCurrentIndex(newtabindex)
 
     def launchCurveList(self):
