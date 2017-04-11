@@ -79,6 +79,8 @@ class PlotWidget(pg.PlotWidget):
             newcurve = self.addCurve(series=newseries)
             newcurve.samplerate = newsamplerate
         else:
+            oldname = oldcurve.series.name
+            newseries.name = oldname
             oldcurve.series = newseries
             oldcurve.samplerate = newsamplerate
             oldcurve.render()
