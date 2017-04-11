@@ -100,11 +100,10 @@ class TsExporter():
                 s.index -= idxdelta
             df = pd.concat(cycle, axis=1)
             datetime = pd.to_datetime(df.index, unit = 'ns')
-            df.index = datetime
 
             filename = "{}-{}.csv".format(self.name, n+1)
             filepath = os.path.join(self.outdir, filename)
-            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
+            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index=False)
 
     def cyclepointstocsv(self):
         filename = "{}-feet.csv".format(self.name)
