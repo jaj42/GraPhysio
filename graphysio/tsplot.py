@@ -62,7 +62,16 @@ class PlotWidget(pg.PlotWidget):
     def addFeet(self, curve, foottype):
         if foottype is utils.FootType.none:
             return
-        elif foottype is utils.FootType.velocity:
+
+        if curve.feetitem is not None:
+            replace = dialogs.userConfirm('Curve already has feet. Replace?', title='Replace feet')
+            if not replace:
+                return
+            else:
+                self.removeItem(curve.feetitem)
+                curve.feetitem = None
+
+        if foottype is utils.FootType.velocity:
             starts, stops = algorithms.findFlowCycles(curve)
         else:
             starts = algorithms.findPressureFeet(curve)
