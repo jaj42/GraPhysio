@@ -99,7 +99,7 @@ class TsExporter():
                 idxdelta = s.index[0] - idxstart
                 s.index -= idxdelta
             df = pd.concat(cycle, axis=1)
-            datetime = pd.to_datetime(df.index, unit = 'ns')
+            df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
 
             filename = "{}-{}.csv".format(self.name, n+1)
             filepath = os.path.join(self.outdir, filename)
