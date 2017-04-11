@@ -142,10 +142,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             self.haserror.emit('No plot selected.')
             return
 
-        qmsg = "Timeshift new curves to make the beginnings coincide?"
-        reply = QtGui.QMessageBox.question(self, 'Append to plot', qmsg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        dorealign = (reply == QtGui.QMessageBox.Yes)
 
+        dorealign = dialogs.userConfirm('Timeshift new curves to make the beginnings coincide?', title='Append to plot')
         plotwidget.appendData(plotdata, dorealign)
         self.statusBar.showMessage("Loading... done")
 

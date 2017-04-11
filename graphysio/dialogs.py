@@ -367,3 +367,10 @@ def askUserValue(param):
         return value
     else:
         return None
+
+def userConfirm(question, title=None):
+    if title is None:
+        title = question
+    reply = QtGui.QMessageBox.question(None, title, question, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+    confirmed = (reply == QtGui.QMessageBox.Yes)
+    return confirmed
