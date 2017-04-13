@@ -66,9 +66,9 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         if sourcewidget is None:
             return
 
-        dlgSetupPU = dialogs.DlgSetupPULoop(sourcewidget, parent = self)
-        if not dlgSetupPU.exec_(): return
-
+        dlgSetupPU = dialogs.DlgSetupPULoop(sourcewidget, parent=self)
+        if not dlgSetupPU.exec_():
+            return
         uname, pname = dlgSetupPU.result
 
         curves = sourcewidget.curves
@@ -87,7 +87,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
     def launchCycleDetection(self):
         dlgCycles = dialogs.DlgCycleDetection(parent = self)
-        if not dlgCycles.exec_(): return
+        if not dlgCycles.exec_():
+            return
         choices = dlgCycles.result
         plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
@@ -96,7 +97,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
     def launchFilter(self):
         dlgFilter = dialogs.DlgFilter(parent = self)
-        if not dlgFilter.exec_(): return
+        if not dlgFilter.exec_():
+            return
         createnew, curvechoices, feetchoices = dlgFilter.result
         plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in curvechoices.items():
@@ -129,7 +131,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 self.hasdata.connect(self.appendToPlotWithData)
 
         dlgNewplot = dialogs.DlgNewPlot(parent=self, title=title, directory=self.dircache)
-        if not dlgNewplot.exec_(): return
+        if not dlgNewplot.exec_():
+            return
         csvrequest = dlgNewplot.result
         self.dircache = csvrequest.folder
         self.statusBar.showMessage("Loading... {}...".format(csvrequest.name))
@@ -142,8 +145,6 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         if plotwidget is None:
             self.haserror.emit('No plot selected.')
             return
-
-
         dorealign = dialogs.userConfirm('Timeshift new curves to make the beginnings coincide?', title='Append to plot')
         plotwidget.appendData(plotdata, dorealign)
         self.statusBar.showMessage("Loading... done")
