@@ -7,6 +7,7 @@ import numpy as np
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import tsplot, puplot, dialogs, utils, csvio
+from graphysio.types import PlotData, FootType
 
 class MainUi(*utils.loadUiFile('mainwindow.ui')):
     hasdata  = QtCore.pyqtSignal(object)
@@ -54,7 +55,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 f()
             except Exception as e:
                 # Re-raise errors here for DEBUG
-                #raise e
+                raise e
                 self.haserror.emit(e)
         return wrapped
 
@@ -91,7 +92,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
             curve = plotwidget.curves[curvename]
-            plotwidget.addFeet(curve, utils.FootType(choice))
+            plotwidget.addFeet(curve, FootType(choice))
 
     def launchFilter(self):
         dlgFilter = dialogs.DlgFilter(parent = self)
@@ -160,7 +161,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         xmin, xmax = sourcewidget.vbrange
 
         newname = '{}-sub'.format(oldname)
-        plotdata = utils.PlotData(name=newname)
+        plotdata = PlotData(name=newname)
 
         plotwidget = tsplot.PlotWidget(plotdata=plotdata, parent=self)
         newtabindex = self.tabWidget.addTab(plotwidget, plotdata.name)

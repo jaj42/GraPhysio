@@ -3,6 +3,7 @@ import os, csv
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import algorithms, utils
+from graphysio.types import CsvRequest
 
 class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
     def __init__(self, parent=None, title="New Plot", directory=""):
@@ -11,7 +12,7 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         self.setWindowTitle(title)
 
         self.dircache = directory
-        self.csvrequest = utils.CsvRequest()
+        self.csvrequest = CsvRequest()
 
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()

@@ -9,6 +9,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import algorithms, exporter, utils, dialogs, legend
+from graphysio.types import FootType
 
 class PlotWidget(pg.PlotWidget):
     def __init__(self, plotdata, parent=None):
@@ -60,7 +61,7 @@ class PlotWidget(pg.PlotWidget):
         return curve
 
     def addFeet(self, curve, foottype):
-        if foottype is utils.FootType.none:
+        if foottype is FootType.none:
             return
 
         if curve.feetitem is not None:
@@ -71,7 +72,7 @@ class PlotWidget(pg.PlotWidget):
                 self.removeItem(curve.feetitem)
                 curve.feetitem = None
 
-        if foottype is utils.FootType.velocity:
+        if foottype is FootType.velocity:
             starts, stops = algorithms.findFlowCycles(curve)
         else:
             starts = algorithms.findPressureFeet(curve)

@@ -6,7 +6,6 @@ import pandas as pd
 
 from pyqtgraph.Qt import QtGui
 
-from graphysio import utils
 from graphysio.dialogs import DlgPeriodExport
 
 class TsExporter():

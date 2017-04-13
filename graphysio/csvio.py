@@ -4,7 +4,7 @@ from functools import partial
 
 from pyqtgraph.Qt import QtCore
 
-from graphysio import utils
+from graphysio.types import PlotData
 
 class Reader(QtCore.QRunnable):
     def __init__(self, csvrequest, sigdata, sigerror):
@@ -57,7 +57,7 @@ class Reader(QtCore.QRunnable):
         # Don't try requested fields that are empty
         fields = [f for f in self.csvrequest.yfields if f in data.columns]
 
-        plotdata = utils.PlotData(data       = data,
-                                  fields     = fields,
-                                  filepath   = self.csvrequest.filepath)
+        plotdata = PlotData(data       = data,
+                            fields     = fields,
+                            filepath   = self.csvrequest.filepath)
         return plotdata
