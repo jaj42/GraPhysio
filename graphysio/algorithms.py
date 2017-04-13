@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from scipy import signal, interpolate
 
-
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
 
@@ -32,6 +31,7 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
            'Fill NaNs' : Filter(name='fillnan', parameters=[]),
+           'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
            'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
            'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])}
 
@@ -97,6 +97,13 @@ def _dopplercut(series, samplerate, parameters):
     newseries.iloc[notlow] = 0
     return (newseries, samplerate)
 
+def _diff(series, samplerate, parameters):
+    order, = parameters
+    diffed = np.diff(series.values, order)
+    newname = "{}-diff{}".format(series.name, order)
+    newseries = pd.Series(diffed, index=series.index[order:], name=newname)
+    return (newseries.rename(newname), samplerate)
+
 def _fillnan(series, samplerate, parameters):
     newseries = series.interpolate(method='index', limit_direction='both')
     newname = "{}-nona".format(series.name)
@@ -116,6 +123,7 @@ filtfuncs = {'savgol'     : _savgol,
              'lowpass'    : _lowpass,
              'interp'     : _interp,
              'dopplercut' : _dopplercut,
+             'diff'       : _diff,
              'pscale'     : _pscale,
              'fillnan'    : _fillnan}
 
@@ -198,7 +206,6 @@ def findPressureFeet(curve):
             try:
                 maximum = sndderiv.loc[idxstart:idxstop].idxmax()
             except ValueError as e:
-                print("local maximum error: {} [{} - {}] in [{} - {}]".format(e, idxstart, idxstop, sndderiv.index[0], sndderiv.index[-1]), file=sys.stderr)
                 continue
             else:
                 yield maximum
