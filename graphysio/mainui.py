@@ -55,7 +55,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 f()
             except Exception as e:
                 # Re-raise errors here for DEBUG
-                raise e
+                #raise e
                 self.haserror.emit(e)
         return wrapped
 
