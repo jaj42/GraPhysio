@@ -130,12 +130,8 @@ filtfuncs = {'savgol'     : _savgol,
 def filter(curve, filtname, paramgetter):
     samplerate = curve.samplerate
     series = curve.series
-    if samplerate is None:
-        raise TypeError("Samplerate is not set and could not be inferred.")
-
     filt = Filters[filtname]
     parameters = map(paramgetter, filt.parameters)
-
     return filtfuncs[filt.name](series, samplerate, parameters)
 
 def filterFeet(feet, filtname, paramgetter):
@@ -160,8 +156,6 @@ def filterFeet(feet, filtname, paramgetter):
 def findPressureFeet(curve):
     series = curve.series.dropna()
     samplerate = curve.samplerate
-    if samplerate is None:
-        raise TypeError("Samplerate is not set and could not be inferred.")
 
     fstderiv = series.diff().shift(-1)
     sndderiv = fstderiv.diff().shift(-1)
