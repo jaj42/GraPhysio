@@ -1,4 +1,5 @@
 import sys
+import itertools
 from collections import namedtuple
 
 import numpy as np
@@ -232,76 +233,61 @@ def findDicrotics(curve):
     series = curve.series.dropna()
     samplerate = curve.samplerate
 
-    # Window of 50ms
-    windowsize = np.floor(.05 * samplerate)
-    windowsize = 6
-
     fstderiv = series.diff().shift(-1)
-    #sndderiv = fstderiv.diff().shift(-1)
-    sndderiv = fstderiv.diff()
+    sndderiv = fstderiv.diff().shift(-1)
     # Smoothen the derivatives
     fstderiv, _ = _savgol(fstderiv, samplerate, (.16, 2))
     sndderiv, _ = _savgol(sndderiv, samplerate, (.16, 2))
 
-    def findPOI(interval, kind):
-        if kind not in ['min', 'max', 'zero']:
-            raise ValueError(kind)
+    def genWindows(soi, interval, windowspan):
+        # Lazy equivalent to np.array_split
+        windowspan *= 1e9 # s to ns
         begin, end = interval
-        # Zone of interest
-        zoi = sndderiv.loc[begin:end]
-        windows = np.array_split(zoi.index.values, windowsize)
+        if begin is None or end is None:
+            raise StopIteration
+        for n in itertools.count():
+            start = begin + n * windowspan
+            stop = start + windowspan
+            if stop >= end:
+                stop = end
+            window = soi.loc[start:stop]
+            if len(window) < 1:
+                raise StopIteration
+            yield window.index.values
 
-        def cond(cur, tmp):
-            if kind == 'min':
-                condition = (tmp < currentmin) or (tmp > 0)
-            elif kind == 'max':
-                condition = (tmp > currentmin) or (tmp < 0)
-            elif kind == 'zero':
-                condition = abs(tmp) < abs(cur)
+    def findPOI(soi, interval, kind, windowsize):
+        if kind not in ['min', 'max']:
+            raise ValueError(kind)
+        findmax = (kind == 'max')
+
+        def cond(ref, new):
+            if findmax:
+                condition = (new > ref) or (new < 0)
             else:
-                condition = None
+                condition = (new < ref) or (new > 0)
             return condition
 
-        current = -np.inf if kind == 'max' else np.inf
-        for window in windows:
-            tmp = sndderiv.loc[window].min()
+        goodwindow = []
+        current = -np.inf if findmax else np.inf
+        for window in genWindows(soi, interval, windowsize):
+            zoi = soi.loc[window]
+            tmp = zoi.max() if findmax else zoi.min()
             if cond(current, tmp):
                 current = tmp
             else:
+                goodwindow = window
                 break
-        finalzoi = sndderiv.loc[window]
-        if kind == 'zero':
-            finalzoi = finalzoi.abs()
-        retidx = finalzoi.argmax() if kind == 'max' else finalzoi.argmin()
+        finalzoi = soi.loc[goodwindow]
+        try:
+            retidx = finalzoi.argmax() if findmax else finalzoi.argmin()
+        except ValueError:
+            # No dicrotic found
+            retidx = None
         return retidx
 
-    def findNextMin(begin, end):
-        zoi = sndderiv.loc[begin:end]
-        windows = np.array_split(zoi.index.values, windowsize)
-        currentmin = np.inf
-        for window in windows:
-            tmp = sndderiv.loc[window].min()
-            if (tmp < currentmin) or (tmp > 0):
-                currentmin = tmp
-            else:
-                break
-        minidx = sndderiv.loc[window].argmin()
-        return minidx
-
-    def findNextMax(begin, end):
-        zoi = sndderiv.loc[begin:end]
-        windows = np.array_split(zoi.index.values, windowsize)
-        currentmax = -np.inf
-        for window in windows:
-            tmp = sndderiv.loc[window].max()
-            if (tmp > currentmax) or (tmp < 0):
-                currentmax = tmp
-            else:
-                break
-        maxidx = sndderiv.loc[window].argmax()
-        return maxidx
-
     def findHorizontal(loc):
+        if loc is None:
+            return None
         step = 1e9 / samplerate # 1e9 to convert Hz to ns
         begin = loc - 4 * step
         end = loc + 4 * step
@@ -313,9 +299,10 @@ def findDicrotics(curve):
     starts, durations = curve.getCyclesIndices()
     for start, duration in zip(starts, durations):
         stop = start + duration
-        sbp = findNextMin(start, stop)
-        predic = findNextMax(sbp, stop)
-        dic = findHorizontal(predic)
-        dics.append(dic)
+        sbp = findPOI(sndderiv, [start, stop], 'min', windowsize=.05)
+        peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=.15)
+        dic = findHorizontal(peridic)
+        if dic is not None:
+            dics.append(dic)
 
     return series.loc[dics]
