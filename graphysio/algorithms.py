@@ -255,37 +255,39 @@ def findDicrotics(curve):
                 raise StopIteration
             yield window.index.values
 
+    def isbetter(new, ref, kind):
+        if kind == 'max':
+            condition = (new > ref) or (new < 0)
+        elif kind == 'min':
+            condition = (new < ref) or (new > 0)
+        else:
+            raise ValueError(kind)
+        return condition
+
     def findPOI(soi, interval, kind, windowsize):
         if kind not in ['min', 'max']:
             raise ValueError(kind)
-        findmax = (kind == 'max')
-
-        def cond(ref, new):
-            if findmax:
-                condition = (new > ref) or (new < 0)
-            else:
-                condition = (new < ref) or (new > 0)
-            return condition
+        argkind = 'arg' + kind
 
         goodwindow = []
-        current = -np.inf if findmax else np.inf
+        previous = -np.inf if kind == 'max' else np.inf
         for window in genWindows(soi, interval, windowsize):
             zoi = soi.loc[window]
-            tmp = zoi.max() if findmax else zoi.min()
-            if cond(current, tmp):
-                current = tmp
-            else:
+            new = getattr(zoi, kind)()
+            if not isbetter(new, previous, kind):
                 goodwindow = window
                 break
+            previous = new
         finalzoi = soi.loc[goodwindow]
         try:
-            retidx = finalzoi.argmax() if findmax else finalzoi.argmin()
+            retidx = getattr(finalzoi, argkind)()
         except ValueError:
             # No dicrotic found
             retidx = None
         return retidx
 
     def findHorizontal(loc):
+        # Needs some love
         if loc is None:
             return None
         step = 1e9 / samplerate # 1e9 to convert Hz to ns
@@ -300,7 +302,7 @@ def findDicrotics(curve):
     for start, duration in zip(starts, durations):
         stop = start + duration
         sbp = findPOI(sndderiv, [start, stop], 'min', windowsize=.05)
-        peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=.15)
+        peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=.05)
         dic = findHorizontal(peridic)
         if dic is not None:
             dics.append(dic)
