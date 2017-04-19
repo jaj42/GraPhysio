@@ -349,16 +349,6 @@ class DlgCurveSelection(*utils.loadUiFile('curveselect.ui')):
         invisible = [self.curvehash[item.text()] for item in unchecked]
         return (visible, invisible)
 
-class DlgConsole(QtGui.QDialog):
-    def __init__(self, ui):
-        super().__init__()
-        import pyqtgraph as pg
-        import numpy as np
-        import pandas as pd
-        namespace = {'ui' : ui, 'pg': pg, 'np': np, 'pd' : pd}
-        self.console = ConsoleWidget(parent=self, namespace=namespace)
-        self.console.catchAllExceptions()
-
 def askUserValue(param):
     if param.request is str:
         value, isok = QtGui.QInputDialog.getText(None, 'Enter value', param.description)

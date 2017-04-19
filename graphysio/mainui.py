@@ -6,7 +6,7 @@ import numpy as np
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import tsplot, puplot, dialogs, utils, csvio
+from graphysio import tsplot, puplot, dialogs, utils, csvio, debug
 from graphysio.types import PlotData, FootType
 
 class MainUi(*utils.loadUiFile('mainwindow.ui')):
@@ -22,17 +22,14 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
         launchNewPlot = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
-        def getGuiShell():
-            shelldlg = dialogs.DlgConsole(self)
-            shelldlg.exec_()
         getCLIShell = partial(utils.getshell, ui=self)
 
         self.menuFile.addAction('&New Plot',       self.errguard(launchNewPlot),    QtCore.Qt.CTRL + QtCore.Qt.Key_N)
         self.menuFile.addAction('&Append to Plot', self.errguard(launchAppendPlot), QtCore.Qt.CTRL + QtCore.Qt.Key_A)
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
-        self.menuFile.addAction('Get GUI shell', self.errguard(getGuiShell))
         self.menuFile.addAction('Get CLI shell', self.errguard(getCLIShell))
+        self.menuFile.addAction('Add matplotlib widget', self.errguard(self.launchPlt))
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
@@ -62,6 +59,10 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 #raise e
                 self.haserror.emit(e)
         return wrapped
+
+    def launchPlt(self):
+        tabindex = self.tabWidget.addTab(debug.debugfig, 'canvas')
+        self.tabWidget.setCurrentIndex(tabindex)
 
     def launchLoop(self):
         tabindex = self.tabWidget.currentIndex()
