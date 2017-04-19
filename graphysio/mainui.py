@@ -22,13 +22,17 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
         launchNewPlot = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
-        getshell = partial(utils.getshell, ui=self)
+        def getGuiShell():
+            shelldlg = dialogs.DlgConsole(self)
+            shelldlg.exec_()
+        getCLIShell = partial(utils.getshell, ui=self)
 
         self.menuFile.addAction('&New Plot',       self.errguard(launchNewPlot),    QtCore.Qt.CTRL + QtCore.Qt.Key_N)
         self.menuFile.addAction('&Append to Plot', self.errguard(launchAppendPlot), QtCore.Qt.CTRL + QtCore.Qt.Key_A)
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
-        self.menuFile.addAction('Get &shell', self.errguard(getshell))
+        self.menuFile.addAction('Get GUI shell', self.errguard(getGuiShell))
+        self.menuFile.addAction('Get CLI shell', self.errguard(getCLIShell))
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
