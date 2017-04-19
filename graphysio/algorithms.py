@@ -227,3 +227,95 @@ def findFlowCycles(curve):
     cycleStops = cycleStops[list(stopidx)]
 
     return (cycleStarts, cycleStops)
+
+def findDicrotics(curve):
+    series = curve.series.dropna()
+    samplerate = curve.samplerate
+
+    # Window of 50ms
+    windowsize = np.floor(.05 * samplerate)
+    windowsize = 6
+
+    fstderiv = series.diff().shift(-1)
+    #sndderiv = fstderiv.diff().shift(-1)
+    sndderiv = fstderiv.diff()
+    # Smoothen the derivatives
+    fstderiv, _ = _savgol(fstderiv, samplerate, (.16, 2))
+    sndderiv, _ = _savgol(sndderiv, samplerate, (.16, 2))
+
+    def findPOI(interval, kind):
+        if kind not in ['min', 'max', 'zero']:
+            raise ValueError(kind)
+        begin, end = interval
+        # Zone of interest
+        zoi = sndderiv.loc[begin:end]
+        windows = np.array_split(zoi.index.values, windowsize)
+
+        def cond(cur, tmp):
+            if kind == 'min':
+                condition = (tmp < currentmin) or (tmp > 0)
+            elif kind == 'max':
+                condition = (tmp > currentmin) or (tmp < 0)
+            elif kind == 'zero':
+                condition = abs(tmp) < abs(cur)
+            else:
+                condition = None
+            return condition
+
+        current = -np.inf if kind == 'max' else np.inf
+        for window in windows:
+            tmp = sndderiv.loc[window].min()
+            if cond(current, tmp):
+                current = tmp
+            else:
+                break
+        finalzoi = sndderiv.loc[window]
+        if kind == 'zero':
+            finalzoi = finalzoi.abs()
+        retidx = finalzoi.argmax() if kind == 'max' else finalzoi.argmin()
+        return retidx
+
+    def findNextMin(begin, end):
+        zoi = sndderiv.loc[begin:end]
+        windows = np.array_split(zoi.index.values, windowsize)
+        currentmin = np.inf
+        for window in windows:
+            tmp = sndderiv.loc[window].min()
+            if (tmp < currentmin) or (tmp > 0):
+                currentmin = tmp
+            else:
+                break
+        minidx = sndderiv.loc[window].argmin()
+        return minidx
+
+    def findNextMax(begin, end):
+        zoi = sndderiv.loc[begin:end]
+        windows = np.array_split(zoi.index.values, windowsize)
+        currentmax = -np.inf
+        for window in windows:
+            tmp = sndderiv.loc[window].max()
+            if (tmp > currentmax) or (tmp < 0):
+                currentmax = tmp
+            else:
+                break
+        maxidx = sndderiv.loc[window].argmax()
+        return maxidx
+
+    def findHorizontal(loc):
+        step = 1e9 / samplerate # 1e9 to convert Hz to ns
+        begin = loc - 4 * step
+        end = loc + 4 * step
+        zoi = fstderiv.loc[begin:end]
+        horidx = zoi.abs().argmin()
+        return horidx
+
+    dics = []
+    starts, durations = curve.getCyclesIndices()
+    for start, duration in zip(starts, durations):
+        stop = start + duration
+        sbp = findNextMin(start, stop)
+        predic = findNextMax(sbp, stop)
+        dic = findHorizontal(predic)
+        dics.append(dic)
+
+    return series.loc[dics]
