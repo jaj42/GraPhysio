@@ -3,7 +3,8 @@ from enum import Enum
 
 class FootType(Enum):
     none     = 'None'
-    pressure = 'Pressure'
+    pressure = 'Pressure foot'
+    dicrotic = 'Dicrotic notch'
     velocity = 'Velocity'
 
 class CsvRequest():

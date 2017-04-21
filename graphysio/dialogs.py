@@ -2,7 +2,7 @@ import os, csv
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import algorithms, utils
+from graphysio import algorithms, utils, types
 from graphysio.types import CsvRequest
 
 class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
@@ -176,7 +176,7 @@ class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
 
         for n, curvename in enumerate(plotframe.curves.keys()):
             combo = QtGui.QComboBox()
-            combo.addItems(['None', 'Pressure', 'Velocity'])
+            combo.addItems([ft.value for ft in types.FootType])
             curveitem = QtGui.QTableWidgetItem(curvename)
 
             self.table.insertRow(n)

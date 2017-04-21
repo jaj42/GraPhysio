@@ -62,6 +62,7 @@ class PlotWidget(pg.PlotWidget):
         if foottype is FootType.none:
             return
 
+        # XXX use dictionary and check for foot type
         if curve.feetitem is not None:
             replace = dialogs.userConfirm('Curve already has feet. Replace?', title='Replace feet')
             if not replace:
@@ -72,12 +73,18 @@ class PlotWidget(pg.PlotWidget):
 
         if foottype is FootType.velocity:
             starts, stops = algorithms.findFlowCycles(curve)
-        else:
+            feet = FeetItem(curve, starts, stops)
+            curve.feetitem = feet
+        elif foottype is FootType.pressure:
             starts = algorithms.findPressureFeet(curve)
-            stops = None
+            feet = FeetItem(curve, starts)
+            curve.feetitem = feet
+        elif foottype is FootType.dicrotic:
+            starts = algorithms.findDicrotics(curve)
+            feet = DicroticItem(curve, starts)
+        else:
+            raise ValueError(foottype)
 
-        feet = FeetItem(curve, starts, stops)
-        curve.feetitem = feet
         feet.sigClicked.connect(self.sigPointClicked)
         self.addItem(feet)
 
@@ -191,7 +198,7 @@ class CurveItem(pg.PlotCurveItem):
 
 class FeetItem(pg.ScatterPlotItem):
     symPoint, symStart, symStop = ('o', 't', 's')
-
+    # Available symbols: o, s, t, d, +, or any QPainterPath
     def __init__(self, curve, starts, stops=None, namesuffix='feet', *args, **kwargs):
         self.selected = []
         pen = curve.opts['pen']
@@ -249,6 +256,9 @@ class FeetItem(pg.ScatterPlotItem):
         # Method needed for compat with CurveItem
         return self._name
 
+class DicroticItem(FeetItem):
+    def __init__(self, curve, dicrotics, *args, **kwargs):
+        super().__init__(curve, starts=dicrotics, namesuffix='dic', *args, **kwargs)
 
 class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
