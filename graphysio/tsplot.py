@@ -1,5 +1,3 @@
-import sys
-from itertools import cycle, islice
 from functools import partial
 
 import numpy as np
@@ -230,7 +228,7 @@ class FeetItem(pg.ScatterPlotItem):
                      symbol = feet['sym'].values)
 
     def isPointSelected(self, point):
-        return (point in self.selected)
+        return point in self.selected
 
     def selectPoint(self, point):
         if not self.isPointSelected(point):

@@ -1,7 +1,6 @@
 import os, csv
 from itertools import zip_longest
 
-import numpy as np
 import pandas as pd
 
 from pyqtgraph.Qt import QtGui
@@ -47,14 +46,10 @@ class TsExporter():
         self.name = dlg.patient
         self.outdir = os.path.dirname(dlg.filepath)
 
-        if os.path.exists(dlg.filepath):
-            fileappend = True
-        else:
-            fileappend = False
-
         with open(dlg.filepath, 'a', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL)
-            if not fileappend: writer.writeheader()
+            if not os.path.exists(dlg.filepath):
+                writer.writeheader()
             writer.writerow({'patient'  : dlg.patient,
                              'begin'    : xmin,
                              'end'      : xmax,
@@ -72,12 +67,6 @@ class TsExporter():
         # Some non trivial manipulations to get the cycles from all
         # curves, then reorganize to group by the n-th cycle from each
         # curve and put those cycles into a dataframe for export.
-        def getLongest(vecs):
-            okvecs = (v for v in vecs if v is not None)
-            maxidx = max(map(len, okvecs))
-            longest = next(filter(lambda v: len(v) >= maxidx, vecs))
-            return longest
-
         def getCurveCycles(curve):
             cycleIdx = curve.getCyclesIndices()
             cycles = (curve.series.loc[b:b+d] for b, d in zip(*cycleIdx))

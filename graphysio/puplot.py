@@ -5,9 +5,7 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 
-from pyqtgraph.Qt import QtGui, QtCore
-
-from graphysio import algorithms, exporter, utils
+from graphysio import exporter, utils
 
 Point     = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
@@ -88,7 +86,7 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
 
         self.curveitem.setData(curloop.u.values, curloop.p.values, pen=self.pen)
         self.scatteritem.setData(np.array(cardx), np.array(cardy))
-        
+
     def prevloop(self):
         idx = self.curidx - 1
         if idx >= 0:
@@ -141,19 +139,19 @@ class PULoop(object):
     def angles(self):
         if self.__angles is None:
             card = self.cardpoints
-            alpha = self.calcangle(card.A, card.B)
-            beta  = self.calcangle(card.A, card.B, card.C)
-            gala  = self.calcangle(card.A, card.C)
+            alpha = calcangle(card.A, card.B)
+            beta  = calcangle(card.A, card.B, card.C)
+            gala  = calcangle(card.A, card.C)
             self.__angles = Angles(alpha, beta, gala)
         return self.__angles
 
-    def calcangle(self, looporigin, pointb, pointa=None):
-        orig = complex(looporigin.x, looporigin.y)
-        cb = complex(pointb.x, pointb.y) - orig
-        if pointa is None:
-            ca = complex(1, 0)
-        else:
-            ca = complex(pointa.x, pointa.y) - orig
-        angca = np.angle(ca, deg=True)
-        angcb = np.angle(cb, deg=True)
-        return abs(angca - angcb)
+def calcangle(looporigin, pointb, pointa=None):
+    orig = complex(looporigin.x, looporigin.y)
+    cb = complex(pointb.x, pointb.y) - orig
+    if pointa is None:
+        ca = complex(1, 0)
+    else:
+        ca = complex(pointa.x, pointa.y) - orig
+    angca = np.angle(ca, deg=True)
+    angcb = np.angle(cb, deg=True)
+    return abs(angca - angcb)

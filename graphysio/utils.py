@@ -5,7 +5,6 @@ import imp
 
 from itertools import cycle
 
-import pandas as pd
 import numpy as np
 from pyqtgraph.Qt import QtGui, loadUiType
 

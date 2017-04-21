@@ -63,5 +63,3 @@ class PlotData():
     def folder(self):
         folder = os.path.dirname(self.filepath)
         return folder
-
-

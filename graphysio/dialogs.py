@@ -1,7 +1,6 @@
 import os, csv
 
 from pyqtgraph.Qt import QtGui, QtCore
-from pyqtgraph.console import ConsoleWidget
 
 from graphysio import algorithms, utils
 from graphysio.types import CsvRequest
@@ -83,9 +82,9 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         if sep == '<tab>':
             sep = '\t'
         filepath = self.txtFile.text()
-        fields = []
         # Use the csv module to retrieve csv fields
-        for lst in [self.lstAll, self.lstX, self.lstY]: lst.clear()
+        for lst in [self.lstAll, self.lstX, self.lstY]:
+            lst.clear()
         self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
         with open(filepath, 'r') as csvfile:
             # Artificially drop n first lines as requested
@@ -94,7 +93,8 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
             csvreader = csv.DictReader(csvfile, delimiter=sep)
             row = next(csvreader)
             for key, value in row.items():
-                if key is None: continue
+                if key is None:
+                    continue
                 keyitem = QtGui.QStandardItem(key)
                 valueitem = QtGui.QStandardItem(value)
                 self.lstAll.appendRow([keyitem, valueitem])

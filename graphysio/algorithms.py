@@ -1,4 +1,3 @@
-import sys
 import itertools
 from collections import namedtuple
 
@@ -16,8 +15,8 @@ class TF(object):
         self.name = name
 
     def discretize(self, samplerate):
-        sys = (self.num, self.den)
-        (dnum, dden, dt) = signal.cont2discrete(sys, 1 / samplerate)
+        systf = (self.num, self.den)
+        (dnum, dden, _) = signal.cont2discrete(systf, 1 / samplerate)
         return (np.squeeze(dnum), np.squeeze(dden))
 
 pulseheartnum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873.0713084, 218273825.541909, 6489400920.14402]
@@ -111,10 +110,10 @@ def _fillnan(series, samplerate, parameters):
     return (newseries.rename(newname), samplerate)
 
 def _pscale(series, samplerate, parameters):
-    sys, dia, mean = parameters
+    sbp, dbp, mbp = parameters
     detrend = series - series.mean()
-    scaled = detrend * (sys - dia) / (series.max() - series.min())
-    newseries = scaled + mean
+    scaled = detrend * (sbp - dbp) / (series.max() - series.min())
+    newseries = scaled + mbp
     newname = "{}-pscale".format(series.name)
     return (newseries.rename(newname), samplerate)
 
@@ -186,7 +185,7 @@ def findPressureFeet(curve):
             risingStops = risingStops[risingStops > risingStarts[0]]
             found = True
             break
-        except IndexError as e:
+        except IndexError:
             continue
 
     # Last resort: find one foot on the whole series
@@ -200,7 +199,7 @@ def findPressureFeet(curve):
             idxstop  = sndderiv.index[stop]
             try:
                 maximum = sndderiv.loc[idxstart:idxstop].idxmax()
-            except ValueError as e:
+            except ValueError:
                 continue
             else:
                 yield maximum
@@ -233,11 +232,11 @@ def findDicrotics(curve):
     series = curve.series.dropna()
     samplerate = curve.samplerate
 
-    fstderiv = series.diff().shift(-1)
-    sndderiv = fstderiv.diff().shift(-1)
+    fstderivraw = series.diff().shift(-1)
+    sndderivraw = fstderivraw.diff().shift(-1)
     # Smoothen the derivatives
-    fstderiv, _ = _savgol(fstderiv, samplerate, (.16, 2))
-    sndderiv, _ = _savgol(sndderiv, samplerate, (.16, 2))
+    fstderiv, _ = _savgol(fstderivraw, samplerate, (.16, 2))
+    sndderiv, _ = _savgol(sndderivraw, samplerate, (.16, 2))
 
     def genWindows(soi, interval, windowspan):
         # Lazy equivalent to np.array_split
