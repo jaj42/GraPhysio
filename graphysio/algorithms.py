@@ -229,11 +229,15 @@ def findFlowCycles(curve):
     return (cycleStarts, cycleStops)
 
 def findDicrotics(curve):
+    from graphysio.debug import mplwidget
+    DEBUG = mplwidget is not None
+
     series = curve.series.dropna()
     samplerate = curve.samplerate
 
-    fstderivraw = series.diff().shift(-1)
-    sndderivraw = fstderivraw.diff().shift(-1)
+    #fstderivraw = series.diff().iloc[1:]
+    fstderivraw = series.diff().iloc[1:]
+    sndderivraw = fstderivraw.diff().iloc[1:]
     # Smoothen the derivatives
     fstderiv, _ = _savgol(fstderivraw, samplerate, (.16, 2))
     sndderiv, _ = _savgol(sndderivraw, samplerate, (.16, 2))
@@ -272,9 +276,12 @@ def findDicrotics(curve):
         previous = -np.inf if kind == 'max' else np.inf
         for window in genWindows(soi, interval, windowsize):
             zoi = soi.loc[window]
+            if DEBUG:
+                mplwidget.axes.plot(window, zoi.values)
             new = getattr(zoi, kind)()
-            if not isbetter(new, previous, kind):
+            if isbetter(new, previous, kind):
                 goodwindow = window
+            else:
                 break
             previous = new
         finalzoi = soi.loc[goodwindow]
@@ -290,9 +297,11 @@ def findDicrotics(curve):
         if loc is None:
             return None
         step = 1e9 / samplerate # 1e9 to convert Hz to ns
-        begin = loc - 4 * step
-        end = loc + 4 * step
+        begin = loc
+        end = loc + 10 * step
         zoi = fstderiv.loc[begin:end]
+        if DEBUG:
+            mplwidget.axes.plot(zoi.index.values, zoi.values)
         horidx = zoi.abs().argmin()
         return horidx
 
@@ -301,8 +310,12 @@ def findDicrotics(curve):
     for start, duration in zip(starts, durations):
         stop = start + duration
         sbp = findPOI(sndderiv, [start, stop], 'min', windowsize=.05)
-        peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=.05)
+        peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=.15)
         dic = findHorizontal(peridic)
+        if DEBUG:
+            mplwidget.axes.axvline(x=sbp)
+            mplwidget.axes.axvline(x=peridic)
+            mplwidget.axes.axvline(x=dic, color='r')
         if dic is not None:
             dics.append(dic)
 

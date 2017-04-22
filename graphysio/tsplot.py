@@ -63,13 +63,13 @@ class PlotWidget(pg.PlotWidget):
             return
 
         # XXX use dictionary and check for foot type
-        if curve.feetitem is not None:
-            replace = dialogs.userConfirm('Curve already has feet. Replace?', title='Replace feet')
-            if not replace:
-                return
-            else:
-                self.removeItem(curve.feetitem)
-                curve.feetitem = None
+        #if curve.feetitem is not None:
+        #    replace = dialogs.userConfirm('Curve already has feet. Replace?', title='Replace feet')
+        #    if not replace:
+        #        return
+        #    else:
+        #        self.removeItem(curve.feetitem)
+        #        curve.feetitem = None
 
         if foottype is FootType.velocity:
             starts, stops = algorithms.findFlowCycles(curve)
@@ -197,7 +197,7 @@ class CurveItem(pg.PlotCurveItem):
 
 
 class FeetItem(pg.ScatterPlotItem):
-    symPoint, symStart, symStop = ('o', 't', 's')
+    symStart, symStop = ['t', 's']
     # Available symbols: o, s, t, d, +, or any QPainterPath
     def __init__(self, curve, starts, stops=None, namesuffix='feet', *args, **kwargs):
         self.selected = []
@@ -205,7 +205,7 @@ class FeetItem(pg.ScatterPlotItem):
         self._name = "{}-{}".format(curve.name(), namesuffix)
         super().__init__(pen = pen, *args, **kwargs)
         if stops is None:
-            self.starts = pd.DataFrame({'points' : starts, 'sym' : self.symPoint}, index=starts.index)
+            self.starts = pd.DataFrame({'points' : starts, 'sym' : self.symStart}, index=starts.index)
             self.stops  = pd.DataFrame({'points' : [], 'sym' : self.symStop})
         else:
             self.starts = pd.DataFrame({'points' : starts, 'sym' : self.symStart}, index=starts.index)
@@ -214,7 +214,7 @@ class FeetItem(pg.ScatterPlotItem):
 
     def removePoints(self, points):
         for point in points:
-            if point.symbol() in [self.symPoint, self.symStart]:
+            if point.symbol() == self.symStart:
                 # should be in starts
                 nidx = self.starts.index.get_loc(point.pos().x(), method='nearest')
                 idx = self.starts.index[nidx]
@@ -257,6 +257,7 @@ class FeetItem(pg.ScatterPlotItem):
         return self._name
 
 class DicroticItem(FeetItem):
+    symStart = ['o']
     def __init__(self, curve, dicrotics, *args, **kwargs):
         super().__init__(curve, starts=dicrotics, namesuffix='dic', *args, **kwargs)
 

@@ -29,7 +29,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
         self.menuFile.addAction('Get CLI shell', self.errguard(getCLIShell))
-        self.menuFile.addAction('Add matplotlib widget', self.errguard(self.launchMpl))
+        self.menuFile.addAction('Add debug tab', self.errguard(self.launchMpl))
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
