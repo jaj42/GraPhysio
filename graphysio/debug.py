@@ -1,27 +1,32 @@
 from pyqtgraph.Qt import QtGui, QtCore
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
 
 from numpy import arange, sin, pi
 
-class FigureCanvas(FigureCanvasQTAgg):
-    def __init__(self, parent=None, width=5, height=4, dpi=200):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
+mplwidget = None
 
-        self.compute_initial_figure()
+class FigureCanvas(QtGui.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.fig = Figure()
+        self.axes = self.fig.add_subplot(111)
+        self.canvas = FigureCanvasQTAgg(self.fig)
+        self.canvas.setParent(self)
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
 
-        super().__init__(fig)
-        self.setParent(parent)
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
 
         self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.updateGeometry()
 
-    def compute_initial_figure(self):
-        t = arange(0.0, 3.0, 0.01)
-        s = sin(2*pi*t)
-        self.axes.plot(t, s)
-        self.axes.plot(t, 2*s)
-
-debugfig = FigureCanvas()
+    def contextMenuEvent(self, event):
+        menu = QtGui.QMenu(self)
+        clearAction = menu.addAction("Clear content")
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+        if action == clearAction:
+            self.axes.cla()
