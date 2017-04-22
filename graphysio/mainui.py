@@ -29,7 +29,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
         self.menuFile.addAction('Get CLI shell', self.errguard(getCLIShell))
-        self.menuFile.addAction('Add matplotlib widget', self.errguard(self.launchPlt))
+        self.menuFile.addAction('Add matplotlib widget', self.errguard(self.launchMpl))
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
@@ -60,8 +60,9 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 self.haserror.emit(e)
         return wrapped
 
-    def launchPlt(self):
-        tabindex = self.tabWidget.addTab(debug.debugfig, 'canvas')
+    def launchMpl(self):
+        debug.mplwidget = debug.FigureCanvas(self)
+        tabindex = self.tabWidget.addTab(debug.mplwidget, 'debug')
         self.tabWidget.setCurrentIndex(tabindex)
 
     def launchLoop(self):
