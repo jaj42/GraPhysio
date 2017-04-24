@@ -161,7 +161,7 @@ class CurveItem(pg.PlotCurveItem):
         self.setData(x = self.series.index.values,
                      y = self.series.values)
 
-    def getCyclesIndices(self, vrange=None):
+    def getCycleIndices(self, vrange=None):
         s = self.series
         fi = self.feetitem
         clip = partial(utils.clip, vrange=vrange)

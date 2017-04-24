@@ -68,7 +68,7 @@ class TsExporter():
         # curves, then reorganize to group by the n-th cycle from each
         # curve and put those cycles into a dataframe for export.
         def getCurveCycles(curve):
-            cycleIdx = curve.getCyclesIndices()
+            cycleIdx = curve.getCycleIndices()
             cycles = (curve.series.loc[b:b+d] for b, d in zip(*cycleIdx))
             return cycles
 

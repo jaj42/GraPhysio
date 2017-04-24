@@ -145,7 +145,7 @@ def filterFeet(feet, filtname, paramgetter):
         msMinDuration, = parameters
         minCycleLength = msMinDuration * 1e6 # Transform ms to ns
         cycleDurations = (stop - start for start, stop in zip(feet.starts.index, feet.stops.index))
-        boolidx = list(map(lambda d: d >= minCycleLength, cycleDurations))
+        boolidx = [d >= minCycleLength for d in cycleDurations]
         newstarts = feet.starts.loc[boolidx]
         newstops = feet.stops.loc[boolidx]
     else:
@@ -306,7 +306,7 @@ def findDicrotics(curve):
         return horidx
 
     dics = []
-    starts, durations = curve.getCyclesIndices()
+    starts, durations = curve.getCycleIndices()
     for start, duration in zip(starts, durations):
         stop = start + duration
         sbp = findPOI(sndderiv, [start, stop], 'min', windowsize=.05)

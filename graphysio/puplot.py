@@ -56,8 +56,8 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
             self.renderloop(0)
 
     def initloopdata(self, u, p):
-        ubegins, udurations = u.getCyclesIndices(self.subsetrange)
-        pbegins, pdurations = p.getCyclesIndices(self.subsetrange)
+        ubegins, udurations = u.getCycleIndices(self.subsetrange)
+        pbegins, pdurations = p.getCycleIndices(self.subsetrange)
         durations = map(min, zip(udurations, pdurations))
         for ubegin, pbegin, duration in zip(ubegins, pbegins, durations):
             loopu = u.series.loc[ubegin:ubegin+duration]
