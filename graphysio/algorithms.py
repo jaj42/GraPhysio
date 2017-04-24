@@ -191,7 +191,7 @@ def findPressureFeet(curve):
     # Last resort: find one foot on the whole series
     if not found:
         risingStarts = [0]
-        risingStops  = [len(sndderiv.index) - 1]
+        risingStops  = [len(sndderiv) - 1]
 
     def locateMaxima():
         for start, stop in zip(risingStarts, risingStops):
@@ -222,20 +222,15 @@ def findFlowCycles(curve):
     except IndexError as e:
         raise TypeError("No cycle detected: {}".format(e))
 
-    startidx, stopidx = zip(*zip(cycleStarts.index, cycleStops.index))
-    cycleStarts = cycleStarts[list(startidx)]
-    cycleStops = cycleStops[list(stopidx)]
-
     return (cycleStarts, cycleStops)
 
 def findDicrotics(curve):
     from graphysio.debug import mplwidget
-    DEBUG = mplwidget is not None
+    DEBUG = (mplwidget is not None)
 
     series = curve.series.dropna()
     samplerate = curve.samplerate
 
-    #fstderivraw = series.diff().iloc[1:]
     fstderivraw = series.diff().iloc[1:]
     sndderivraw = fstderivraw.diff().iloc[1:]
     # Smoothen the derivatives
