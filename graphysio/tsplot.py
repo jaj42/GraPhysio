@@ -32,7 +32,7 @@ class PlotWidget(pg.PlotWidget):
     def appendData(self, newplotdata, dorealign=False):
         allSeries = (newplotdata.data[c] for c in newplotdata.fields)
         for series in allSeries:
-            self.addCurve(series, dorealign=dorealign)
+            self.addSeriesAsCurve(series, dorealign=dorealign)
 
     @property
     def curves(self):
@@ -42,21 +42,32 @@ class PlotWidget(pg.PlotWidget):
     def feetitems(self):
         return {item.name() : item for item in self.listDataItems() if isinstance(item, FeetItem)}
 
-    def addCurve(self, series, pen=None, dorealign=False):
-        # TODO handle name clashes
-        if pen is None:
-            pen = next(self.colors)
+    def getPen(self):
+        return next(self.colors)
 
+    def addSeriesAsCurve(self, series, pen=None, dorealign=False):
         # Timeshift new curves to make the beginnings coincide
         if dorealign:
             begins = (curve.series.index[0] for curve in self.curves.values() if len(curve.series.index) > 0)
             offset = min(begins) - series.index[0]
             series.index += offset
-
-        curve = CurveItem(series = series, pen = pen)
-        self.addItem(curve)
-        self.legend.addItem(curve, curve.name())
+        if pen is None:
+            pen = self.getPen()
+        curve = CurveItem(series=series, pen=pen)
+        self.addCurve(curve)
         return curve
+
+    def addCurve(self, curve, pen=None):
+        # TODO handle name clashes
+        if pen is not None:
+            curve.setPen(pen)
+        self.addItem(curve)
+        if isinstance(curve, pg.PlotCurveItem):
+            self.legend.addItem(curve, curve.name())
+
+    def removeCurve(self, curve):
+        self.removeItem(curve)
+        self.legend.removeItem(curve.name())
 
     def addFeet(self, curve, foottype):
         if foottype is FootType.none:
@@ -91,7 +102,7 @@ class PlotWidget(pg.PlotWidget):
     def filterCurve(self, oldcurve, filtername, asnew=False):
         newseries, newsamplerate = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
         if asnew:
-            newcurve = self.addCurve(series=newseries)
+            newcurve = self.addSeriesAsCurve(series=newseries)
             newcurve.samplerate = newsamplerate
         else:
             oldname = oldcurve.series.name
@@ -126,15 +137,12 @@ class PlotWidget(pg.PlotWidget):
         newvisible = [item for item in visible if item not in self.listDataItems()]
         newinvisible = [item for item in invisible if item not in self.hiddenitems]
         for item in newvisible:
-            self.addItem(item)
-            if isinstance(item, pg.PlotCurveItem):
-                self.legend.addItem(item, item.name())
+            self.addCurve(item)
             if item in self.hiddenitems:
                 self.hiddenitems.remove(item)
 
         for item in newinvisible:
-            self.removeItem(item)
-            self.legend.removeItem(item.name())
+            self.removeCurve(item)
             if item not in self.hiddenitems:
                 self.hiddenitems.append(item)
 
@@ -146,15 +154,14 @@ class PlotWidget(pg.PlotWidget):
 
 
 class CurveItem(pg.PlotCurveItem):
-    def __init__(self, series, pen=QtGui.QColor(QtCore.Qt.black), *args, **kwargs):
+    def __init__(self, series, pen=QtGui.QColor(QtCore.Qt.black)):
         self.series = series
         self.feetitem = None
         self.pen = pen
         self.samplerate = utils.estimateSampleRate(self.series)
         super().__init__(name = self.series.name,
                          pen  = self.pen,
-                         antialias = True,
-                         *args, **kwargs)
+                         antialias = True)
         self.render()
 
     def render(self):
@@ -199,11 +206,11 @@ class CurveItem(pg.PlotCurveItem):
 class FeetItem(pg.ScatterPlotItem):
     symStart, symStop = ['t', 's']
     # Available symbols: o, s, t, d, +, or any QPainterPath
-    def __init__(self, curve, starts, stops=None, namesuffix='feet', *args, **kwargs):
+    def __init__(self, curve, starts, stops=None, namesuffix='feet'):
         self.selected = []
         pen = curve.opts['pen']
         self._name = "{}-{}".format(curve.name(), namesuffix)
-        super().__init__(pen = pen, *args, **kwargs)
+        super().__init__(pen=pen)
         if stops is None:
             self.starts = pd.DataFrame({'points' : starts, 'sym' : self.symStart}, index=starts.index)
             self.stops  = pd.DataFrame({'points' : [], 'sym' : self.symStop})
@@ -258,8 +265,8 @@ class FeetItem(pg.ScatterPlotItem):
 
 class DicroticItem(FeetItem):
     symStart = ['o']
-    def __init__(self, curve, dicrotics, *args, **kwargs):
-        super().__init__(curve, starts=dicrotics, namesuffix='dic', *args, **kwargs)
+    def __init__(self, curve, dicrotics):
+        super().__init__(curve, starts=dicrotics, namesuffix='dic')
 
 class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):

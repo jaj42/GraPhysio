@@ -6,7 +6,7 @@ import numpy as np
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import tsplot, puplot, dialogs, utils, csvio, debug
+from graphysio import tsplot, puplot, dialogs, utils, csvio, debug, transformations
 from graphysio.types import PlotData, FootType
 
 class MainUi(*utils.loadUiFile('mainwindow.ui')):
@@ -36,6 +36,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuCurves.addAction('Visible &Curves',   self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
         self.menuCurves.addAction('Cycle &Detection',  self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
         self.menuCurves.addAction('&Filter',           self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        self.menuFile.addSeparator()
+        self.menuCurves.addAction('&Perfusion Index',  self.errguard(self.launchPI))
 
         self.menuSelection.addAction('As &new plot',          self.errguard(self.launchNewPlotFromSelection))
         self.menuSelection.addAction('&Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))
@@ -90,6 +92,12 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
     def launchCurveList(self):
         plotwidget = self.tabWidget.currentWidget()
         plotwidget.showCurveList()
+
+    def launchPI(self):
+        plotwidget = self.tabWidget.currentWidget()
+        curves = transformations.perfusionindex(plotwidget)
+        for curve in curves:
+            plotwidget.addCurve(curve)
 
     def launchCycleDetection(self):
         dlgCycles = dialogs.DlgCycleDetection(parent = self)
@@ -174,7 +182,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         newtabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
         for c in sourcewidget.curves.values():
             series = c.series.loc[xmin:xmax]
-            plotwidget.addCurve(series)
+            plotwidget.addSeriesAsCurve(series)
         self.tabWidget.setCurrentIndex(newtabindex)
 
     def launchAppendToPlotFromSelection(self):
@@ -197,7 +205,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
         for c in sourcewidget.curves.values():
             series = c.series.loc[xmin:xmax]
-            destwidget.addCurve(series, dorealign=dorealign)
+            destwidget.addSeriesAsCurve(series, dorealign=dorealign)
         self.tabWidget.setCurrentIndex(destidx)
 
     def exportSeries(self):

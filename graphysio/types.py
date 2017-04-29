@@ -1,6 +1,8 @@
 import os
 from enum import Enum
 
+from graphysio.algorithms import Filter, Parameter
+
 class FootType(Enum):
     none     = 'None'
     pressure = 'Pressure foot'
