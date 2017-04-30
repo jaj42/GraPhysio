@@ -14,7 +14,7 @@ class Reader(QtCore.QRunnable):
         self.sigdata = sigdata
         self.sigerror = sigerror
 
-    def run(self):
+    def run(self) -> None:
         try:
             data = self.getdata()
         except Exception as e:
@@ -22,7 +22,7 @@ class Reader(QtCore.QRunnable):
         else:
             self.sigdata.emit(data)
 
-    def getdata(self):
+    def getdata(self) -> PlotData:
         data = pd.read_csv(self.csvrequest.filepath,
                            sep       = self.csvrequest.seperator,
                            usecols   = self.csvrequest.fields,

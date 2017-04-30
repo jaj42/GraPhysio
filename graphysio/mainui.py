@@ -36,7 +36,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuCurves.addAction('Visible &Curves',   self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
         self.menuCurves.addAction('Cycle &Detection',  self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
         self.menuCurves.addAction('&Filter',           self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
-        self.menuFile.addSeparator()
+        self.menuCurves.addSeparator()
         self.menuCurves.addAction('&Perfusion Index',  self.errguard(self.launchPI))
 
         self.menuSelection.addAction('As &new plot',          self.errguard(self.launchNewPlotFromSelection))

@@ -1,10 +1,12 @@
+from typing import List
+
 import pandas as pd
 
 from graphysio.dialogs import askUserValue
 from graphysio.types import Parameter
 from graphysio.tsplot import PlotWidget, CurveItem
 
-def perfusionindex(plotwidget: PlotWidget) -> [CurveItem]:
+def perfusionindex(plotwidget: PlotWidget) -> List[CurveItem]:
     curvenames = list(plotwidget.curves.keys())
     q = Parameter('Select Curve', curvenames)
     curvename = askUserValue(q)
@@ -31,5 +33,16 @@ def perfusionindex(plotwidget: PlotWidget) -> [CurveItem]:
     piseries = pd.Series(pivalues, index=begins)
     piseries.name = "{}-{}".format(wave.name, 'perf')
 
+    newcurve = CurveItem(piseries, pen=plotwidget.getPen())
+    return [newcurve]
+
+def feettocurve(plotwidget: PlotWidget) -> List[CurveItem]:
+    feetitems = {}
+    for curve in plotwidget.curves.values():
+        feetitems.update(curve.feetitems)
+    feetnames = list(feetitems.keys())
+    q = Parameter('Select Curve', feetnames)
+    feetname = askUserValue(q)
+    fi = feetitems[feetname]
     newcurve = CurveItem(piseries, pen=plotwidget.getPen())
     return [newcurve]
