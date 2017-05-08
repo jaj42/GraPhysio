@@ -38,10 +38,6 @@ class PlotWidget(pg.PlotWidget):
     def curves(self):
         return {item.name() : item for item in self.listDataItems() if isinstance(item, CurveItem)}
 
-    @property
-    def feetitems(self):
-        return {item.name() : item for item in self.listDataItems() if isinstance(item, FeetItem)}
-
     def getPen(self):
         return next(self.colors)
 
@@ -53,7 +49,7 @@ class PlotWidget(pg.PlotWidget):
             series.index += offset
         if pen is None:
             pen = self.getPen()
-        curve = CurveItem(series=series, pen=pen)
+        curve = CurveItem(series=series, parent=self, pen=pen)
         self.addCurve(curve)
         return curve
 
@@ -69,36 +65,6 @@ class PlotWidget(pg.PlotWidget):
         self.removeItem(curve)
         self.legend.removeItem(curve.name())
 
-    def addFeet(self, curve, foottype):
-        if foottype is FootType.none:
-            return
-
-        # XXX use dictionary and check for foot type
-        #if curve.feetitem is not None:
-        #    replace = dialogs.userConfirm('Curve already has feet. Replace?', title='Replace feet')
-        #    if not replace:
-        #        return
-        #    else:
-        #        self.removeItem(curve.feetitem)
-        #        curve.feetitem = None
-
-        if foottype is FootType.velocity:
-            starts, stops = algorithms.findFlowCycles(curve)
-            feet = FeetItem(curve, starts, stops)
-            curve.feetitem = feet
-        elif foottype is FootType.pressure:
-            starts = algorithms.findPressureFeet(curve)
-            feet = FeetItem(curve, starts)
-            curve.feetitem = feet
-        elif foottype is FootType.dicrotic:
-            starts = algorithms.findDicrotics(curve)
-            feet = DicroticItem(curve, starts)
-        else:
-            raise ValueError(foottype)
-
-        feet.sigClicked.connect(self.sigPointClicked)
-        self.addItem(feet)
-
     def filterCurve(self, oldcurve, filtername, asnew=False):
         newseries, newsamplerate = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
         if asnew:
@@ -112,22 +78,16 @@ class PlotWidget(pg.PlotWidget):
             oldcurve.render()
 
     def filterFeet(self, feetitem, filtername):
-        starts, stops = algorithms.filterFeet(feetitem, filtername, dialogs.askUserValue)
-        feetitem.starts = starts
-        feetitem.stops = stops
-        feetitem.render()
-
-    def sigPointClicked(self, curve, points):
-        point = points[0] # keep the first point
-        if not curve.isPointSelected(point):
-            curve.selectPoint(point)
-        else:
-            curve.unselectPoint(point)
+        raise NotImplementedError
+        #starts, stops = algorithms.filterFeet(feetitem, filtername, dialogs.askUserValue)
+        #feetitem.starts = starts
+        #feetitem.stops = stops
+        #feetitem.render()
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Delete:
-            for curve in self.feetitems.values():
-                curve.removeSelection()
+            for curve in self.curves.values():
+                curve.feetitem.removeSelection()
 
     def showCurveList(self):
         dlgCurveSelection = dialogs.DlgCurveSelection(parent=self, visible=self.listDataItems(), hidden=self.hiddenitems)
@@ -153,13 +113,31 @@ class PlotWidget(pg.PlotWidget):
         return (xmin, xmax)
 
 
+def sigPointClicked(curve, points):
+    point = points[0] # only one point per click
+    if not curve.isPointSelected(point):
+        curve.selectPoint(point)
+    else:
+        curve.unselectPoint(point)
+
 class CurveItem(pg.PlotCurveItem):
-    def __init__(self, series, pen=QtGui.QColor(QtCore.Qt.black)):
+    def __init__(self, parent, series, pen=None):
+        self.parent = parent
         self.series = series
-        self.feetitem = None
-        self.pen = pen
         self.samplerate = utils.estimateSampleRate(self.series)
-        super().__init__(name = self.series.name,
+
+        if pen is None:
+            self.pen = QtGui.QColor(QtCore.Qt.black)
+        else:
+            self.pen = pen
+
+        self.feet = {}
+        feetname = '{}-feet'.format(series.name)
+        self.feetitem = FeetItem(self.feet, name=feetname, pen=self.pen)
+        parent.addItem(self.feetitem)
+        self.feetitem.sigClicked.connect(sigPointClicked)
+
+        super().__init__(name = series.name,
                          pen  = self.pen,
                          antialias = True)
         self.render()
@@ -168,30 +146,48 @@ class CurveItem(pg.PlotCurveItem):
         self.setData(x = self.series.index.values,
                      y = self.series.values)
 
+    def addFeet(self, foottype):
+        if foottype is FootType.none:
+            return
+        elif foottype is FootType.velocity:
+            starts, stops = algorithms.findFlowCycles(self)
+            self.feet['start'] = starts
+            self.feet['stop'] = stops
+        elif foottype is FootType.pressure:
+            foot = algorithms.findPressureFeet(self)
+            self.feet['start'] = foot
+        elif foottype is FootType.dicrotic:
+            dic = algorithms.findDicrotics(self)
+            self.feet['dicrotic'] = dic
+        else:
+            raise ValueError(foottype)
+        self.feetitem.render()
+
     def getCycleIndices(self, vrange=None):
         s = self.series
-        fi = self.feetitem
         clip = partial(utils.clip, vrange=vrange)
+        hasstarts = ('start' in self.feet) and self.feet['start'].size > 0
+        hasstops = ('stop' in self.feet) and self.feet['stop'].size > 0
         if vrange:
             xmin, xmax = vrange
         else:
             xmin = s.index[0]
             xmax = s.index[-1]
-        if fi is None or fi.starts.size < 1:
+        if not hasstarts:
             # We have no feet, treat the whole signal as one cycle
             locs = (s.index.get_loc(i, method='nearest') for i in [xmin, xmax])
             indices = (s.index[l] for l in locs)
             begins, ends = [np.array([i]) for i in indices]
-        elif fi.stops.size < 1:
+        elif not hasstops:
             # We have no stops, starts serve as stops for previous cycle
-            begins = clip(fi.starts.index.values)
+            begins = clip(self.feet['start'].index.values)
             endloc = s.index.get_loc(xmax, method='nearest')
             end = s.index[endloc]
             ends = np.append(begins[1:], end)
         else:
             # We have starts and stops, use them
-            begins = fi.starts.index.values
-            ends   = fi.stops.index.values
+            begins = self.feet['start'].index.values
+            ends = self.feet['stop'].index.values
             begins, ends = map(clip, [begins, ends])
 
         # Handle the case where we start in the middle of a cycle
@@ -204,40 +200,38 @@ class CurveItem(pg.PlotCurveItem):
 
 
 class FeetItem(pg.ScatterPlotItem):
-    symStart = 'star'
-    symStop = 's'
+    sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'o'}
     #Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
-    def __init__(self, curve, starts, stops=None, namesuffix='feet'):
-        self.selected = []
-        pen = curve.opts['pen']
-        self._name = "{}-{}".format(curve.name(), namesuffix)
+
+    def __init__(self, content, name, pen=None):
         super().__init__(pen=pen)
-        if stops is None:
-            self.starts = pd.DataFrame({'points' : starts, 'sym' : self.symStart}, index=starts.index)
-            self.stops  = pd.DataFrame({'points' : [], 'sym' : self.symStop})
-        else:
-            self.starts = pd.DataFrame({'points' : starts, 'sym' : self.symStart}, index=starts.index)
-            self.stops  = pd.DataFrame({'points' : stops, 'sym' : self.symStop}, index=stops.index)
+        self.selected = []
+        self.content = content
+        self.__name = name
+        self.resym = {value : key for key, value in self.sym.items()}
         self.render()
 
     def removePoints(self, points):
         for point in points:
-            if point.symbol() == self.symStart:
-                # should be in starts
-                nidx = self.starts.index.get_loc(point.pos().x(), method='nearest')
-                idx = self.starts.index[nidx]
-                self.starts.drop(idx, inplace=True)
-            elif point.symbol() == self.symStop:
-                # should be in stops
-                nidx = self.stops.index.get_loc(point.pos().x(), method='nearest')
-                idx = self.stops.index[nidx]
-                self.stops.drop(idx, inplace=True)
-            else:
-                # should not happen
-                pass
+            try:
+                sym = self.resym[point.symbol()]
+                s = self.content[sym]
+            except KeyError:
+                # Should not happen
+                continue
+            nidx = s.index.get_loc(point.pos().x(), method='nearest')
+            idx = s.index[nidx]
+            self.content[sym] = s.drop(idx)
+        self.render()
 
     def render(self):
-        feet = pd.concat([self.starts, self.stops])
+        data = []
+        for key, values in self.content.items():
+            tmp = pd.DataFrame({'points' : values, 'sym' : self.sym[key]}, index=values.index)
+            data.append(tmp)
+        if len(data) < 1:
+            return
+        feet = pd.concat(data)
         self.setData(x = feet.index.values,
                      y = feet['points'].values,
                      symbol = feet['sym'].values)
@@ -264,12 +258,7 @@ class FeetItem(pg.ScatterPlotItem):
 
     def name(self):
         # Method needed for compat with CurveItem
-        return self._name
-
-class DicroticItem(FeetItem):
-    symStart = 'o'
-    def __init__(self, curve, dicrotics):
-        super().__init__(curve, starts=dicrotics, namesuffix='dic')
+        return self.__name
 
 class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):

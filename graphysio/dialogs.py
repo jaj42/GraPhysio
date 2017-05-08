@@ -223,26 +223,19 @@ class DlgFilter(*utils.loadUiFile('filter.ui')):
                 self.choices[itemname] = (combo, itemtype)
 
         curves = list(plotframe.curves.keys())
-        feet = list(plotframe.feetitems.keys())
-
         fillTable(curves, 'curve', algorithms.Filters)
-        fillTable(feet, 'feet', algorithms.FeetFilters)
 
         self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
     @property
     def result(self):
-        feetfilters = {}
         curvefilters = {}
         for itemname, value in self.choices.items():
             combo, itemtype = value
-            if itemtype == 'feet':
-                feetfilters[itemname] = combo.currentText()
-            else:
-                curvefilters[itemname] = combo.currentText()
+            curvefilters[itemname] = combo.currentText()
 
         createnew = (self.chkNewcurve.checkState() > QtCore.Qt.Unchecked)
-        return (createnew, curvefilters, feetfilters)
+        return (createnew, curvefilters)
 
 
 class DlgSetupPULoop(*utils.loadUiFile('setuppuloop.ui')):

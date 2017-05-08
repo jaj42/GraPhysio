@@ -106,9 +106,10 @@ class TsExporter():
             # Cancel pressed
             return
         self.outdir = os.path.dirname(filepath)
-        feetitems = self.parent.feetitems.values()
-        feetidx = [pd.Series(item.feet.index) for item in feetitems]
-        feetnames = [item.feet.name for item in feetitems]
+
+        starts = [curve.feet['start'] for curve in self.parent.curves.values() if 'start' in curve.feet]
+        feetidx = [pd.Series(item.index) for item in starts]
+        feetnames = [item.name for item in starts]
         df = pd.concat(feetidx, axis=1, keys=feetnames)
         df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
 

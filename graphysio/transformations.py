@@ -11,12 +11,11 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItem]:
     q = Parameter('Select Curve', curvenames)
     curvename = askUserValue(q)
     curve = plotwidget.curves[curvename]
-    fi = curve.feetitem
-    if fi is None or fi.starts.size < 1:
-        raise ValueError('No start feet for curve')
+    if 'start' not in curve.feet or curve.feet['start'].size < 1:
+        raise ValueError('No start information for curve')
 
     wave = curve.series
-    starts = fi.starts['points']
+    starts = curve.feet['start']
     df = pd.concat([wave, starts], axis=1)
     df = df.interpolate(method='index')
 
@@ -37,12 +36,4 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItem]:
     return [newcurve]
 
 def feettocurve(plotwidget: PlotWidget) -> List[CurveItem]:
-    feetitems = {}
-    for curve in plotwidget.curves.values():
-        feetitems.update(curve.feetitems)
-    feetnames = list(feetitems.keys())
-    q = Parameter('Select Curve', feetnames)
-    feetname = askUserValue(q)
-    fi = feetitems[feetname]
-    newcurve = CurveItem(piseries, pen=plotwidget.getPen())
-    return [newcurve]
+    raise NotImplementedError
