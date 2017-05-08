@@ -204,8 +204,9 @@ class CurveItem(pg.PlotCurveItem):
 
 
 class FeetItem(pg.ScatterPlotItem):
-    symStart, symStop = ['t', 's']
-    # Available symbols: o, s, t, d, +, or any QPainterPath
+    symStart = 'star'
+    symStop = 's'
+    #Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
     def __init__(self, curve, starts, stops=None, namesuffix='feet'):
         self.selected = []
         pen = curve.opts['pen']
@@ -247,11 +248,13 @@ class FeetItem(pg.ScatterPlotItem):
     def selectPoint(self, point):
         if not self.isPointSelected(point):
             self.selected.append(point)
+        point.setPen('r')
         point.setBrush('r')
 
     def unselectPoint(self, point):
         if self.isPointSelected(point):
             self.selected.remove(point)
+        point.resetPen()
         point.resetBrush()
 
     def removeSelection(self):
@@ -264,7 +267,7 @@ class FeetItem(pg.ScatterPlotItem):
         return self._name
 
 class DicroticItem(FeetItem):
-    symStart = ['o']
+    symStart = 'o'
     def __init__(self, curve, dicrotics):
         super().__init__(curve, starts=dicrotics, namesuffix='dic')
 
