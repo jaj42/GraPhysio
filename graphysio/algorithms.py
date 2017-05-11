@@ -224,9 +224,37 @@ def findFlowCycles(curve):
 
     return (cycleStarts, cycleStops)
 
+def findSystoles(curve):
+    series = curve.series.dropna()
+    samplerate = curve.samplerate
+
+    systoles = []
+    starts, durations = curve.getCycleIndices()
+    for start, duration in zip(starts, durations):
+        stop = start + duration
+        sys = findPOI(series, [start, stop], 'max', windowsize=.05)
+        if sys is not None:
+            systoles.append(sys)
+    return series.loc[systoles]
+
+def findDiastoles(curve):
+    series = curve.series.dropna()
+    samplerate = curve.samplerate
+
+    diastoles = []
+    starts, durations = curve.getCycleIndices()
+    for start, duration in zip(starts, durations):
+        stop = start - duration
+        dia = findPOI(series, [start, stop], 'min', windowsize=.05, forcesign=False)
+        if dia is not None:
+            diastoles.append(dia)
+    return series.loc[diastoles]
+
 def findDicrotics(curve):
-    from graphysio.debug import mplwidget
-    DEBUG = (mplwidget is not None)
+    #from graphysio.debug import mplwidget
+    #DEBUG = (mplwidget is not None)
+
+    # XXX use systolic points we already calculated using findSystoles
 
     series = curve.series.dropna()
     samplerate = curve.samplerate
@@ -237,81 +265,98 @@ def findDicrotics(curve):
     fstderiv, _ = _savgol(fstderivraw, samplerate, (.16, 2))
     sndderiv, _ = _savgol(sndderivraw, samplerate, (.16, 2))
 
-    def genWindows(soi, interval, windowspan):
-        # Lazy equivalent to np.array_split
-        windowspan *= 1e9 # s to ns
-        begin, end = interval
-        if begin is None or end is None:
-            raise StopIteration
-        for n in itertools.count():
-            start = begin + n * windowspan
-            stop = start + windowspan
-            if stop >= end:
-                stop = end
-            window = soi.loc[start:stop]
-            if len(window) < 1:
-                raise StopIteration
-            yield window.index.values
-
-    def isbetter(new, ref, kind):
-        if kind == 'max':
-            condition = (new > ref) or (new < 0)
-        elif kind == 'min':
-            condition = (new < ref) or (new > 0)
-        else:
-            raise ValueError(kind)
-        return condition
-
-    def findPOI(soi, interval, kind, windowsize):
-        if kind not in ['min', 'max']:
-            raise ValueError(kind)
-        argkind = 'arg' + kind
-
-        goodwindow = []
-        previous = -np.inf if kind == 'max' else np.inf
-        for window in genWindows(soi, interval, windowsize):
-            zoi = soi.loc[window]
-            if DEBUG:
-                mplwidget.axes.plot(window, zoi.values)
-            new = getattr(zoi, kind)()
-            if isbetter(new, previous, kind):
-                goodwindow = window
-            else:
-                break
-            previous = new
-        finalzoi = soi.loc[goodwindow]
-        try:
-            retidx = getattr(finalzoi, argkind)()
-        except ValueError:
-            # No dicrotic found
-            retidx = None
-        return retidx
-
-    def findHorizontal(loc):
-        # Needs some love
-        if loc is None:
-            return None
-        step = 1e9 / samplerate # 1e9 to convert Hz to ns
-        begin = loc
-        end = loc + 10 * step
-        zoi = fstderiv.loc[begin:end]
-        if DEBUG:
-            mplwidget.axes.plot(zoi.index.values, zoi.values)
-        horidx = zoi.abs().argmin()
-        return horidx
-
     dics = []
     starts, durations = curve.getCycleIndices()
     for start, duration in zip(starts, durations):
         stop = start + duration
         sbp = findPOI(sndderiv, [start, stop], 'min', windowsize=.05)
         peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=.15)
-        dic = findHorizontal(peridic)
-        if DEBUG:
-            mplwidget.axes.axvline(x=sbp)
-            mplwidget.axes.axvline(x=peridic)
-            mplwidget.axes.axvline(x=dic, color='r')
+        dic = findHorizontal(fstderiv, peridic)
+        #if DEBUG:
+        #    mplwidget.axes.axvline(x=sbp)
+        #    mplwidget.axes.axvline(x=peridic)
+        #    mplwidget.axes.axvline(x=dic, color='r')
         if dic is not None:
             dics.append(dic)
-
     return series.loc[dics]
+
+
+# Utility function for point placing
+
+def isbetter(new, ref, kind, forcesign):
+    if kind == 'max':
+        condition = (new > ref)
+        if forcesign:
+            condition = condition or (new < 0)
+    elif kind == 'min':
+        condition = (new < ref)
+        if forcesign:
+            condition = condition or (new > 0)
+    else:
+        raise ValueError(kind)
+    return condition
+
+def genWindows(soi, interval, windowspan):
+    begin, end = interval
+    ltr = (end > begin)
+    windowspan *= 1e9 # s to ns
+    if begin is None or end is None:
+        raise StopIteration
+    if ltr:
+        direction = 1
+    else:
+        direction = -1
+    for n in itertools.count():
+        start = begin + direction * n * windowspan
+        stop = start + direction * windowspan
+
+        # Stop condition if we exceed end
+        if ltr:
+            if stop >= end:
+                stop = end
+        else:
+            if stop <= end:
+                stop = end
+            start, stop = (stop, start)
+
+        window = soi.loc[start:stop]
+        if len(window) < 1:
+            raise StopIteration
+        yield window.index.values
+
+def findPOI(soi, interval, kind, windowsize, forcesign=True):
+    if kind not in ['min', 'max']:
+        raise ValueError(kind)
+    argkind = 'arg' + kind
+
+    goodwindow = []
+    previous = -np.inf if kind == 'max' else np.inf
+    for window in genWindows(soi, interval, windowsize):
+        zoi = soi.loc[window]
+        #if DEBUG:
+        #    mplwidget.axes.plot(window, zoi.values)
+        new = getattr(zoi, kind)()
+        if isbetter(new, previous, kind, forcesign):
+            goodwindow = window
+        else:
+            break
+        previous = new
+    finalzoi = soi.loc[goodwindow]
+    try:
+        retidx = getattr(finalzoi, argkind)()
+    except ValueError:
+        # No POI found
+        retidx = None
+    return retidx
+
+def findHorizontal(soi, loc):
+    if loc is None:
+        return None
+    step = 8000000 # 8 ms (from ns)
+    begin = loc
+    end = loc + 10 * step
+    zoi = soi.loc[begin:end]
+    #if DEBUG:
+    #    mplwidget.axes.plot(zoi.index.values, zoi.values)
+    horidx = zoi.abs().argmin()
+    return horidx

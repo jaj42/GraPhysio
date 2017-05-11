@@ -156,6 +156,12 @@ class CurveItem(pg.PlotCurveItem):
         elif foottype is FootType.pressure:
             foot = algorithms.findPressureFeet(self)
             self.feet['start'] = foot
+        elif foottype is FootType.diastole:
+            dia = algorithms.findDiastoles(self)
+            self.feet['diastole'] = dia
+        elif foottype is FootType.systole:
+            sys = algorithms.findSystoles(self)
+            self.feet['systole'] = sys
         elif foottype is FootType.dicrotic:
             dic = algorithms.findDicrotics(self)
             self.feet['dicrotic'] = dic

@@ -6,6 +6,8 @@ from graphysio.algorithms import Filter, Parameter
 class FootType(Enum):
     none     = 'None'
     pressure = 'Pressure foot'
+    diastole = 'Diastolic valley'
+    systole  = 'Systolic peak'
     dicrotic = 'Dicrotic notch'
     velocity = 'Velocity'
 
