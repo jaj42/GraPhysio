@@ -224,37 +224,9 @@ def findFlowCycles(curve):
 
     return (cycleStarts, cycleStops)
 
-def findSystoles(curve):
-    series = curve.series.dropna()
-    samplerate = curve.samplerate
-
-    systoles = []
-    starts, durations = curve.getCycleIndices()
-    for start, duration in zip(starts, durations):
-        stop = start + duration
-        sys = findPOI(series, [start, stop], 'max', windowsize=.05)
-        if sys is not None:
-            systoles.append(sys)
-    return series.loc[systoles]
-
-def findDiastoles(curve):
-    series = curve.series.dropna()
-    samplerate = curve.samplerate
-
-    diastoles = []
-    starts, durations = curve.getCycleIndices()
-    for start, duration in zip(starts, durations):
-        stop = start - duration
-        dia = findPOI(series, [start, stop], 'min', windowsize=.05, forcesign=False)
-        if dia is not None:
-            diastoles.append(dia)
-    return series.loc[diastoles]
-
-def findDicrotics(curve):
+def findPressureFull(curve):
     #from graphysio.debug import mplwidget
     #DEBUG = (mplwidget is not None)
-
-    # XXX use systolic points we already calculated using findSystoles
 
     series = curve.series.dropna()
     samplerate = curve.samplerate
@@ -265,20 +237,24 @@ def findDicrotics(curve):
     fstderiv, _ = _savgol(fstderivraw, samplerate, (.16, 2))
     sndderiv, _ = _savgol(sndderivraw, samplerate, (.16, 2))
 
-    dics = []
+    cycles = []
     starts, durations = curve.getCycleIndices()
     for start, duration in zip(starts, durations):
         stop = start + duration
-        sbp = findPOI(sndderiv, [start, stop], 'min', windowsize=.05)
+        diastop = start - duration
+        dia = findPOI(series, [start, diastop], 'min', windowsize=.05, forcesign=False)
+        sbp = findPOI(series, [start, stop], 'max', windowsize=.05)
         peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=.15)
         dic = findHorizontal(fstderiv, peridic)
         #if DEBUG:
         #    mplwidget.axes.axvline(x=sbp)
         #    mplwidget.axes.axvline(x=peridic)
         #    mplwidget.axes.axvline(x=dic, color='r')
-        if dic is not None:
-            dics.append(dic)
-    return series.loc[dics]
+        cycle = (dia, sbp, dic)
+        cycles.append(cycle)
+
+    indices = (np.array(idx) for idx in zip(*cycles))
+    return [series.loc[idx] for idx in indices]
 
 
 # Utility function for point placing
@@ -353,7 +329,7 @@ def findHorizontal(soi, loc):
     if loc is None:
         return None
     step = 8000000 # 8 ms (from ns)
-    begin = loc
+    begin = loc - 10 * step
     end = loc + 10 * step
     zoi = soi.loc[begin:end]
     #if DEBUG:

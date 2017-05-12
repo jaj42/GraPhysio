@@ -7,7 +7,7 @@ import numpy as np
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import tsplot, puplot, dialogs, utils, csvio, debug, transformations
-from graphysio.types import PlotData, FootType
+from graphysio.types import PlotData, CycleId
 
 class MainUi(*utils.loadUiFile('mainwindow.ui')):
     hasdata  = QtCore.pyqtSignal(object)
@@ -107,7 +107,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         plotwidget = self.tabWidget.currentWidget()
         for curvename, choice in choices.items():
             curve = plotwidget.curves[curvename]
-            curve.addFeet(FootType(choice))
+            curve.addFeet(CycleId(choice))
 
     def launchFilter(self):
         dlgFilter = dialogs.DlgFilter(parent = self)

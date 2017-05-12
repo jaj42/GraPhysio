@@ -4,11 +4,16 @@ from enum import Enum
 from graphysio.algorithms import Filter, Parameter
 
 class FootType(Enum):
+    start    = 'start'
+    stop     = 'stop'
+    diastole = 'diastole'
+    systole  = 'systole'
+    dicrotic = 'dicrotic'
+
+class CycleId(Enum):
     none     = 'None'
-    pressure = 'Pressure foot'
-    diastole = 'Diastolic valley'
-    systole  = 'Systolic peak'
-    dicrotic = 'Dicrotic notch'
+    foot     = 'Pressure foot'
+    pressure = 'Pressure Full'
     velocity = 'Velocity'
 
 class CsvRequest():

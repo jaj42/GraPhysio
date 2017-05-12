@@ -176,7 +176,7 @@ class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
 
         for n, curvename in enumerate(plotframe.curves.keys()):
             combo = QtGui.QComboBox()
-            combo.addItems([ft.value for ft in types.FootType])
+            combo.addItems([ft.value for ft in types.CycleId])
             curveitem = QtGui.QTableWidgetItem(curvename)
 
             self.table.insertRow(n)

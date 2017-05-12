@@ -7,7 +7,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import algorithms, exporter, utils, dialogs, legend
-from graphysio.types import FootType
+from graphysio.types import CycleId
 
 class PlotWidget(pg.PlotWidget):
     def __init__(self, plotdata, parent=None):
@@ -146,27 +146,23 @@ class CurveItem(pg.PlotCurveItem):
         self.setData(x = self.series.index.values,
                      y = self.series.values)
 
-    def addFeet(self, foottype):
-        if foottype is FootType.none:
+    def addFeet(self, cycleid):
+        if cycleid is CycleId.none:
             return
-        elif foottype is FootType.velocity:
+        elif cycleid is CycleId.velocity:
             starts, stops = algorithms.findFlowCycles(self)
             self.feet['start'] = starts
             self.feet['stop'] = stops
-        elif foottype is FootType.pressure:
+        elif cycleid is CycleId.foot:
             foot = algorithms.findPressureFeet(self)
             self.feet['start'] = foot
-        elif foottype is FootType.diastole:
-            dia = algorithms.findDiastoles(self)
+        elif cycleid is CycleId.pressure:
+            dia, sbp, dic = algorithms.findPressureFull(self)
             self.feet['diastole'] = dia
-        elif foottype is FootType.systole:
-            sys = algorithms.findSystoles(self)
-            self.feet['systole'] = sys
-        elif foottype is FootType.dicrotic:
-            dic = algorithms.findDicrotics(self)
+            self.feet['systole']  = sbp
             self.feet['dicrotic'] = dic
         else:
-            raise ValueError(foottype)
+            raise ValueError(cycleid)
         self.feetitem.render()
 
     def getCycleIndices(self, vrange=None):
