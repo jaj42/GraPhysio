@@ -42,8 +42,8 @@ class PlotWidget(pg.PlotWidget):
         return next(self.colors)
 
     def addSeriesAsCurve(self, series, pen=None, dorealign=False):
-        # Timeshift new curves to make the beginnings coincide
         if dorealign:
+            # Timeshift new curves to make the beginnings coincide
             begins = (curve.series.index[0] for curve in self.curves.values() if len(curve.series.index) > 0)
             offset = min(begins) - series.index[0]
             series.index += offset
@@ -90,11 +90,11 @@ class PlotWidget(pg.PlotWidget):
                 curve.feetitem.removeSelection()
 
     def showCurveList(self):
-        dlgCurveSelection = dialogs.DlgCurveSelection(parent=self, visible=self.listDataItems(), hidden=self.hiddenitems)
+        dlgCurveSelection = dialogs.DlgCurveSelection(parent=self, visible=self.curves.values(), hidden=self.hiddenitems)
         if not dlgCurveSelection.exec_():
             return
         visible, invisible = dlgCurveSelection.result
-        newvisible = [item for item in visible if item not in self.listDataItems()]
+        newvisible = [item for item in visible if item not in self.curves.values()]
         newinvisible = [item for item in invisible if item not in self.hiddenitems]
         for item in newvisible:
             self.addCurve(item)
@@ -133,7 +133,7 @@ class CurveItem(pg.PlotCurveItem):
 
         self.feet = {}
         feetname = '{}-feet'.format(series.name)
-        self.feetitem = FeetItem(self.feet, name=feetname, pen=self.pen)
+        self.feetitem = FeetItem(self.series, self.feet, name=feetname, pen=self.pen)
         parent.addItem(self.feetitem)
         self.feetitem.sigClicked.connect(sigPointClicked)
 
@@ -182,14 +182,14 @@ class CurveItem(pg.PlotCurveItem):
             begins, ends = [np.array([i]) for i in indices]
         elif not hasstops:
             # We have no stops, starts serve as stops for previous cycle
-            begins = clip(self.feet['start'].index.values)
+            begins = clip(self.feet['start'].values)
             endloc = s.index.get_loc(xmax, method='nearest')
             end = s.index[endloc]
             ends = np.append(begins[1:], end)
         else:
             # We have starts and stops, use them
-            begins = self.feet['start'].index.values
-            ends = self.feet['stop'].index.values
+            begins = self.feet['start'].values
+            ends = self.feet['stop'].values
             begins, ends = map(clip, [begins, ends])
 
         # Handle the case where we start in the middle of a cycle
@@ -205,10 +205,11 @@ class FeetItem(pg.ScatterPlotItem):
     sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'o'}
     #Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
-    def __init__(self, content, name, pen=None):
+    def __init__(self, series, indices, name, pen=None):
         super().__init__(pen=pen)
         self.selected = []
-        self.content = content
+        self.series = series
+        self.indices = indices
         self.__name = name
         self.resym = {value : key for key, value in self.sym.items()}
         self.render()
@@ -217,19 +218,20 @@ class FeetItem(pg.ScatterPlotItem):
         for point in points:
             try:
                 sym = self.resym[point.symbol()]
-                s = self.content[sym]
+                idx = self.indices[sym]
             except KeyError:
                 # Should not happen
                 continue
-            nidx = s.index.get_loc(point.pos().x(), method='nearest')
-            idx = s.index[nidx]
-            self.content[sym] = s.drop(idx)
+            nidx = idx.get_loc(point.pos().x(), method='nearest')
+            self.indices[sym] = idx.delete(nidx)
         self.render()
 
     def render(self):
         data = []
-        for key, values in self.content.items():
-            tmp = pd.DataFrame({'points' : values, 'sym' : self.sym[key]}, index=values.index)
+        for key, idx in self.indices.items():
+            idxnona = idx.dropna()
+            points = self.series[idxnona]
+            tmp = pd.DataFrame({'points' : points, 'sym' : self.sym[key]}, index=idxnona)
             data.append(tmp)
         if len(data) < 1:
             return

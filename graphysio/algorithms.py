@@ -204,7 +204,7 @@ def findPressureFeet(curve):
             else:
                 yield maximum
 
-    cycleStarts = series[list(locateMaxima())]
+    cycleStarts = pd.Index(list(locateMaxima()))
     return cycleStarts
 
 def findFlowCycles(curve):
@@ -222,7 +222,7 @@ def findFlowCycles(curve):
     except IndexError as e:
         raise TypeError("No cycle detected: {}".format(e))
 
-    return (cycleStarts, cycleStops)
+    return (cycleStarts.index, cycleStops.index)
 
 def findPressureFull(curve):
     #from graphysio.debug import mplwidget
@@ -253,8 +253,8 @@ def findPressureFull(curve):
         cycle = (dia, sbp, dic)
         cycles.append(cycle)
 
-    indices = (np.array(idx) for idx in zip(*cycles))
-    return [series.loc[idx] for idx in indices]
+    indices = [pd.Index(idx) for idx in zip(*cycles)]
+    return indices
 
 
 # Utility function for point placing
