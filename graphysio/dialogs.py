@@ -26,6 +26,7 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         # Setup Field Table
         self.lstVAll.verticalHeader().hide()
         self.lstVAll.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        self.lstVAll.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
         # Connect callbacks
         self.btnBrowse.clicked.connect(self.selectFile)
