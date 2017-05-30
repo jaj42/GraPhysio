@@ -27,8 +27,9 @@ TFs = {tfpulseheart.name : tfpulseheart}
 interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
 
 Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
+           'Highpass filter' : Filter(name='highpass', parameters=[Parameter('Cutoff frequency (Hz)', float), Parameter('Filter order', int)]),
            'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
-           'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', int), Parameter('Interpolation type', interpkind)]),
+           'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', float), Parameter('Interpolation type', interpkind)]),
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
            'Fill NaNs' : Filter(name='fillnan', parameters=[]),
            'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
@@ -78,6 +79,15 @@ def _lowpass(series, samplerate, parameters):
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
 
+def _highpass(series, samplerate, parameters):
+    Fc, order = parameters
+    Wn = Fc * 2 / samplerate
+    b, a = signal.butter(order, Wn, btype='highpass')
+    filtered = signal.lfilter(b, a, series)
+    newname = "{}-hp{}".format(series.name, Fc)
+    newseries = pd.Series(filtered, index=series.index, name=newname)
+    return (newseries, samplerate)
+
 def _interp(series, samplerate, parameters):
     newsamplerate, method = parameters
     oldidx = series.index
@@ -121,6 +131,7 @@ filtfuncs = {'savgol'     : _savgol,
              'affine'     : _affine,
              'tf'         : _tf,
              'lowpass'    : _lowpass,
+             'highpass'   : _highpass,
              'interp'     : _interp,
              'dopplercut' : _dopplercut,
              'diff'       : _diff,
