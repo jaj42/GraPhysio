@@ -58,12 +58,14 @@ class PlotWidget(pg.PlotWidget):
         if pen is not None:
             curve.setPen(pen)
         self.addItem(curve)
-        if isinstance(curve, pg.PlotCurveItem):
+        if isinstance(curve, pg.PlotDataItem):
             self.legend.addItem(curve, curve.name())
+        curve.visible.emit()
 
     def removeCurve(self, curve):
         self.removeItem(curve)
         self.legend.removeItem(curve.name())
+        curve.invisible.emit()
 
     def filterCurve(self, oldcurve, filtername, asnew=False):
         newseries, newsamplerate = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
@@ -120,8 +122,11 @@ def sigPointClicked(curve, points):
     else:
         curve.unselectPoint(point)
 
-class CurveItem(pg.PlotCurveItem):
-    def __init__(self, parent, series, pen=None):
+class CurveItem(pg.PlotDataItem):
+    visible = QtCore.pyqtSignal()
+    invisible = QtCore.pyqtSignal()
+
+    def __init__(self, series, parent, pen=None):
         self.parent = parent
         self.series = series
         self.samplerate = utils.estimateSampleRate(self.series)
@@ -140,7 +145,19 @@ class CurveItem(pg.PlotCurveItem):
         super().__init__(name = series.name,
                          pen  = self.pen,
                          antialias = True)
+
+        self.visible.connect(self.__becameVisible)
+        self.invisible.connect(self.__becameInvisible)
         self.render()
+
+    def __becameVisible(self):
+        if not self.feetitem in self.parent.listDataItems():
+            self.parent.addItem(self.feetitem)
+            self.feetitem.render()
+        self.render()
+
+    def __becameInvisible(self):
+        self.parent.removeItem(self.feetitem)
 
     def render(self):
         self.setData(x = self.series.index.values,
@@ -176,6 +193,7 @@ class CurveItem(pg.PlotCurveItem):
             xmin = s.index[0]
             xmax = s.index[-1]
         if not hasstarts:
+            # XXX is get_loc needed?
             # We have no feet, treat the whole signal as one cycle
             locs = (s.index.get_loc(i, method='nearest') for i in [xmin, xmax])
             indices = (s.index[l] for l in locs)
@@ -202,7 +220,7 @@ class CurveItem(pg.PlotCurveItem):
 
 
 class FeetItem(pg.ScatterPlotItem):
-    sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'o'}
+    sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'd'}
     #Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
     def __init__(self, series, indices, name, pen=None):
