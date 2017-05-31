@@ -153,8 +153,8 @@ class CurveItem(pg.PlotDataItem):
     def __becameVisible(self):
         if not self.feetitem in self.parent.listDataItems():
             self.parent.addItem(self.feetitem)
-            self.feetitem.render()
         self.render()
+        self.feetitem.render()
 
     def __becameInvisible(self):
         self.parent.removeItem(self.feetitem)
@@ -217,6 +217,11 @@ class CurveItem(pg.PlotDataItem):
         begins, ends = utils.truncatevecs([begins, ends])
         durations = ends - begins
         return (begins, durations)
+
+    def getFeetPoints(self, feetname):
+        feetidx = self.feet[feetname]
+        feetnona = feetidx[pd.notnull(feetidx)]
+        return self.series.loc[feetnona]
 
 
 class FeetItem(pg.ScatterPlotItem):
