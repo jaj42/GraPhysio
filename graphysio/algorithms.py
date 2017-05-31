@@ -27,7 +27,7 @@ TFs = {tfpulseheart.name : tfpulseheart}
 interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
 
 Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
-           'Highpass filter' : Filter(name='highpass', parameters=[Parameter('Cutoff frequency (Hz)', float), Parameter('Filter order', int)]),
+           'Filter ventilation' : Filter(name='ventilation', parameters=[]),
            'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
            'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', float), Parameter('Interpolation type', interpkind)]),
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
@@ -65,27 +65,30 @@ def _tf(series, samplerate, parameters):
     filtname, = parameters
     tf = TFs[filtname]
     b, a = tf.discretize(samplerate)
-    filtered = signal.lfilter(b, a, series)
-    newname = "{}-{}".format(series.name, tf.name)
-    newseries = pd.Series(filtered, index=series.index, name=newname)
+    seriesnona = series.dropna()
+    filtered = signal.lfilter(b, a, seriesnona)
+    newname = "{}-{}".format(seriesnona.name, tf.name)
+    newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
     return (newseries, samplerate)
 
 def _lowpass(series, samplerate, parameters):
     Fc, order = parameters
     Wn = Fc * 2 / samplerate
     b, a = signal.butter(order, Wn)
-    filtered = signal.lfilter(b, a, series)
-    newname = "{}-lp{}".format(series.name, Fc)
-    newseries = pd.Series(filtered, index=series.index, name=newname)
+    seriesnona = series.dropna()
+    filtered = signal.lfilter(b, a, seriesnona)
+    newname = "{}-lp{}".format(seriesnona.name, Fc)
+    newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
     return (newseries, samplerate)
 
-def _highpass(series, samplerate, parameters):
-    Fc, order = parameters
-    Wn = Fc * 2 / samplerate
-    b, a = signal.butter(order, Wn, btype='highpass')
-    filtered = signal.lfilter(b, a, series)
-    newname = "{}-hp{}".format(series.name, Fc)
-    newseries = pd.Series(filtered, index=series.index, name=newname)
+def _ventilation(series, samplerate, parameters):
+    order = 12
+    Wn = [Fc * 2 / samplerate for Fc in (8, 22)]
+    b, a = signal.butter(order, Wn, btype='bandstop')
+    seriesnona = series.dropna()
+    filtered = signal.lfilter(b, a, seriesnona)
+    newname = "{}-novent".format(seriesnona.name)
+    newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
     return (newseries, samplerate)
 
 def _interp(series, samplerate, parameters):
@@ -131,7 +134,7 @@ filtfuncs = {'savgol'     : _savgol,
              'affine'     : _affine,
              'tf'         : _tf,
              'lowpass'    : _lowpass,
-             'highpass'   : _highpass,
+             'ventilation': _ventilation,
              'interp'     : _interp,
              'dopplercut' : _dopplercut,
              'diff'       : _diff,
@@ -264,7 +267,7 @@ def findPressureFull(curve):
         cycle = (dia, sbp, dic)
         cycles.append(cycle)
 
-    indices = [pd.Index(idx) for idx in zip(*cycles)]
+    indices = [pd.Index(idx, dtype=np.int64) for idx in zip(*cycles)]
     return indices
 
 
