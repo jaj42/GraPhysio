@@ -7,7 +7,7 @@ import numpy as np
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import tsplot, puplot, dialogs, utils, csvio, debug, transformations
-from graphysio.types import PlotData, CycleId
+from graphysio.types import PlotData, CycleId, Parameter
 
 class MainUi(*utils.loadUiFile('mainwindow.ui')):
     hasdata  = QtCore.pyqtSignal(object)
@@ -35,9 +35,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
         self.menuCurves.addAction('Visible &Curves',   self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
         self.menuCurves.addAction('Cycle &Detection',  self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
-        self.menuCurves.addAction('&Filter',           self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
-        self.menuCurves.addSeparator()
-        self.menuCurves.addAction('&Perfusion Index',  self.errguard(self.launchPI))
+        self.menuCurves.addAction('&Filter Curve',     self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        self.menuCurves.addAction('&Transformation',   self.errguard(self.launchTransformation), QtCore.Qt.CTRL + QtCore.Qt.Key_F)
 
         self.menuSelection.addAction('As &new plot',          self.errguard(self.launchNewPlotFromSelection))
         self.menuSelection.addAction('&Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))
@@ -58,7 +57,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 f()
             except Exception as e:
                 # Re-raise errors here for DEBUG
-                #raise e
+                raise e
                 self.haserror.emit(e)
         return wrapped
 
@@ -93,12 +92,6 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         plotwidget = self.tabWidget.currentWidget()
         plotwidget.showCurveList()
 
-    def launchPI(self):
-        plotwidget = self.tabWidget.currentWidget()
-        curves = transformations.perfusionindex(plotwidget)
-        for curve in curves:
-            plotwidget.addCurve(curve)
-
     def launchCycleDetection(self):
         dlgCycles = dialogs.DlgCycleDetection(parent = self)
         if not dlgCycles.exec_():
@@ -121,23 +114,25 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             curve = plotwidget.curves[curvename]
             plotwidget.filterCurve(curve, choice, asnew=createnew)
 
+    def launchTransformation(self):
+        plotwidget = self.tabWidget.currentWidget()
+        param = Parameter("Choose Transformation", list(transformations.Transformations.keys()))
+        qresult = dialogs.askUserValue(param)
+        trans = transformations.Transformations[qresult]
+        for curve in trans(plotwidget):
+            plotwidget.addCurve(curve)
+
     def launchReadData(self, newwidget=True):
+        try:
+            self.hasdata.disconnect()
+        except:
+            pass
         if newwidget:
             title = "New Plot"
-            try:
-                self.hasdata.disconnect()
-            except:
-                pass
-            finally:
-                self.hasdata.connect(self.createNewPlotWithData)
+            self.hasdata.connect(self.createNewPlotWithData)
         else:
             title = "Append to Plot"
-            try:
-                self.hasdata.disconnect()
-            except:
-                pass
-            finally:
-                self.hasdata.connect(self.appendToPlotWithData)
+            self.hasdata.connect(self.appendToPlotWithData)
 
         dlgNewplot = dialogs.DlgNewPlot(parent=self, title=title, directory=self.dircache)
         if not dlgNewplot.exec_():
