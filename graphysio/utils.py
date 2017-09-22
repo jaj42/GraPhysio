@@ -41,7 +41,11 @@ def estimateSampleRate(series):
     intervals = np.diff(series.dropna().index)
     # 1e9 to account for ns -> Hz
     fs = 1e9 / np.median(intervals)
-    return int(round(fs))
+    if fs == np.inf:
+        fs = 0
+    if fs > 1:
+        fs = int(round(fs))
+    return fs
 
 def loadmodule():
     defaultdir = os.path.expanduser('~')

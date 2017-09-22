@@ -37,7 +37,7 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
 
         self.curidx = 0
         self.loops = []
-        self.pen = p.pen
+        self.pen = p.opts['pen']
         self.graphicsView.setBackground('w')
 
         plotitem = self.graphicsView.getPlotItem()

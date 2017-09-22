@@ -15,7 +15,7 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItem]:
         raise ValueError('No start information for curve')
 
     wave = curve.series
-    starts = curve.feet['start']
+    starts = curve.getFeetPoints('start')
     df = pd.concat([wave, starts], axis=1)
     df = df.interpolate(method='index')
 
@@ -32,8 +32,22 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItem]:
     piseries = pd.Series(pivalues, index=begins)
     piseries.name = "{}-{}".format(wave.name, 'perf')
 
-    newcurve = CurveItem(piseries, pen=plotwidget.getPen())
+    newcurve = CurveItem(parent=plotwidget, series=piseries, pen=plotwidget.getPen())
     return [newcurve]
 
 def feettocurve(plotwidget: PlotWidget) -> List[CurveItem]:
-    raise NotImplementedError
+    feetitemhash = {}
+    for curve in plotwidget.curves.values():
+        feetitemhash.update({"{}-{}".format(curve.name(), feetname) : (curve, feetname) for feetname in curve.feet.keys()})
+    param = Parameter("Choose points to create curve", list(feetitemhash.keys()))
+    qresult = askUserValue(param)
+    curve, feetname = feetitemhash[qresult]
+
+    newseries = curve.getFeetPoints(feetname)
+    newseries.name = qresult
+
+    newcurve = CurveItem(parent=plotwidget, series=newseries, pen=plotwidget.getPen())
+    return [newcurve]
+
+Transformations = {'Perfusion Index' : perfusionindex,
+                   'Feet to Curve'   : feettocurve}

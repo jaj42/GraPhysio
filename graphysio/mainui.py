@@ -23,7 +23,6 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         launchNewPlot = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
         getCLIShell = partial(utils.getshell, ui=self)
-
         self.menuFile.addAction('&New Plot',       self.errguard(launchNewPlot),    QtCore.Qt.CTRL + QtCore.Qt.Key_N)
         self.menuFile.addAction('&Append to Plot', self.errguard(launchAppendPlot), QtCore.Qt.CTRL + QtCore.Qt.Key_A)
         self.menuFile.addSeparator()
@@ -33,10 +32,13 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
+        launchFilterCurve = partial(self.launchFilter, filterfeet=False)
+        launchFilterFeet = partial(self.launchFilter, filterfeet=True)
         self.menuCurves.addAction('Visible &Curves',   self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
         self.menuCurves.addAction('Cycle &Detection',  self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
-        self.menuCurves.addAction('&Filter Curve',     self.errguard(self.launchFilter),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
-        self.menuCurves.addAction('&Transformation',   self.errguard(self.launchTransformation), QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        self.menuCurves.addAction('&Filter Curve',     self.errguard(launchFilterCurve),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        self.menuCurves.addAction('&Filter Feet',      self.errguard(launchFilterFeet))
+        self.menuCurves.addAction('&Transformation',   self.errguard(self.launchTransformation))
 
         self.menuSelection.addAction('As &new plot',          self.errguard(self.launchNewPlotFromSelection))
         self.menuSelection.addAction('&Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))
@@ -57,7 +59,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 f()
             except Exception as e:
                 # Re-raise errors here for DEBUG
-                raise e
+                #raise e
                 self.haserror.emit(e)
         return wrapped
 
@@ -102,17 +104,21 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             curve = plotwidget.curves[curvename]
             curve.addFeet(CycleId(choice))
 
-    def launchFilter(self):
-        dlgFilter = dialogs.DlgFilter(parent = self)
+    def launchFilter(self, filterfeet):
+        dlgFilter = dialogs.DlgFilter(parent=self, filterfeet=filterfeet)
         if not dlgFilter.exec_():
             return
         createnew, curvechoices = dlgFilter.result
         plotwidget = self.tabWidget.currentWidget()
+        if filterfeet:
+            filterfunc = plotwidget.filterFeet
+        else:
+            filterfunc = plotwidget.filterCurve
         for curvename, choice in curvechoices.items():
             if choice == 'None':
                 continue
             curve = plotwidget.curves[curvename]
-            plotwidget.filterCurve(curve, choice, asnew=createnew)
+            filterfunc(curve, choice, asnew=createnew)
 
     def launchTransformation(self):
         plotwidget = self.tabWidget.currentWidget()

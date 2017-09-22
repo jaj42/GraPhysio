@@ -13,6 +13,6 @@ class MyLegendItem(pg.LegendItem):
 
     def addItem(self, item, name):
         # Make the line width bigger
-        pen = pg.mkPen(item.pen, width=2)
+        pen = pg.mkPen(item.opts['pen'], width=2)
         newitem = pg.PlotDataItem(pen=pen)
         super().addItem(newitem, name)

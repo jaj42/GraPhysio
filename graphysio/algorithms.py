@@ -8,6 +8,8 @@ from scipy import signal, interpolate
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
 
+DEBUGWIDGET = None
+
 class TF(object):
     def __init__(self, num, den, name=''):
         self.num  = num
@@ -19,11 +21,7 @@ class TF(object):
         (dnum, dden, _) = signal.cont2discrete(systf, 1 / samplerate)
         return (np.squeeze(dnum), np.squeeze(dden))
 
-pulseheartnum = [0.693489245308734, 132.978069767093, 87009.5691967337, 10914873.0713084, 218273825.541909, 6489400920.14402]
-pulseheartden = [1, 180.289425270434, 174563.510125383, 17057258.6774222, 555352944.277185, 6493213494.43661]
-tfpulseheart = TF(pulseheartnum, pulseheartden, name='HeartPulse')
-
-TFs = {tfpulseheart.name : tfpulseheart}
+TFs = {}
 interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
 
 Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
@@ -33,6 +31,7 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
            'Fill NaNs' : Filter(name='fillnan', parameters=[]),
            'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
+           'Normalize' : Filter(name='norm', parameters=[]),
            'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
            'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])}
 
@@ -43,7 +42,14 @@ def updateTFs():
     Filters['Transfer function'] = Filter(name='tf', parameters=[Parameter('Transfer function', tflist)])
 updateTFs()
 
-def _savgol(series, samplerate, parameters):
+def norm(series, samplerate, parameters):
+    smax = np.percentile(series, 95)
+    smin = np.percentile(series, 5)
+    newseries = (series - smin) / (smax - smin)
+    newname = "{}-{}".format(series.name, 'norm')
+    return (newseries.rename(newname), samplerate)
+
+def savgol(series, samplerate, parameters):
     window, order = parameters
     window = np.floor(window * samplerate)
     if not window % 2:
@@ -54,14 +60,14 @@ def _savgol(series, samplerate, parameters):
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
 
-def _affine(series, samplerate, parameters):
+def affine(series, samplerate, parameters):
     a, b = parameters
     filtered = a * series + b
     newname = "{}-{}-{}-{}".format(series.name, 'affine', a, b)
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
 
-def _tf(series, samplerate, parameters):
+def tf(series, samplerate, parameters):
     filtname, = parameters
     tf = TFs[filtname]
     b, a = tf.discretize(samplerate)
@@ -71,7 +77,7 @@ def _tf(series, samplerate, parameters):
     newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
     return (newseries, samplerate)
 
-def _lowpass(series, samplerate, parameters):
+def lowpass(series, samplerate, parameters):
     Fc, order = parameters
     Wn = Fc * 2 / samplerate
     b, a = signal.butter(order, Wn)
@@ -81,17 +87,17 @@ def _lowpass(series, samplerate, parameters):
     newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
     return (newseries, samplerate)
 
-def _ventilation(series, samplerate, parameters):
-    order = 12
-    Wn = [Fc * 2 / samplerate for Fc in (8, 22)]
+def ventilation(series, samplerate, parameters):
+    order = 8
+    Wn = [Fc * 2 / samplerate for Fc in (.13, .36)]
     b, a = signal.butter(order, Wn, btype='bandstop')
-    seriesnona = series.dropna()
-    filtered = signal.lfilter(b, a, seriesnona)
-    newname = "{}-novent".format(seriesnona.name)
-    newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
+    filtered = signal.lfilter(b, a, series)
+    print(filtered)
+    newname = "{}-novent".format(series.name)
+    newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
 
-def _interp(series, samplerate, parameters):
+def interp(series, samplerate, parameters):
     newsamplerate, method = parameters
     oldidx = series.index
     f = interpolate.interp1d(oldidx, series.values, kind=method)
@@ -102,7 +108,7 @@ def _interp(series, samplerate, parameters):
     newseries = pd.Series(resampled, index=newidx, name=newname)
     return (newseries, newsamplerate)
 
-def _dopplercut(series, samplerate, parameters):
+def dopplercut(series, samplerate, parameters):
     minvel, = parameters
     notlow, = (series < minvel).nonzero()
     newname = "{}-{}+".format(series.name, minvel)
@@ -110,19 +116,19 @@ def _dopplercut(series, samplerate, parameters):
     newseries.iloc[notlow] = 0
     return (newseries, samplerate)
 
-def _diff(series, samplerate, parameters):
+def diff(series, samplerate, parameters):
     order, = parameters
     diffed = np.diff(series.values, order)
     newname = "{}-diff{}".format(series.name, order)
     newseries = pd.Series(diffed, index=series.index[order:], name=newname)
     return (newseries.rename(newname), samplerate)
 
-def _fillnan(series, samplerate, parameters):
+def fillnan(series, samplerate, parameters):
     newseries = series.interpolate(method='index', limit_direction='both')
     newname = "{}-nona".format(series.name)
     return (newseries.rename(newname), samplerate)
 
-def _pscale(series, samplerate, parameters):
+def pscale(series, samplerate, parameters):
     sbp, dbp, mbp = parameters
     detrend = series - series.mean()
     scaled = detrend * (sbp - dbp) / (series.max() - series.min())
@@ -130,16 +136,17 @@ def _pscale(series, samplerate, parameters):
     newname = "{}-pscale".format(series.name)
     return (newseries.rename(newname), samplerate)
 
-filtfuncs = {'savgol'     : _savgol,
-             'affine'     : _affine,
-             'tf'         : _tf,
-             'lowpass'    : _lowpass,
-             'ventilation': _ventilation,
-             'interp'     : _interp,
-             'dopplercut' : _dopplercut,
-             'diff'       : _diff,
-             'pscale'     : _pscale,
-             'fillnan'    : _fillnan}
+filtfuncs = {'savgol'     : savgol,
+             'affine'     : affine,
+             'tf'         : tf,
+             'lowpass'    : lowpass,
+             'ventilation': ventilation,
+             'interp'     : interp,
+             'dopplercut' : dopplercut,
+             'diff'       : diff,
+             'pscale'     : pscale,
+             'norm'       : norm,
+             'fillnan'    : fillnan}
 
 def filter(curve, filtname, paramgetter):
     samplerate = curve.samplerate
@@ -148,20 +155,20 @@ def filter(curve, filtname, paramgetter):
     parameters = map(paramgetter, filt.parameters)
     return filtfuncs[filt.name](series, samplerate, parameters)
 
-def filterFeet(feet, filtname, paramgetter):
+def filterFeet(starts, stops, filtname, paramgetter):
     filt = FeetFilters[filtname]
     parameters = map(paramgetter, filt.parameters)
 
     if filt.name == 'shortcycles':
-        if len(feet.stops) < 1:
+        if len(stops) < 1:
             # No stop information
             raise ValueError('No stop feet')
         msMinDuration, = parameters
         minCycleLength = msMinDuration * 1e6 # Transform ms to ns
-        cycleDurations = (stop - start for start, stop in zip(feet.starts.index, feet.stops.index))
+        cycleDurations = (stop - start for start, stop in zip(starts, stops))
         boolidx = [d >= minCycleLength for d in cycleDurations]
-        newstarts = feet.starts.loc[boolidx]
-        newstops = feet.stops.loc[boolidx]
+        newstarts = starts[boolidx]
+        newstops = stops[boolidx]
     else:
         errmsg = 'Unknown filter: {}'.format(filtname)
         raise ValueError(errmsg)
@@ -239,8 +246,9 @@ def findFlowCycles(curve):
     return (cycleStarts.index, cycleStops.index)
 
 def findPressureFull(curve):
-    #from graphysio.debug import mplwidget
-    #DEBUG = (mplwidget is not None)
+    from graphysio.debug import mplwidget
+    global DEBUGWIDGET
+    DEBUGWIDGET = mplwidget
 
     series = curve.series.dropna()
     samplerate = curve.samplerate
@@ -248,8 +256,11 @@ def findPressureFull(curve):
     fstderivraw = series.diff().iloc[1:]
     sndderivraw = fstderivraw.diff().iloc[1:]
     # Smoothen the derivatives
-    fstderiv, _ = _savgol(fstderivraw, samplerate, (.16, 2))
-    sndderiv, _ = _savgol(sndderivraw, samplerate, (.16, 2))
+    fstderiv, _ = savgol(fstderivraw, samplerate, (.16, 2))
+    sndderiv, _ = savgol(sndderivraw, samplerate, (.16, 2))
+
+    if DEBUGWIDGET:
+        DEBUGWIDGET.axes.plot(series.index.values, series.values)
 
     cycles = []
     starts, durations = curve.getCycleIndices()
@@ -260,10 +271,9 @@ def findPressureFull(curve):
         sbp = findPOI(series, [start, stop], 'max', windowsize=.05)
         peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=.15)
         dic = findHorizontal(fstderiv, peridic)
-        #if DEBUG:
-        #    mplwidget.axes.axvline(x=sbp)
-        #    mplwidget.axes.axvline(x=peridic)
-        #    mplwidget.axes.axvline(x=dic, color='r')
+        if DEBUGWIDGET:
+            DEBUGWIDGET.axes.axvline(x=peridic)
+            DEBUGWIDGET.axes.axvline(x=dic, color='r')
         cycle = (dia, sbp, dic)
         cycles.append(cycle)
 
@@ -315,6 +325,7 @@ def genWindows(soi, interval, windowspan):
         yield window.index.values
 
 def findPOI(soi, interval, kind, windowsize, forcesign=True):
+    global DEBUGWIDGET
     if kind not in ['min', 'max']:
         raise ValueError(kind)
     argkind = 'arg' + kind
@@ -323,8 +334,8 @@ def findPOI(soi, interval, kind, windowsize, forcesign=True):
     previous = -np.inf if kind == 'max' else np.inf
     for window in genWindows(soi, interval, windowsize):
         zoi = soi.loc[window]
-        #if DEBUG:
-        #    mplwidget.axes.plot(window, zoi.values)
+        if DEBUGWIDGET:
+            DEBUGWIDGET.axes.plot(window, zoi.values * 50)
         new = getattr(zoi, kind)()
         if isbetter(new, previous, kind, forcesign):
             goodwindow = window
@@ -340,13 +351,13 @@ def findPOI(soi, interval, kind, windowsize, forcesign=True):
     return retidx
 
 def findHorizontal(soi, loc):
+    global DEBUGWIDGET
     if loc is None:
         return None
     step = 8000000 # 8 ms (from ns)
-    begin = loc - 10 * step
     end = loc + 10 * step
-    zoi = soi.loc[begin:end]
-    #if DEBUG:
-    #    mplwidget.axes.plot(zoi.index.values, zoi.values)
+    zoi = soi.loc[loc:end]
+    if DEBUGWIDGET:
+        DEBUGWIDGET.axes.plot(zoi.index.values, zoi.values * 50)
     horidx = zoi.abs().argmin()
     return horidx

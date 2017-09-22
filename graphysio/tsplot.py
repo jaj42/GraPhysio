@@ -54,7 +54,7 @@ class PlotWidget(pg.PlotWidget):
         return curve
 
     def addCurve(self, curve, pen=None):
-        # TODO handle name clashes
+        # TODO handle name clashes as append
         if pen is not None:
             curve.setPen(pen)
         self.addItem(curve)
@@ -79,12 +79,13 @@ class PlotWidget(pg.PlotWidget):
             oldcurve.samplerate = newsamplerate
             oldcurve.render()
 
-    def filterFeet(self, feetitem, filtername):
-        raise NotImplementedError
-        #starts, stops = algorithms.filterFeet(feetitem, filtername, dialogs.askUserValue)
-        #feetitem.starts = starts
-        #feetitem.stops = stops
-        #feetitem.render()
+    def filterFeet(self, curve, filtername, asnew=False):
+        oldstarts = curve.feet['start']
+        oldstops = curve.feet['stop']
+        starts, stops = algorithms.filterFeet(oldstarts, oldstops, filtername, dialogs.askUserValue)
+        curve.feet['start'] = starts
+        curve.feet['stop'] = stops
+        curve.feetitem.render()
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Delete:
@@ -128,22 +129,20 @@ class CurveItem(pg.PlotDataItem):
 
     def __init__(self, series, parent, pen=None):
         self.parent = parent
-        self.series = series
+        self.series = series.dropna()
         self.samplerate = utils.estimateSampleRate(self.series)
 
         if pen is None:
-            self.pen = QtGui.QColor(QtCore.Qt.black)
-        else:
-            self.pen = pen
+            pen = QtGui.QColor(QtCore.Qt.black)
 
         self.feet = {}
         feetname = '{}-feet'.format(series.name)
-        self.feetitem = FeetItem(self.series, self.feet, name=feetname, pen=self.pen)
+        self.feetitem = FeetItem(self, self.feet, name=feetname, pen=pen)
         parent.addItem(self.feetitem)
         self.feetitem.sigClicked.connect(sigPointClicked)
 
         super().__init__(name = series.name,
-                         pen  = self.pen,
+                         pen  = pen,
                          antialias = True)
 
         self.visible.connect(self.__becameVisible)
@@ -228,10 +227,10 @@ class FeetItem(pg.ScatterPlotItem):
     sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'd'}
     #Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
-    def __init__(self, series, indices, name, pen=None):
+    def __init__(self, parent, indices, name, pen=None):
         super().__init__(pen=pen)
         self.selected = []
-        self.series = series
+        self.parent = parent
         self.indices = indices
         self.__name = name
         self.resym = {value : key for key, value in self.sym.items()}
@@ -253,7 +252,7 @@ class FeetItem(pg.ScatterPlotItem):
         data = []
         for key, idx in self.indices.items():
             idxnona = idx.dropna()
-            points = self.series[idxnona]
+            points = self.parent.series[idxnona]
             tmp = pd.DataFrame({'points' : points, 'sym' : self.sym[key]}, index=idxnona)
             data.append(tmp)
         if len(data) < 1:

@@ -1,6 +1,7 @@
 import os, csv
 
 from pyqtgraph.Qt import QtGui, QtCore
+import pyqtgraph as pg
 
 from graphysio import algorithms, utils, types
 from graphysio.types import CsvRequest
@@ -108,7 +109,9 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
             self.chkGenX.setCheckState(QtCore.Qt.Checked)
 
     def moveToX(self):
-        if self.lstX.rowCount() > 0: return # Only allow one element allowed for X.
+        if self.lstX.rowCount() > 0:
+            # Only allow one element for X.
+            return
         selection = self.lstVAll.selectedIndexes()
         rowindex = selection[0].row()
         row = self.lstAll.takeRow(rowindex)
@@ -117,7 +120,8 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
     def moveToY(self):
         while True:
             selection = self.lstVAll.selectedIndexes()
-            if len(selection) < 1: break
+            if len(selection) < 1:
+                break
             rowindex = selection[0].row()
             self.lstY.appendRow(self.lstAll.takeRow(rowindex))
 
@@ -160,7 +164,6 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         self.csvrequest.droplines = self.spnLinedrop.value()
         self.accept()
 
-
 class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -193,7 +196,7 @@ class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
 
 
 class DlgFilter(*utils.loadUiFile('filter.ui')):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, filterfeet=False):
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -224,7 +227,11 @@ class DlgFilter(*utils.loadUiFile('filter.ui')):
                 self.choices[itemname] = (combo, itemtype)
 
         curves = list(plotframe.curves.keys())
-        fillTable(curves, 'curve', algorithms.Filters)
+        if filterfeet:
+            self.chkNewcurve.hide()
+            fillTable(curves, 'curve', algorithms.FeetFilters)
+        else:
+            fillTable(curves, 'curve', algorithms.Filters)
 
         self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
@@ -313,6 +320,7 @@ class DlgCurveSelection(*utils.loadUiFile('curveselect.ui')):
 
         self.okButton.clicked.connect(self.accept)
         self.cancelButton.clicked.connect(self.reject)
+        self.btnProperties.clicked.connect(self.openProperties)
 
         hiddenhash = {curve.name(): curve for curve in hidden}
         self.curvehash = {curve.name(): curve for curve in visible}
@@ -322,6 +330,16 @@ class DlgCurveSelection(*utils.loadUiFile('curveselect.ui')):
             self.addCurve(curve.name(), checked=True)
         for curve in hidden:
             self.addCurve(curve.name(), checked=False)
+
+    def openProperties(self):
+        selected = self.lstCurves.selectedItems()
+        try:
+            curvename = selected[0].text()
+        except IndexError:
+            return
+        curve = self.curvehash[curvename]
+        dlg = DlgCurveProperties(curve)
+        dlg.exec_()
 
     def addCurve(self, name, checked):
         item = QtGui.QListWidgetItem()
@@ -342,6 +360,45 @@ class DlgCurveSelection(*utils.loadUiFile('curveselect.ui')):
         visible = [self.curvehash[item.text()] for item in checked]
         invisible = [self.curvehash[item.text()] for item in unchecked]
         return (visible, invisible)
+
+class DlgCurveProperties(*utils.loadUiFile('curveproperties.ui')):
+    def __init__(self, curve, parent=None):
+        super().__init__(parent=parent)
+        self.setupUi(self)
+
+        self.curve = curve
+
+        self.okButton.clicked.connect(self.ok)
+        self.cancelButton.clicked.connect(self.reject)
+        self.btnColor.clicked.connect(self.chooseColor)
+
+        pen = curve.opts['pen']
+        if isinstance(pen, QtGui.QPen):
+            color = pen.color()
+            width = pen.width()
+        else:
+            color = pen
+            width = 1
+        self.color = color
+
+        self.grpName.setTitle(curve.name())
+        self.txtName.setText(curve.name())
+        self.spnWidth.setValue(width)
+        self.btnColor.setStyleSheet('background-color: {}'.format(color.name()))
+        self.lblSamplerate.setText(str(curve.samplerate))
+
+    def ok(self):
+        width = self.spnWidth.value()
+        pen = pg.mkPen(color=self.color, width=width)
+        self.curve.setPen(pen)
+        self.accept()
+
+    def chooseColor(self):
+        color = QtGui.QColorDialog.getColor()
+        if not color.isValid():
+            return
+        self.color = color
+        self.btnColor.setStyleSheet('background-color: {}'.format(color.name()))
 
 def askUserValue(param):
     if param.request is str:
