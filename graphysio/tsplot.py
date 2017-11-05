@@ -173,6 +173,8 @@ class CurveItem(pg.PlotDataItem):
             foot = algorithms.findPressureFeet(self)
             self.feet['start'] = foot
         elif cycleid is CycleId.pressure:
+            if not 'start' in self.feet:
+                self.addFeet(CycleId.foot)
             dia, sbp, dic = algorithms.findPressureFull(self)
             self.feet['diastole'] = dia
             self.feet['systole']  = sbp
@@ -192,7 +194,6 @@ class CurveItem(pg.PlotDataItem):
             xmin = s.index[0]
             xmax = s.index[-1]
         if not hasstarts:
-            # XXX is get_loc needed?
             # We have no feet, treat the whole signal as one cycle
             locs = (s.index.get_loc(i, method='nearest') for i in [xmin, xmax])
             indices = (s.index[l] for l in locs)
