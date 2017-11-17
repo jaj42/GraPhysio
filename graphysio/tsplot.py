@@ -47,14 +47,18 @@ class PlotWidget(pg.PlotWidget):
             begins = (curve.series.index[0] for curve in self.curves.values() if len(curve.series.index) > 0)
             offset = min(begins) - series.index[0]
             series.index += offset
-        if pen is None:
-            pen = self.getPen()
-        curve = CurveItem(series=series, parent=self, pen=pen)
-        self.addCurve(curve)
+        try:
+            curve = self.curves[series.name]
+            curve.extend(series)
+        except KeyError:
+            if pen is None:
+                pen = self.getPen()
+            curve = CurveItem(series=series, parent=self, pen=pen)
+            self.addCurve(curve)
         return curve
 
     def addCurve(self, curve, pen=None):
-        # TODO handle name clashes as append
+        # TODO handle name clashes
         if pen is not None:
             curve.setPen(pen)
         self.addItem(curve)
@@ -161,6 +165,12 @@ class CurveItem(pg.PlotDataItem):
     def render(self):
         self.setData(x = self.series.index.values,
                      y = self.series.values)
+
+    def extend(self, newseries):
+        merged1 = self.series.append(newseries)
+        merged2 = merged1.sort_index()
+        self.series = merged2
+        self.render()
 
     def addFeet(self, cycleid):
         if cycleid is CycleId.none:
