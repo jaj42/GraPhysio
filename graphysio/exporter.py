@@ -33,7 +33,7 @@ class TsExporter():
         data = pd.concat(series, axis=1).sort_index()
         data['datetime'] = pd.to_datetime(data.index, unit = 'ns')
         data = data.loc[xmin:xmax]
-        data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index=False)
+        data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
 
     def periodstocsv(self):
         xmin, xmax = self.parent.vbrange
@@ -91,7 +91,7 @@ class TsExporter():
 
             filename = "{}-{}.csv".format(self.name, n+1)
             filepath = os.path.join(self.outdir, filename)
-            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index=False)
+            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
 
     def cyclepointstocsv(self):
         filename = "{}-feet.csv".format(self.name)
@@ -148,4 +148,4 @@ class PuExporter():
             filename = "{}-{}.csv".format(self.name, n+1)
             filepath = os.path.join(self.outdir, filename)
             df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
-            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index=False)
+            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
