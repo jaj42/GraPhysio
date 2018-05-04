@@ -151,7 +151,8 @@ filtfuncs = {'savgol'     : savgol,
              'dopplercut' : dopplercut,
              'diff'       : diff,
              'pscale'     : pscale,
-             'norm'       : norm,
+             'norm1'      : norm1,
+             'norm2'      : norm2,
              'fillnan'    : fillnan}
 
 def filter(curve, filtname, paramgetter):
