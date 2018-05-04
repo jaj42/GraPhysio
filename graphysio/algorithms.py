@@ -31,7 +31,8 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
            'Fill NaNs' : Filter(name='fillnan', parameters=[]),
            'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
-           'Normalize' : Filter(name='norm', parameters=[]),
+           'Normalize' : Filter(name='norm1', parameters=[]),
+           'Tolerant Normalize' : Filter(name='norm2', parameters=[]),
            'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
            'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])}
 
@@ -42,12 +43,17 @@ def updateTFs():
     Filters['Transfer function'] = Filter(name='tf', parameters=[Parameter('Transfer function', tflist)])
 updateTFs()
 
-def norm(series, samplerate, parameters):
-    smax = np.percentile(series, 95)
-    smin = np.percentile(series, 5)
-    newseries = (series - smin) / (smax - smin)
+def norm1(series, samplerate, parameters):
+    series -= np.mean(series)
+    series /= np.max(series) - np.min(series)
     newname = "{}-{}".format(series.name, 'norm')
-    return (newseries.rename(newname), samplerate)
+    return (series.rename(newname), samplerate)
+
+def norm2(series, samplerate, parameters):
+    series -= np.mean(series)
+    series /= np.std(series)
+    newname = "{}-{}".format(series.name, 'norm')
+    return (series.rename(newname), samplerate)
 
 def savgol(series, samplerate, parameters):
     window, order = parameters
