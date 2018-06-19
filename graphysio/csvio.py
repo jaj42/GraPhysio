@@ -36,7 +36,9 @@ class Reader(QtCore.QRunnable):
             data.index = (1e9 * data.index / self.csvrequest.samplerate).astype(np.int64)
         else:
             dtformat = self.csvrequest.datetime_format
-            if dtformat == '<seconds>':
+            if dtformat == '<infer>':
+                timestamp = pd.to_datetime(data[self.csvrequest.dtfield], infer_datetime_format=True)
+            elif dtformat == '<seconds>':
                 timestamp = pd.to_datetime(data[self.csvrequest.dtfield] * 1e9, unit = 'ns')
             elif dtformat == '<milliseconds>':
                 timestamp = pd.to_datetime(data[self.csvrequest.dtfield] * 1e6, unit = 'ns')
