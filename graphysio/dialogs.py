@@ -88,7 +88,7 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         for lst in [self.lstAll, self.lstX, self.lstY]:
             lst.clear()
         self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
-        with open(filepath, 'r') as csvfile:
+        with open(filepath, 'r', encoding='latin1') as csvfile:
             # Artificially drop n first lines as requested
             for i in range(self.spnLinedrop.value()):
                 next(csvfile)
