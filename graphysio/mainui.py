@@ -156,6 +156,16 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             self.haserror.emit('No plot selected.')
             return
         dorealign = dialogs.userConfirm('Timeshift new curves to make the beginnings coincide?', title='Append to plot')
+
+        for fieldname in plotdata.data:
+            if fieldname in plotwidget.curves:
+                # Name conflict with existing series
+                newname, okPressed = QtGui.QInputDialog.getText(self, "Series name conflict", "Series with identical names will be merged.", text=fieldname)
+                if not okPressed:
+                    return
+                if newname != fieldname:
+                    plotdata.data.rename(columns={fieldname : newname}, inplace=True)
+
         plotwidget.appendData(plotdata, dorealign)
         self.statusBar.showMessage("Loading... done")
 

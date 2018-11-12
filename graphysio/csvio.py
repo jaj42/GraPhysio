@@ -50,6 +50,7 @@ class Reader(QtCore.QRunnable):
                 timestamp = pd.to_datetime(data[self.csvrequest.dtfield], format = dtformat)
             timestamp = timestamp.astype(np.int64)
             data = data.set_index([timestamp])
+            data = data.drop(columns=self.csvrequest.dtfield)
 
         # Coerce all columns to numeric and remove empty columns
         pdtonum = partial(pd.to_numeric, errors='coerce')
@@ -57,10 +58,6 @@ class Reader(QtCore.QRunnable):
         data = data.dropna(axis='rows', how='all')
         data = data.sort_index()
 
-        # Don't try requested fields that are empty
-        fields = [f for f in self.csvrequest.yfields if f in data.columns]
-
-        plotdata = PlotData(data       = data,
-                            fields     = fields,
-                            filepath   = self.csvrequest.filepath)
+        plotdata = PlotData(data     = data,
+                            filepath = self.csvrequest.filepath)
         return plotdata

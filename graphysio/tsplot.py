@@ -30,9 +30,8 @@ class PlotWidget(pg.PlotWidget):
         self.appendData(plotdata)
 
     def appendData(self, newplotdata, dorealign=False):
-        allSeries = (newplotdata.data[c] for c in newplotdata.fields)
-        for series in allSeries:
-            self.addSeriesAsCurve(series, dorealign=dorealign)
+        for seriesname in newplotdata.data:
+            self.addSeriesAsCurve(newplotdata.data[seriesname], dorealign=dorealign)
 
     @property
     def curves(self):
@@ -58,7 +57,6 @@ class PlotWidget(pg.PlotWidget):
         return curve
 
     def addCurve(self, curve, pen=None):
-        # TODO handle name clashes
         if pen is not None:
             curve.setPen(pen)
         self.addItem(curve)

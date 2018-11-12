@@ -53,11 +53,9 @@ class CsvRequest():
 
 class PlotData():
     def __init__(self, data = None,
-                       fields = [],
                        filepath = "",
                        name = None):
         self.data = data
-        self.fields = fields
         self.filepath = filepath
         self._name = name
 
