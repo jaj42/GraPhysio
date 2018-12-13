@@ -25,6 +25,8 @@ class CsvRequest():
                        datetime_format = "%Y-%m-%d %H:%M:%S,%f",
                        droplines = 0,
                        generatex = False,
+                       timezone  = 'UTC',
+                       encoding  = 'latin1',
                        samplerate = None):
         self.filepath = filepath
         self.seperator = seperator
@@ -34,6 +36,8 @@ class CsvRequest():
         self.datetime_format = datetime_format
         self.droplines = droplines
         self.generatex = generatex
+        self.encoding = encoding
+        self.timezone = timezone
         self.samplerate = samplerate
 
     @property
@@ -52,7 +56,7 @@ class CsvRequest():
         return folder
 
 class PlotData():
-    def __init__(self, data = None,
+    def __init__(self, data = [],
                        filepath = "",
                        name = None):
         self.data = data
