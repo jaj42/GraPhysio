@@ -18,6 +18,7 @@ class Reader(QtCore.QRunnable):
         try:
             data = self.getdata()
         except Exception as e:
+            #raise e
             self.sigerror.emit(e)
         else:
             self.sigdata.emit(data)
@@ -28,36 +29,42 @@ class Reader(QtCore.QRunnable):
                            usecols   = self.csvrequest.fields,
                            decimal   = self.csvrequest.decimal,
                            skiprows  = self.csvrequest.droplines,
+                           encoding  = self.csvrequest.encoding,
                            index_col = False,
-                           encoding  = 'latin1',
                            engine    = 'c')
 
+        pdtonum = partial(pd.to_numeric, errors='coerce')
+        dtformat = self.csvrequest.datetime_format
         if self.csvrequest.generatex:
             data.index = (1e9 * data.index / self.csvrequest.samplerate).astype(np.int64)
+        elif dtformat == '<infer>':
+            timestamp = data[self.csvrequest.dtfield].dropna()
+            timestamp = pd.to_datetime(timestamp, infer_datetime_format=True)
         else:
-            dtformat = self.csvrequest.datetime_format
-            if dtformat == '<infer>':
-                timestamp = pd.to_datetime(data[self.csvrequest.dtfield], infer_datetime_format=True)
-            elif dtformat == '<seconds>':
-                timestamp = pd.to_datetime(data[self.csvrequest.dtfield] * 1e9, unit = 'ns')
+            timestamp = data[self.csvrequest.dtfield]
+            if dtformat == '<seconds>':
+                timestamp = pdtonum(timestamp).dropna()
+                timestamp = pd.to_datetime(timestamp * 1e9, unit = 'ns')
             elif dtformat == '<milliseconds>':
-                timestamp = pd.to_datetime(data[self.csvrequest.dtfield] * 1e6, unit = 'ns')
+                timestamp = pdtonum(timestamp).dropna()
+                timestamp = pd.to_datetime(timestamp * 1e6, unit = 'ns')
             elif dtformat == '<microseconds>':
-                timestamp = pd.to_datetime(data[self.csvrequest.dtfield] * 1e3, unit = 'ns')
+                timestamp = pdtonum(timestamp).dropna()
+                timestamp = pd.to_datetime(timestamp * 1e3, unit = 'ns')
             elif dtformat == '<nanoseconds>':
-                timestamp = pd.to_datetime(data[self.csvrequest.dtfield], unit = 'ns')
+                timestamp = pdtonum(timestamp).dropna()
+                timestamp = pd.to_datetime(timestamp, unit = 'ns')
             else:
-                timestamp = pd.to_datetime(data[self.csvrequest.dtfield], format = dtformat)
+                timestamp = pd.to_datetime(timestamp, format = dtformat)
+            timestamp = pd.Index(timestamp).tz_localize(self.csvrequest.timezone).tz_convert('UTC')
             timestamp = timestamp.astype(np.int64)
             data = data.set_index([timestamp])
             data = data.drop(columns=self.csvrequest.dtfield)
 
         # Coerce all columns to numeric and remove empty columns
-        pdtonum = partial(pd.to_numeric, errors='coerce')
         data = data.apply(pdtonum).dropna(axis='columns', how='all')
         data = data.dropna(axis='rows', how='all')
         data = data.sort_index()
 
-        plotdata = PlotData(data     = data,
-                            filepath = self.csvrequest.filepath)
+        plotdata = PlotData(data = data, filepath = self.csvrequest.filepath)
         return plotdata

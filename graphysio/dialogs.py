@@ -64,7 +64,8 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         self.txtDateTime.setEditText("%Y-%m-%d %H:%M:%S{}%f".format(delims[1]))
 
     def estimateDelimiters(self, filepath):
-        with open(filepath, 'r', encoding='latin1') as csvfile:
+        encoding = self.txtEncoding.currentText()
+        with open(filepath, 'r', encoding=encoding) as csvfile:
             line1 = next(csvfile)
             line2 = next(csvfile)
             semipos = line1.find(';')
@@ -88,7 +89,8 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         for lst in [self.lstAll, self.lstX, self.lstY]:
             lst.clear()
         self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
-        with open(filepath, 'r', encoding='latin1') as csvfile:
+        encoding = self.txtEncoding.currentText()
+        with open(filepath, 'r', encoding=encoding) as csvfile:
             # Artificially drop n first lines as requested
             for i in range(self.spnLinedrop.value()):
                 next(csvfile)
@@ -162,6 +164,8 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         self.csvrequest.decimal = self.txtDecimal.currentText()
         self.csvrequest.datetime_format = self.txtDateTime.currentText()
         self.csvrequest.droplines = self.spnLinedrop.value()
+        self.csvrequest.encoding = self.txtEncoding.currentText()
+        self.csvrequest.timezone = self.txtTimezone.currentText()
         self.accept()
 
 class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
