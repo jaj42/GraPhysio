@@ -1,9 +1,11 @@
 import itertools
+from functools import partial
 from collections import namedtuple
 
 import numpy as np
 import pandas as pd
 from scipy import signal, interpolate
+from sympy.parsing.sympy_parser import parse_expr
 
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
@@ -33,6 +35,7 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
            'Normalize' : Filter(name='norm1', parameters=[]),
            'Tolerant Normalize' : Filter(name='norm2', parameters=[]),
+           'Enter expression (variable = x)' : Filter(name='expression', parameters=[Parameter('Expression', str)]),
            'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
            'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])}
 
@@ -54,6 +57,15 @@ def norm2(series, samplerate, parameters):
     series /= np.std(series)
     newname = "{}-{}".format(series.name, 'norm')
     return (series.rename(newname), samplerate)
+
+evaleq = lambda eq, x: eq.evalf(subs={'x' : x})
+def expression(series, samplerate, parameters):
+    express, = parameters
+    eq = parse_expr(express)
+    evalthis = partial(evaleq, eq)
+    newseries = series.apply(evalthis).astype(np.float64)
+    newname = "{}-{}".format(series.name, 'filtered')
+    return (newseries.rename(newname), samplerate)
 
 def savgol(series, samplerate, parameters):
     window, order = parameters
@@ -153,6 +165,7 @@ filtfuncs = {'savgol'     : savgol,
              'pscale'     : pscale,
              'norm1'      : norm1,
              'norm2'      : norm2,
+             'expression' : expression,
              'fillnan'    : fillnan}
 
 def filter(curve, filtname, paramgetter):
