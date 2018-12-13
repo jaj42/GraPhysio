@@ -376,6 +376,11 @@ class DlgCurveProperties(*utils.loadUiFile('curveproperties.ui')):
         self.cancelButton.clicked.connect(self.reject)
         self.btnColor.clicked.connect(self.chooseColor)
 
+        connect = curve.opts['connect']
+        symbol = curve.opts['symbol']
+        if symbol is None:
+            symbol = 'None'
+
         pen = curve.opts['pen']
         if isinstance(pen, QtGui.QPen):
             color = pen.color()
@@ -385,6 +390,13 @@ class DlgCurveProperties(*utils.loadUiFile('curveproperties.ui')):
             width = 1
         self.color = color
 
+        idx = self.cmbConnect.findText(connect, QtCore.Qt.MatchFixedString)
+        self.cmbConnect.setCurrentIndex(idx)
+
+        idx = self.cmbSymbol.findText(symbol, QtCore.Qt.MatchFixedString)
+        self.cmbSymbol.setCurrentIndex(idx)
+
+        self.cmbSymbol.setEditText(symbol)
         self.grpName.setTitle(curve.name())
         self.txtName.setText(curve.name())
         self.spnWidth.setValue(width)
@@ -392,9 +404,20 @@ class DlgCurveProperties(*utils.loadUiFile('curveproperties.ui')):
         self.lblSamplerate.setText(str(curve.samplerate))
 
     def ok(self):
+        connect = str(self.cmbConnect.currentText().lower())
+        if connect == 'none':
+            connect = [0]
+        symbol = self.cmbSymbol.currentText().lower()
+        if symbol == 'none':
+            symbol = None
+
+        #self.curve.setData(connect=connect, symbol=symbol)
+        self.curve.setData(symbol=symbol)
+
         width = self.spnWidth.value()
         pen = pg.mkPen(color=self.color, width=width)
         self.curve.setPen(pen)
+
         self.accept()
 
     def chooseColor(self):
