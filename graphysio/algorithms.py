@@ -33,6 +33,7 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
            'Fill NaNs' : Filter(name='fillnan', parameters=[]),
            'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
+           'Lag' : Filter(name='lag', parameters=[Parameter('Amount (s)', float)]),
            'Normalize' : Filter(name='norm1', parameters=[]),
            'Tolerant Normalize' : Filter(name='norm2', parameters=[]),
            'Enter expression (variable = x)' : Filter(name='expression', parameters=[Parameter('Expression', str)]),
@@ -76,6 +77,13 @@ def savgol(series, samplerate, parameters):
     filtered = signal.savgol_filter(series, int(window), order)
     newname = "{}-{}".format(series.name, 'filtered')
     newseries = pd.Series(filtered, index=series.index, name=newname)
+    return (newseries, samplerate)
+
+def lag(series, samplerate, parameters):
+    timedelta, = parameters
+    nindex = series.index.values + timedelta * 1e9
+    newname = "{}-{}s".format(series.name, timedelta)
+    newseries = pd.Series(series.values, index=nindex, name=newname)
     return (newseries, samplerate)
 
 def affine(series, samplerate, parameters):
@@ -156,6 +164,7 @@ def pscale(series, samplerate, parameters):
 
 filtfuncs = {'savgol'     : savgol,
              'affine'     : affine,
+             'lag'        : lag,
              'tf'         : tf,
              'lowpass'    : lowpass,
              'ventilation': ventilation,
