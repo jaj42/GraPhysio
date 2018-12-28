@@ -330,7 +330,7 @@ def genWindows(soi, interval, windowspan):
     ltr = (end > begin)
     windowspan *= 1e9 # s to ns
     if begin is None or end is None:
-        raise StopIteration
+        return
     if ltr:
         direction = 1
     else:
@@ -350,14 +350,14 @@ def genWindows(soi, interval, windowspan):
 
         window = soi.loc[start:stop]
         if len(window) < 1:
-            raise StopIteration
+            return
         yield window.index.values
 
 def findPOI(soi, interval, kind, windowsize, forcesign=True):
     global DEBUGWIDGET
     if kind not in ['min', 'max']:
         raise ValueError(kind)
-    argkind = 'arg' + kind
+    argkind = 'idx' + kind
 
     goodwindow = []
     previous = -np.inf if kind == 'max' else np.inf
@@ -388,5 +388,5 @@ def findHorizontal(soi, loc):
     zoi = soi.loc[loc:end]
     if DEBUGWIDGET:
         DEBUGWIDGET.axes.plot(zoi.index.values, zoi.values * 50)
-    horidx = zoi.abs().argmin()
+    horidx = zoi.abs().idxmin()
     return horidx

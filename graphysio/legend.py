@@ -1,8 +1,8 @@
 import pyqtgraph as pg
 
-__all__ = ['MyLegendItem']
+__all__ = ['LegendItem']
 
-class MyLegendItem(pg.LegendItem):
+class LegendItem(pg.LegendItem):
     def __init__(self, size=None, offset=(40,5)):
         super().__init__(size, offset)
 

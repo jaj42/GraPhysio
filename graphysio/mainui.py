@@ -6,8 +6,10 @@ import numpy as np
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import tsplot, puplot, dialogs, utils, csvio, debug, transformations
+from graphysio import dialogs, utils, csvio, debug, transformations
 from graphysio.types import PlotData, CycleId, Parameter
+
+from graphysio.plotwidgets import TSWidget, LoopWidget
 
 class MainUi(*utils.loadUiFile('mainwindow.ui')):
     hasdata  = QtCore.pyqtSignal(object)
@@ -59,7 +61,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 f()
             except Exception as e:
                 # Re-raise errors here for DEBUG
-                #raise e
+                raise e
                 self.haserror.emit(e)
         return wrapped
 
@@ -84,7 +86,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         u = curves[uname]
         p = curves[pname]
         subsetrange = sourcewidget.vbrange
-        loopwidget = puplot.LoopWidget(u, p, subsetrange, parent=self)
+        loopwidget = LoopWidget(u, p, subsetrange, parent=self)
 
         oldname = self.tabWidget.tabText(tabindex)
         newtabindex = self.tabWidget.addTab(loopwidget, '{}-{}-loops'.format(oldname, p.name()))
@@ -170,7 +172,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.statusBar.showMessage("Loading... done")
 
     def createNewPlotWithData(self, plotdata):
-        plotwidget = tsplot.PlotWidget(plotdata=plotdata, parent=self)
+        plotwidget = TSWidget(plotdata=plotdata, parent=self)
         tabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
@@ -184,7 +186,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         newname = '{}-sub'.format(oldname)
         plotdata = PlotData(name=newname)
 
-        plotwidget = tsplot.PlotWidget(plotdata=plotdata, parent=self)
+        plotwidget = TSWidget(plotdata=plotdata, parent=self)
         newtabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
         for c in sourcewidget.curves.values():
             series = c.series.loc[xmin:xmax]
