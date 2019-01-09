@@ -10,6 +10,8 @@ from graphysio.plotwidgets.plotwidget import PlotWidget
 from graphysio.plotwidgets.tsplot import CurveItemWithFeet
 
 class POISelectorWidget(PlotWidget):
+    pointkey = 'dicrotic'
+
     @staticmethod
     def mouseMoved(self, evt):
         pos = evt[0]  ## using signal proxy turns original arguments into a tuple
@@ -20,14 +22,20 @@ class POISelectorWidget(PlotWidget):
 
     @staticmethod
     def clicked(self, evt):
+        button = evt.button()
         pos = self.vLine.value()
-        b = evt.button()
-        print(b, pos)
+        if button == 1:
+            self.curve.feetitem.addPoints_(self.pointkey, [pos])
+        elif button == 2:
+            self.curve.feetitem.removePoints_(self.pointkey, [pos])
 
     def __init__(self, series, parent=None):
         super().__init__(parent=parent, CurveClass=CurveItemWithFeet)
-        self.curve = self.addSeriesAsCurve(series)
+        vb = self.getViewBox()
+        vb.setMouseMode(vb.PanMode)
+        self.setMenuEnabled(False)
 
+        self.curve = self.addSeriesAsCurve(series)
         pen = pg.mkPen('k', width=2)
         self.vLine = pg.InfiniteLine(angle=90, movable=False, pen=pen)
         self.addItem(self.vLine, ignoreBounds=True)
@@ -36,8 +44,3 @@ class POISelectorWidget(PlotWidget):
         self.sigproxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
         clicked = partial(self.clicked, self)
         self.scene().sigMouseClicked.connect(clicked)
-
-#    def keyPressEvent(self, event):
-#        if event.key() == QtCore.Qt.Key_Delete:
-#            for curve in self.curves.values():
-#                curve.feetitem.removeSelection()
