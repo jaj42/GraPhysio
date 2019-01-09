@@ -176,7 +176,7 @@ class PointsItem(pg.ScatterPlotItem):
         self.__name = name
         self.render()
 
-    def addPoints_(self, key, locations):
+    def addPointsByLocation(self, key, locations):
         if not key in self.indices:
             self.indices[key] = pd.Index([])
         newlocs = []
@@ -189,7 +189,7 @@ class PointsItem(pg.ScatterPlotItem):
         self.indices[key] = newidx.unique().sort_values()
         self.render()
 
-    def removePoints_(self, key, locations):
+    def removePointsByLocation(self, key, locations):
         if not key in self.indices:
             return
         oldidx = self.indices[key]

@@ -26,9 +26,9 @@ class POISelectorWidget(PlotWidget):
         button = evt.button()
         pos = self.vLine.value()
         if button == 1:
-            self.curve.feetitem.addPoints_(self.pointkey, [pos])
+            self.curve.feetitem.addPointsByLocation(self.pointkey, [pos])
         elif button == 2:
-            self.curve.feetitem.removePoints_(self.pointkey, [pos])
+            self.curve.feetitem.removePointsByLocation(self.pointkey, [pos])
 
     def __init__(self, series, parent=None):
         super().__init__(parent=parent, CurveClass=CurveItemWithFeet)
