@@ -47,3 +47,10 @@ class POISelectorWidget(PlotWidget):
         self.sigproxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
         clicked = partial(self.clicked, self)
         self.scene().sigMouseClicked.connect(clicked)
+
+    @property
+    def exportMenu(self):
+        menu = super().exportMenu.copy()
+        newm = {'&POI to CSV' : self.exporter.poitocsv}
+        menu.update(newm)
+        return menu
