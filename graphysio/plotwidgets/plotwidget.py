@@ -109,3 +109,7 @@ class PlotWidget(pg.PlotWidget):
         vbrange = self.vb.viewRange()
         xmin, xmax = map(int, vbrange[0])
         return (xmin, xmax)
+
+    @property
+    def exportMenu(self):
+        return {}

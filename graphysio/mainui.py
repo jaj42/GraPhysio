@@ -21,6 +21,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.dircache = os.path.expanduser('~')
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
+        self.tabWidget.currentChanged.connect(self.tabChanged)
 
         launchNewPlot = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
@@ -46,12 +47,6 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuSelection.addAction('&Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))
         self.menuSelection.addAction('Generate PU-&Loops',    self.errguard(self.launchLoop), QtCore.Qt.CTRL + QtCore.Qt.Key_L)
 
-        self.menuExport.addAction('&Series to CSV',              self.errguard(self.exportSeries))
-        self.menuExport.addAction('&Time info to CSV',           self.errguard(self.exportPeriod))
-        self.menuExport.addAction('&Cycle info to CSV',          self.errguard(self.exportCycleInfo))
-        self.menuExport.addAction('&Cycles to CSV directory',    self.errguard(self.exportCycles))
-        self.menuExport.addAction('&Loop Data to CSV directory', self.errguard(self.exportLoops))
-
         self.haserror.connect(utils.displayError)
 
     def errguard(self, f):
@@ -64,6 +59,14 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 raise e
                 self.haserror.emit(e)
         return wrapped
+
+    def tabChanged(self, tabid):
+        plotwidget = self.tabWidget.widget(tabid)
+        if plotwidget is None:
+            return
+        self.menuExport.clear()
+        for key, f in plotwidget.exportMenu.items():
+            self.menuExport.addAction(key, f)
 
     def launchMpl(self):
         debug.mplwidget = debug.FigureCanvas(self)
@@ -215,51 +218,6 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             series = c.series.loc[xmin:xmax]
             destwidget.addSeriesAsCurve(series, dorealign=dorealign)
         self.tabWidget.setCurrentIndex(destidx)
-
-    def exportSeries(self):
-        plotwidget = self.tabWidget.currentWidget()
-        if plotwidget is None:
-            return
-        if hasattr(plotwidget.exporter, 'seriestocsv'):
-            plotwidget.exporter.seriestocsv()
-        else:
-            self.haserror.emit('Method not available for this plot.')
-
-    def exportPeriod(self):
-        plotwidget = self.tabWidget.currentWidget()
-        if plotwidget is None:
-            return
-        if hasattr(plotwidget.exporter, 'periodstocsv'):
-            plotwidget.exporter.periodstocsv()
-        else:
-            self.haserror.emit('Method not available for this plot.')
-
-    def exportCycles(self):
-        plotwidget = self.tabWidget.currentWidget()
-        if plotwidget is None:
-            return
-        if hasattr(plotwidget.exporter, 'cyclestocsv'):
-            plotwidget.exporter.cyclestocsv()
-        else:
-            self.haserror.emit('Method not available for this plot.')
-
-    def exportCycleInfo(self):
-        plotwidget = self.tabWidget.currentWidget()
-        if plotwidget is None:
-            return
-        if hasattr(plotwidget.exporter, 'cyclepointstocsv'):
-            plotwidget.exporter.cyclepointstocsv()
-        else:
-            self.haserror.emit('Method not available for this plot.')
-
-    def exportLoops(self):
-        plotwidget = self.tabWidget.currentWidget()
-        if plotwidget is None:
-            return
-        if hasattr(plotwidget.exporter, 'exportloops'):
-            plotwidget.exporter.exportloops()
-        else:
-            self.haserror.emit('Method not available for this plot.')
 
     def fileQuit(self):
         self.close()
