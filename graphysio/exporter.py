@@ -149,3 +149,29 @@ class PuExporter():
             filepath = os.path.join(self.outdir, filename)
             df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
             df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
+
+class POIExporter():
+    def __init__(self, parent, name):
+        self.parent = parent
+        self.name = name
+        self.outdir = os.path.expanduser('~')
+
+    def poitocsv(self):
+        filename = "{}-poi.csv".format(self.name)
+        defaultpath = os.path.join(self.outdir, filename)
+        filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
+                                                     filter  = "CSV files (*.csv *.dat)",
+                                                     directory = defaultpath)
+        if type(filepath) is not str:
+            # PyQt5 API change
+            filepath = filepath[0]
+        if not filepath:
+            # Cancel pressed
+            return
+        self.outdir = os.path.dirname(filepath)
+
+        poiidx = parent.curve.feetitem.indices[parent.pointkey]
+        datetime = pd.to_datetime(s, unit = 'ns')
+        s = poiidx.to_series().rename('poi')
+        s = pd.to_datetime(s, unit = 'ns')
+        s.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')

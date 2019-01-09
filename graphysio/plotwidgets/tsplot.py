@@ -161,7 +161,7 @@ class TSWidget(PlotWidget):
                }
         menu.update(newm)
         return menu
-    
+
 
 class PointsItem(pg.ScatterPlotItem):
     sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'd'}

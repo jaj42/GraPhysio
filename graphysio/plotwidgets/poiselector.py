@@ -6,6 +6,7 @@ import pyqtgraph as pg
 
 from pyqtgraph.Qt import QtGui, QtCore
 
+from graphysio import exporter
 from graphysio.plotwidgets.plotwidget import PlotWidget
 from graphysio.plotwidgets.tsplot import CurveItemWithFeet
 
@@ -36,6 +37,8 @@ class POISelectorWidget(PlotWidget):
         self.setMenuEnabled(False)
 
         self.curve = self.addSeriesAsCurve(series)
+        self.exporter = exporter.POIExporter(self, self.curve.name())
+
         pen = pg.mkPen('k', width=2)
         self.vLine = pg.InfiniteLine(angle=90, movable=False, pen=pen)
         self.addItem(self.vLine, ignoreBounds=True)
