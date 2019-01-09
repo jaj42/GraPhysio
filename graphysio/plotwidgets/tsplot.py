@@ -25,9 +25,8 @@ class CurveItemWithFeet(CurveItem):
 
     def __init__(self, series, parent, pen=None):
         super().__init__(series, parent, pen)
-        self.feet = {}
         feetname = '{}-feet'.format(series.name)
-        self.feetitem = FeetItem(self, self.feet, name=feetname, pen=pen)
+        self.feetitem = PointsItem(self, name=feetname, pen=pen)
         parent.addItem(self.feetitem)
         self.feetitem.sigClicked.connect(self.sigPointClicked)
         self.visible.connect(self.__becameVisible)
@@ -47,18 +46,18 @@ class CurveItemWithFeet(CurveItem):
             return
         elif cycleid is CycleId.velocity:
             starts, stops = algorithms.findFlowCycles(self)
-            self.feet['start'] = starts
-            self.feet['stop'] = stops
+            self.feetitem.indices['start'] = starts
+            self.feetitem.indices['stop'] = stops
         elif cycleid is CycleId.foot:
             foot = algorithms.findPressureFeet(self)
-            self.feet['start'] = foot
+            self.feetitem.indices['start'] = foot
         elif cycleid is CycleId.pressure:
-            if not 'start' in self.feet:
+            if not 'start' in self.feetitem.indices:
                 self.addFeet(CycleId.foot)
             dia, sbp, dic = algorithms.findPressureFull(self)
-            self.feet['diastole'] = dia
-            self.feet['systole']  = sbp
-            self.feet['dicrotic'] = dic
+            self.feetitem.indices['diastole'] = dia
+            self.feetitem.indices['systole']  = sbp
+            self.feetitem.indices['dicrotic'] = dic
         else:
             raise ValueError(cycleid)
         self.feetitem.render()
@@ -66,8 +65,8 @@ class CurveItemWithFeet(CurveItem):
     def getCycleIndices(self, vrange=None):
         s = self.series
         clip = partial(utils.clip, vrange=vrange)
-        hasstarts = ('start' in self.feet) and self.feet['start'].size > 0
-        hasstops = ('stop' in self.feet) and self.feet['stop'].size > 0
+        hasstarts = ('start' in self.feetitem.indices) and self.feetitem.indices['start'].size > 0
+        hasstops = ('stop' in self.feetitem.indices) and self.feetitem.indices['stop'].size > 0
         if vrange:
             xmin, xmax = vrange
         else:
@@ -80,14 +79,14 @@ class CurveItemWithFeet(CurveItem):
             begins, ends = [np.array([i]) for i in indices]
         elif not hasstops:
             # We have no stops, starts serve as stops for previous cycle
-            begins = clip(self.feet['start'].values)
+            begins = clip(self.feetitem.indices['start'].values)
             endloc = s.index.get_loc(xmax, method='nearest')
             end = s.index[endloc]
             ends = np.append(begins[1:], end)
         else:
             # We have starts and stops, use them
-            begins = self.feet['start'].values
-            ends = self.feet['stop'].values
+            begins = self.feetitem.indices['start'].values
+            ends = self.feetitem.indices['stop'].values
             begins, ends = map(clip, [begins, ends])
 
         # Handle the case where we start in the middle of a cycle
@@ -99,7 +98,7 @@ class CurveItemWithFeet(CurveItem):
         return (begins, durations)
 
     def getFeetPoints(self, feetname):
-        feetidx = self.feet[feetname]
+        feetidx = self.feetitem.indices[feetname]
         feetnona = feetidx[pd.notnull(feetidx)]
         return self.series.loc[feetnona]
 
@@ -152,18 +151,54 @@ class TSWidget(PlotWidget):
             if item not in self.hiddenitems:
                 self.hiddenitems.append(item)
 
+    @property
+    def exportMenu(self):
+        menu = super().exportMenu.copy()
+        newm = {'&Series to CSV'           : self.exporter.seriestocsv
+               ,'&Time info to CSV'        : self.exporter.periodstocsv
+               ,'&Cycle info to CSV'       : self.exporter.cyclepointstocsv
+               ,'&Cycles to CSV directory' : self.exporter.cyclestocsv
+               }
+        menu.update(newm)
+        return menu
+    
 
-class FeetItem(pg.ScatterPlotItem):
+class PointsItem(pg.ScatterPlotItem):
     sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'd'}
     #Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
-    def __init__(self, parent, indices, name, pen=None):
+    def __init__(self, parent, name, indices={}, pen=None):
         super().__init__(pen=pen)
-        self.selected = []
         self.parent = parent
         self.indices = indices
-        self.__name = name
+        self.selected = []
         self.resym = {value : key for key, value in self.sym.items()}
+        self.__name = name
+        self.render()
+
+    def addPoints_(self, key, locations):
+        if not key in self.indices:
+            self.indices[key] = pd.Index([])
+        newlocs = []
+        for loc in locations:
+            locfixed = self.parent.series.index.get_loc(loc, method='nearest')
+            locfixed = self.parent.series.index[locfixed]
+            newlocs.append(locfixed)
+        oldidx = self.indices[key]
+        newidx = oldidx.append(pd.Index(newlocs))
+        self.indices[key] = newidx.unique().sort_values()
+        self.render()
+
+    def removePoints_(self, key, locations):
+        if not key in self.indices:
+            return
+        oldidx = self.indices[key]
+        dellocs = []
+        for loc in locations:
+            locidx = oldidx.get_loc(loc, method='nearest')
+            dellocs.append(locidx)
+        newidx = oldidx.delete(dellocs)
+        self.indices[key] = newidx
         self.render()
 
     def removePoints(self, points):
