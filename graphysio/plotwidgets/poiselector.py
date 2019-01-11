@@ -90,18 +90,18 @@ class POISelectorPlot(PlotWidget):
             s = self.curve.series.loc[xmin:xmax]
             posprop = findPOIGreedy(s, pos, 'min')
             fixedposloc = s.index.get_loc(posprop, method='nearest')
-            correctedpos = s.index[correctedpos]
+            correctedpos = s.index[fixedposloc]
         elif self.fixvalue is FixIndex.sndderiv:
             xmin, xmax = self.vbrange
             s = self.sndderiv.loc[xmin:xmax]
             posprop = findPOIGreedy(s, pos, 'max')
             fixedposloc = s.index.get_loc(posprop, method='nearest')
-            correctedpos = s.index[correctedpos]
+            correctedpos = s.index[fixedposloc]
         else:
             xmin, xmax = self.vbrange
             s = self.curve.series.loc[xmin:xmax]
             fixedposloc = s.index.get_loc(pos, method='nearest')
-            correctedpos = s.index[correctedpos]
+            correctedpos = s.index[fixedposloc]
         return correctedpos
 
     @property
