@@ -5,35 +5,8 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio.legend import LegendItem
-from graphysio.utils import estimateSampleRate, Colors
-
-
-class CurveItem(pg.PlotDataItem):
-    visible = QtCore.pyqtSignal()
-    invisible = QtCore.pyqtSignal()
-
-    def __init__(self, series, parent, pen=None):
-        self.parent = parent
-        self.series = series.dropna()
-        self.samplerate = estimateSampleRate(self.series)
-
-        if pen is None:
-            pen = QtGui.QColor(QtCore.Qt.black)
-
-        super().__init__(name = series.name,
-                         pen  = pen,
-                         antialias = True)
-        self.render()
-
-    def render(self):
-        self.setData(x = self.series.index.values,
-                     y = self.series.values)
-
-    def extend(self, newseries):
-        merged1 = self.series.append(newseries)
-        merged2 = merged1.sort_index()
-        self.series = merged2
-        self.render()
+from graphysio.utils import Colors
+from graphysio.plotwidgets import curves
 
 
 class TimeAxisItem(pg.AxisItem):
@@ -49,11 +22,10 @@ class TimeAxisItem(pg.AxisItem):
 
 
 class PlotWidget(pg.PlotWidget):
-    def __init__(self, parent=None, CurveClass=CurveItem):
+    def __init__(self, parent=None):
         self.parent = parent
         self.colors = Colors()
         self.hiddenitems = []
-        self.CurveClass = CurveClass
 
         axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         super().__init__(parent=parent, axisItems=axisItems, background='w')
@@ -70,24 +42,30 @@ class PlotWidget(pg.PlotWidget):
 
     @property
     def curves(self):
-        return {item.name() : item for item in self.listDataItems() if isinstance(item, CurveItem)}
+        return {item.name() : item for item in self.listDataItems() if isinstance(item, curves.CurveItem)}
 
     def getPen(self):
         return next(self.colors)
 
-    def addSeriesAsCurve(self, series, pen=None, dorealign=False):
+    def addSeriesAsCurve(self, series, pen=None, dorealign=False, withfeet=True):
         if dorealign and self.curves:
             # Timeshift new curves to make the beginnings coincide
             begins = (curve.series.index[0] for curve in self.curves.values() if len(curve.series.index) > 0)
             offset = min(begins) - series.index[0]
             series.index += offset
         try:
+            # Append to existing curve?
             curve = self.curves[series.name]
             curve.extend(series)
         except KeyError:
+            # New curve
             if pen is None:
                 pen = self.getPen()
-            curve = self.CurveClass(series=series, parent=self, pen=pen)
+            if withfeet:
+                Curve = curves.CurveItemWithFeet
+            else:
+                Curve = curves.CurveItem
+            curve = Curve(series=series, parent=self, pen=pen)
             self.addCurve(curve)
         return curve
 

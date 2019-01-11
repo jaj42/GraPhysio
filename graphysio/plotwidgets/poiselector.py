@@ -8,7 +8,7 @@ from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import exporter
 from graphysio.plotwidgets.plotwidget import PlotWidget
-from graphysio.plotwidgets.tsplot import CurveItemWithFeet
+from graphysio.types import Parameter
 
 class POISelectorWidget(PlotWidget):
     pointkey = 'dicrotic'
@@ -31,7 +31,7 @@ class POISelectorWidget(PlotWidget):
             self.curve.feetitem.removePointsByLocation(self.pointkey, [pos])
 
     def __init__(self, series, parent=None):
-        super().__init__(parent=parent, CurveClass=CurveItemWithFeet)
+        super().__init__(parent=parent)
         vb = self.getViewBox()
         vb.setMouseMode(vb.PanMode)
         self.setMenuEnabled(False)
