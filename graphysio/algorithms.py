@@ -379,6 +379,36 @@ def findPOI(soi, interval, kind, windowsize, forcesign=True):
         retidx = None
     return retidx
 
+def findPOIGreedy(soi, start, kind):
+    if kind not in ['min', 'max']:
+        raise ValueError(kind)
+    loc = soi.index.get_loc(start, method='nearest')
+    # Find direction
+    try:
+        finddir = soi.iloc[[loc-1, loc, loc+1]]
+    except IndexError:
+        # We're at the edge of the curve
+        return start
+    npminmax = np.argmin if kind == 'min' else np.argmax
+    direction = npminmax(finddir.values) - 1
+    if direction == 0:
+        # We're already at the local minimum
+        return start
+    curloc = loc
+    while True:
+        nextloc = curloc + direction
+        try:
+            samplesoi = soi.iloc[[curloc, nextloc]]
+        except IndexError:
+            # We're at the edge of the curve
+            break
+        nextisbetter = npminmax(samplesoi.values)
+        if not nextisbetter:
+            # Minimum found
+            break
+        curloc = nextloc
+    return soi.index[curloc]
+
 def findHorizontal(soi, loc):
     global DEBUGWIDGET
     if loc is None:
