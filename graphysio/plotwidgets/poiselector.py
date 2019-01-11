@@ -83,11 +83,25 @@ class POISelectorPlot(PlotWidget):
         self.scene().sigMouseClicked.connect(clicked)
 
     def fixpos(self, pos):
+        # Need to go through get_loc, otherwise strange things happen
         correctedpos = pos
         if self.fixvalue is FixIndex.minimum:
-            correctedpos = findPOIGreedy(self.curve.series, pos, 'min')
+            xmin, xmax = self.vbrange
+            s = self.curve.series.loc[xmin:xmax]
+            posprop = findPOIGreedy(s, pos, 'min')
+            fixedposloc = s.index.get_loc(posprop, method='nearest')
+            correctedpos = s.index[correctedpos]
         elif self.fixvalue is FixIndex.sndderiv:
-            correctedpos = findPOIGreedy(self.sndderiv, pos, 'max')
+            xmin, xmax = self.vbrange
+            s = self.sndderiv.loc[xmin:xmax]
+            posprop = findPOIGreedy(s, pos, 'max')
+            fixedposloc = s.index.get_loc(posprop, method='nearest')
+            correctedpos = s.index[correctedpos]
+        else:
+            xmin, xmax = self.vbrange
+            s = self.curve.series.loc[xmin:xmax]
+            fixedposloc = s.index.get_loc(pos, method='nearest')
+            correctedpos = s.index[correctedpos]
         return correctedpos
 
     @property
@@ -95,5 +109,5 @@ class POISelectorPlot(PlotWidget):
         if self.__sndderiv is None:
             sndderiv = self.curve.series.diff().diff().iloc[1:]
             sndderiv, _ = savgol(sndderiv, self.curve.samplerate, (.16, 2))
-            self.__sndderiv = sndderiv
+            self.__sndderiv = sndderiv.dropna()
         return self.__sndderiv

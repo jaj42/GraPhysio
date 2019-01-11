@@ -35,6 +35,7 @@ uiBasePath = os.path.join(curPath, 'ui')
 def loadUiFile(uiFile):
     uiPath = os.path.join(uiBasePath, uiFile)
     uiClasses = loadUiType(uiPath)
+    # form class and Qt base class.
     return uiClasses
 
 def estimateSampleRate(series):

@@ -54,13 +54,8 @@ class POIItem(pg.ScatterPlotItem):
     def addPointsByLocation(self, key, locations):
         if not key in self.indices:
             self.indices[key] = pd.Index([])
-        newlocs = []
-        for loc in locations:
-            locfixed = self.parent.series.index.get_loc(loc, method='nearest')
-            locfixed = self.parent.series.index[locfixed]
-            newlocs.append(locfixed)
         oldidx = self.indices[key]
-        newidx = oldidx.append(pd.Index(newlocs))
+        newidx = oldidx.append(pd.Index(locations))
         self.indices[key] = newidx.unique().sort_values()
         self.render()
 
@@ -91,8 +86,10 @@ class POIItem(pg.ScatterPlotItem):
     def render(self):
         data = []
         for key, idx in self.indices.items():
+            if len(idx) < 1:
+                continue
             idxnona = idx.dropna()
-            points = self.parent.series[idxnona]
+            points = self.parent.series.loc[idxnona]
             tmp = pd.DataFrame({'points' : points, 'sym' : self.sym[key]}, index=idxnona)
             data.append(tmp)
         if len(data) < 1:
