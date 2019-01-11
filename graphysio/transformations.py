@@ -5,9 +5,9 @@ import pandas as pd
 from graphysio.dialogs import askUserValue
 from graphysio.types import Parameter
 from graphysio.plotwidgets import PlotWidget
-from graphysio.plotwidgets.tsplot import CurveItemWithFeet
+from graphysio.plotwidgets.curves import CurveItemWithPOI
 
-def perfusionindex(plotwidget: PlotWidget) -> List[CurveItemWithFeet]:
+def perfusionindex(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     curvenames = list(plotwidget.curves.keys())
     q = Parameter('Select Curve', curvenames)
     curvename = askUserValue(q)
@@ -33,10 +33,10 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItemWithFeet]:
     piseries = pd.Series(pivalues, index=begins)
     piseries.name = "{}-{}".format(wave.name, 'perf')
 
-    newcurve = CurveItemWithFeet(parent=plotwidget, series=piseries, pen=plotwidget.getPen())
+    newcurve = CurveItemWithPOI(parent=plotwidget, series=piseries, pen=plotwidget.getPen())
     return [newcurve]
 
-def feettocurve(plotwidget: PlotWidget) -> List[CurveItemWithFeet]:
+def feettocurve(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     feetitemhash = {}
     for curve in plotwidget.curves.values():
         feetitemhash.update({"{}-{}".format(curve.name(), feetname) : (curve, feetname) for feetname in curve.feet.keys()})
@@ -47,7 +47,7 @@ def feettocurve(plotwidget: PlotWidget) -> List[CurveItemWithFeet]:
     newseries = curve.getFeetPoints(feetname)
     newseries.name = qresult
 
-    newcurve = CurveItemWithFeet(parent=plotwidget, series=newseries, pen=plotwidget.getPen())
+    newcurve = CurveItemWithPOI(parent=plotwidget, series=newseries, pen=plotwidget.getPen())
     return [newcurve]
 
 Transformations = {'Perfusion Index' : perfusionindex,

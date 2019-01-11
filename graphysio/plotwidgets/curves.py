@@ -38,8 +38,8 @@ class CurveItem(pg.PlotDataItem):
         self.render()
 
 
-class PointsItem(pg.ScatterPlotItem):
-    sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'd'}
+class POIItem(pg.ScatterPlotItem):
+    sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'd', 'point' : 'o'}
     #Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
     def __init__(self, parent, name, pen=None):
@@ -127,7 +127,7 @@ class PointsItem(pg.ScatterPlotItem):
         return self.__name
 
 
-class CurveItemWithFeet(CurveItem):
+class CurveItemWithPOI(CurveItem):
     visible = QtCore.pyqtSignal()
     invisible = QtCore.pyqtSignal()
 
@@ -142,7 +142,7 @@ class CurveItemWithFeet(CurveItem):
     def __init__(self, series, parent, pen=None):
         super().__init__(series, parent, pen)
         feetname = '{}-feet'.format(series.name)
-        self.feetitem = PointsItem(self, name=feetname, pen=pen)
+        self.feetitem = POIItem(self, name=feetname, pen=pen)
         parent.addItem(self.feetitem)
         self.feetitem.sigClicked.connect(self.sigPointClicked)
         self.visible.connect(self.__becameVisible)

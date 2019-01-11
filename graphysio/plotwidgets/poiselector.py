@@ -11,7 +11,7 @@ from graphysio.plotwidgets.plotwidget import PlotWidget
 from graphysio.types import Parameter
 
 class POISelectorWidget(PlotWidget):
-    pointkey = 'dicrotic'
+    pointkey = 'point'
 
     @staticmethod
     def mouseMoved(self, evt):

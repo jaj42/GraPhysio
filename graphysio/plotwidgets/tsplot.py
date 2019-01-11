@@ -10,7 +10,7 @@ from graphysio import algorithms, exporter, utils, dialogs
 from graphysio.types import CycleId, Parameter
 
 from graphysio.plotwidgets.plotwidget import PlotWidget
-from graphysio.plotwidgets.curves import CurveItemWithFeet
+from graphysio.plotwidgets.curves import CurveItemWithPOI
 from graphysio.plotwidgets.poiselector import POISelectorWidget
 
 
