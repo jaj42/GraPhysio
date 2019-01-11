@@ -1,3 +1,4 @@
+from enum import Enum
 from functools import partial
 
 import numpy as np
@@ -6,11 +7,40 @@ import pyqtgraph as pg
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import exporter
+from graphysio import exporter, utils
 from graphysio.plotwidgets.plotwidget import PlotWidget
 from graphysio.types import Parameter
+from graphysio.algorithms import findPOIGreedy, savgol
 
-class POISelectorWidget(PlotWidget):
+class FixIndex(Enum):
+    disabled = 'Disabled'
+    minimum  = 'Local Minimum'
+    sndderiv = '2nd derivative peak'
+
+
+class POISelectorWidget(*utils.loadUiFile('poiwidget.ui')):
+    @staticmethod
+    def buttonClicked(self, qbutton):
+        fixval = FixIndex(qbutton.text())
+        self.graphicsView.fixvalue = fixval
+
+    def __init__(self, series, parent):
+        super().__init__(parent=parent)
+        self.setupUi(self)
+
+        self.graphicsView = POISelectorPlot(series, parent=self) 
+        self.horizontalLayout.addWidget(self.graphicsView)
+
+        buttonClicked = partial(self.buttonClicked, self)
+        self.buttonGroup.buttonClicked.connect(buttonClicked)
+
+    @property
+    def exportMenu(self):
+        menu = {'&POI to CSV' : self.graphicsView.exporter.poitocsv}
+        return menu
+
+
+class POISelectorPlot(PlotWidget):
     pointkey = 'point'
 
     @staticmethod
@@ -26,7 +56,8 @@ class POISelectorWidget(PlotWidget):
         button = evt.button()
         pos = self.vLine.value()
         if button == 1:
-            self.curve.feetitem.addPointsByLocation(self.pointkey, [pos])
+            correctedpos = self.fixpos(pos)
+            self.curve.feetitem.addPointsByLocation(self.pointkey, [correctedpos])
         elif button == 2:
             self.curve.feetitem.removePointsByLocation(self.pointkey, [pos])
 
@@ -35,6 +66,9 @@ class POISelectorWidget(PlotWidget):
         vb = self.getViewBox()
         vb.setMouseMode(vb.PanMode)
         self.setMenuEnabled(False)
+
+        self.__sndderiv = None
+        self.fixvalue = FixIndex.disabled
 
         self.curve = self.addSeriesAsCurve(series)
         self.exporter = exporter.POIExporter(self, self.curve.name())
@@ -48,9 +82,18 @@ class POISelectorWidget(PlotWidget):
         clicked = partial(self.clicked, self)
         self.scene().sigMouseClicked.connect(clicked)
 
+    def fixpos(self, pos):
+        correctedpos = pos
+        if self.fixvalue is FixIndex.minimum:
+            correctedpos = findPOIGreedy(self.curve.series, pos, 'min')
+        elif self.fixvalue is FixIndex.sndderiv:
+            correctedpos = findPOIGreedy(self.sndderiv, pos, 'max')
+        return correctedpos
+
     @property
-    def exportMenu(self):
-        menu = super().exportMenu.copy()
-        newm = {'&POI to CSV' : self.exporter.poitocsv}
-        menu.update(newm)
-        return menu
+    def sndderiv(self):
+        if self.__sndderiv is None:
+            sndderiv = self.curve.series.diff().diff().iloc[1:]
+            sndderiv, _ = savgol(sndderiv, self.curve.samplerate, (.16, 2))
+            self.__sndderiv = sndderiv
+        return self.__sndderiv
