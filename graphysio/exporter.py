@@ -170,9 +170,10 @@ class POIExporter():
             return
         self.outdir = os.path.dirname(filepath)
 
+        srcseries = self.parent.curve.series
         poiidx = self.parent.curve.feetitem.indices[self.parent.pointkey]
-        pois = poiidx.to_series().rename('poi')
-        sers = [self.parent.curve.series, pois]
+        pois = srcseries[poiidx.dropna()].rename('poi')
+        sers = [srcseries, pois]
         df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
         df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
         df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
