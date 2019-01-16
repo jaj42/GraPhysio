@@ -22,23 +22,23 @@ class POISelectorWidget(*utils.loadUiFile('poiwidget.ui')):
     @staticmethod
     def buttonClicked(self, qbutton):
         fixval = FixIndex(qbutton.text())
-        self.graphicsView.fixvalue = fixval
+        self.poiselectorwidget.fixvalue = fixval
 
     def __init__(self, series, parent):
         super().__init__(parent=parent)
         self.setupUi(self)
         self.parent = parent
 
-        self.graphicsView = POISelectorPlot(series, parent=self) 
-        self.horizontalLayout.addWidget(self.graphicsView)
+        self.poiselectorwidget = POISelectorPlot(series, parent=self)
+        self.horizontalLayout.addWidget(self.poiselectorwidget)
 
         buttonClicked = partial(self.buttonClicked, self)
         self.buttonGroup.buttonClicked.connect(buttonClicked)
 
     @property
     def menu(self):
-        m = {'Plot'   : {'&Import POIs' : partial(self.parent.launchReadData, cb=self.graphicsView.loadPOI)}
-            ,'Export' : {'&POI to CSV'  : self.graphicsView.exporter.poitocsv}
+        m = {'Plot'   : {'&Import POIs' : partial(self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI)}
+            ,'Export' : {'&POI to CSV'  : self.poiselectorwidget.exporter.poitocsv}
             }
         return m
 
@@ -66,8 +66,7 @@ class POISelectorPlot(PlotWidget):
 
     def __init__(self, series, parent=None):
         super().__init__(name=series.name, parent=parent)
-        vb = self.getViewBox()
-        vb.setMouseMode(vb.PanMode)
+        self.vb.setMouseMode(self.vb.PanMode)
         self.setMenuEnabled(False)
 
         self.__sndderiv = None

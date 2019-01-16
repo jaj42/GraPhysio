@@ -74,7 +74,7 @@ def savgol(series, samplerate, parameters):
     if not window % 2:
         # window is even, we need odd
         window += 1
-    filtered = signal.savgol_filter(series, int(window), order)
+    filtered = signal.savgol_filter(series.values, int(window), order)
     newname = "{}-{}".format(series.name, 'filtered')
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
