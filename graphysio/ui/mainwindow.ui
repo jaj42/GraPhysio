@@ -45,25 +45,7 @@
      <string>File</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuExport">
-    <property name="title">
-     <string>Export</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuCurves">
-    <property name="title">
-     <string>Curves</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menuSelection">
-    <property name="title">
-     <string>Selection</string>
-    </property>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuCurves"/>
-   <addaction name="menuSelection"/>
-   <addaction name="menuExport"/>
   </widget>
   <action name="actNewplot">
    <property name="text">

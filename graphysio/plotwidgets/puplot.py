@@ -103,9 +103,9 @@ class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
         self.renderloop()
 
     @property
-    def exportMenu(self):
-        newm = {'&Loop Data to CSV directory' : self.exporter.exportloops}
-        return newm
+    def menu(self):
+        m = {'Export' : {'&Loop Data to CSV directory' : self.exporter.exportloops}}
+        return m
 
 
 class PULoop(object):

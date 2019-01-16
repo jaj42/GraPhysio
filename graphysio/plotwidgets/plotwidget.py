@@ -22,8 +22,9 @@ class TimeAxisItem(pg.AxisItem):
 
 
 class PlotWidget(pg.PlotWidget):
-    def __init__(self, parent=None):
+    def __init__(self, name, parent=None):
         self.parent = parent
+        self.name = name
         self.colors = Colors()
         self.hiddenitems = []
 
@@ -87,7 +88,3 @@ class PlotWidget(pg.PlotWidget):
         vbrange = self.vb.viewRange()
         xmin, xmax = map(int, vbrange[0])
         return (xmin, xmax)
-
-    @property
-    def exportMenu(self):
-        return {}

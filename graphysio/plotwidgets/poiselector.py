@@ -8,8 +8,8 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import exporter, utils
-from graphysio.plotwidgets.plotwidget import PlotWidget
 from graphysio.types import Parameter
+from graphysio.plotwidgets import PlotWidget
 from graphysio.algorithms import findPOIGreedy, savgol
 
 class FixIndex(Enum):
@@ -27,6 +27,7 @@ class POISelectorWidget(*utils.loadUiFile('poiwidget.ui')):
     def __init__(self, series, parent):
         super().__init__(parent=parent)
         self.setupUi(self)
+        self.parent = parent
 
         self.graphicsView = POISelectorPlot(series, parent=self) 
         self.horizontalLayout.addWidget(self.graphicsView)
@@ -35,9 +36,11 @@ class POISelectorWidget(*utils.loadUiFile('poiwidget.ui')):
         self.buttonGroup.buttonClicked.connect(buttonClicked)
 
     @property
-    def exportMenu(self):
-        menu = {'&POI to CSV' : self.graphicsView.exporter.poitocsv}
-        return menu
+    def menu(self):
+        m = {'Plot'   : {'&Import POIs' : partial(self.parent.launchReadData, cb=self.graphicsView.loadPOI)}
+            ,'Export' : {'&POI to CSV'  : self.graphicsView.exporter.poitocsv}
+            }
+        return m
 
 
 class POISelectorPlot(PlotWidget):
@@ -62,7 +65,7 @@ class POISelectorPlot(PlotWidget):
             self.curve.feetitem.removePointsByLocation(self.pointkey, [pos])
 
     def __init__(self, series, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(name=series.name, parent=parent)
         vb = self.getViewBox()
         vb.setMouseMode(vb.PanMode)
         self.setMenuEnabled(False)
@@ -71,7 +74,7 @@ class POISelectorPlot(PlotWidget):
         self.fixvalue = FixIndex.disabled
 
         self.curve = self.addSeriesAsCurve(series)
-        self.exporter = exporter.POIExporter(self, self.curve.name())
+        self.exporter = exporter.POIExporter(self, self.name)
 
         pen = pg.mkPen('k', width=2)
         self.vLine = pg.InfiniteLine(angle=90, movable=False, pen=pen)
@@ -81,6 +84,17 @@ class POISelectorPlot(PlotWidget):
         self.sigproxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
         clicked = partial(self.clicked, self)
         self.scene().sigMouseClicked.connect(clicked)
+
+    def loadPOI(self, plotdata):
+        columnname, ok = QtGui.QInputDialog.getItem(self,
+                                                    'Select POI series',
+                                                    'Load POI',
+                                                    plotdata.data.columns,
+                                                    editable=False)
+        if not ok:
+            return
+        poiseries = plotdata.data[columnname].dropna().index
+        self.curve.feetitem.addPointsByLocation(self.pointkey, poiseries)
 
     def fixpos(self, pos):
         # Need to go through get_loc, otherwise strange things happen

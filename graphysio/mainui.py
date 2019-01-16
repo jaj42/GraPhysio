@@ -6,10 +6,8 @@ import numpy as np
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import dialogs, utils, csvio, debug, transformations
-from graphysio.types import PlotData, CycleId, Parameter
-
-from graphysio.plotwidgets import TSWidget, LoopWidget
+from graphysio import dialogs, utils, csvio
+from graphysio.plotwidgets import TSWidget
 
 class MainUi(*utils.loadUiFile('mainwindow.ui')):
     hasdata  = QtCore.pyqtSignal(object)
@@ -23,7 +21,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
         self.tabWidget.currentChanged.connect(self.tabChanged)
 
-        launchNewPlot = partial(self.launchReadData, newwidget=True)
+        launchNewPlot    = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
         getCLIShell = partial(utils.getshell, ui=self)
         self.menuFile.addAction('&New Plot',       self.errguard(launchNewPlot),    QtCore.Qt.CTRL + QtCore.Qt.Key_N)
@@ -31,21 +29,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
         self.menuFile.addAction('Get CLI shell', self.errguard(getCLIShell))
-        self.menuFile.addAction('Add debug tab', self.errguard(self.launchMpl))
         self.menuFile.addSeparator()
-        self.menuFile.addAction('&Quit', self.errguard(self.fileQuit), QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
-
-        launchFilterCurve = partial(self.launchFilter, filterfeet=False)
-        launchFilterFeet = partial(self.launchFilter, filterfeet=True)
-        self.menuCurves.addAction('Visible &Curves',   self.errguard(self.launchCurveList),      QtCore.Qt.CTRL + QtCore.Qt.Key_C)
-        self.menuCurves.addAction('Cycle &Detection',  self.errguard(self.launchCycleDetection), QtCore.Qt.CTRL + QtCore.Qt.Key_D)
-        self.menuCurves.addAction('&Filter Curve',     self.errguard(launchFilterCurve),         QtCore.Qt.CTRL + QtCore.Qt.Key_F)
-        self.menuCurves.addAction('&Filter Feet',      self.errguard(launchFilterFeet))
-        self.menuCurves.addAction('&Transformation',   self.errguard(self.launchTransformation))
-
-        self.menuSelection.addAction('As &new plot',          self.errguard(self.launchNewPlotFromSelection))
-        self.menuSelection.addAction('&Append to other plot', self.errguard(self.launchAppendToPlotFromSelection))
-        self.menuSelection.addAction('Generate PU-&Loops',    self.errguard(self.launchLoop), QtCore.Qt.CTRL + QtCore.Qt.Key_L)
+        self.menuFile.addAction('&Quit', self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
         self.haserror.connect(utils.displayError)
 
@@ -60,85 +45,36 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 self.haserror.emit(e)
         return wrapped
 
+    def addTab(self, *args,**kwargs):
+        return self.tabWidget.addTab(*args,**kwargs)
+
+    def closeTab(self, i):
+        w = self.tabWidget.widget(i)
+        self.tabWidget.removeTab(i)
+        w.close()
+        w.deleteLater()
+        del w
+
     def tabChanged(self, tabid):
-        plotwidget = self.tabWidget.widget(tabid)
-        if plotwidget is None:
+        destwidget = self.tabWidget.widget(tabid)
+        if destwidget is None:
             return
-        self.menuExport.clear()
-        for key, f in plotwidget.exportMenu.items():
-            self.menuExport.addAction(key, f)
+        self.menuBar.clear()
+        self.menuBar.addMenu(self.menuFile)
+        for title, submenu in destwidget.menu.items():
+            menu = self.menuBar.addMenu(title)
+            for title, item in submenu.items():
+                menu.addAction(title, item)
 
-    def launchMpl(self):
-        debug.mplwidget = debug.FigureCanvas(self)
-        tabindex = self.tabWidget.addTab(debug.mplwidget, 'debug')
-        self.tabWidget.setCurrentIndex(tabindex)
-
-    def launchLoop(self):
-        tabindex = self.tabWidget.currentIndex()
-        sourcewidget = self.tabWidget.widget(tabindex)
-
-        if sourcewidget is None:
-            return
-
-        dlgSetupPU = dialogs.DlgSetupPULoop(sourcewidget, parent=self)
-        if not dlgSetupPU.exec_():
-            return
-        uname, pname = dlgSetupPU.result
-
-        curves = sourcewidget.curves
-        u = curves[uname]
-        p = curves[pname]
-        subsetrange = sourcewidget.vbrange
-        loopwidget = LoopWidget(u, p, subsetrange, parent=self)
-
-        oldname = self.tabWidget.tabText(tabindex)
-        newtabindex = self.tabWidget.addTab(loopwidget, '{}-{}-loops'.format(oldname, p.name()))
-        self.tabWidget.setCurrentIndex(newtabindex)
-
-    def launchCurveList(self):
-        plotwidget = self.tabWidget.currentWidget()
-        plotwidget.showCurveList()
-
-    def launchCycleDetection(self):
-        dlgCycles = dialogs.DlgCycleDetection(parent = self)
-        if not dlgCycles.exec_():
-            return
-        choices = dlgCycles.result
-        plotwidget = self.tabWidget.currentWidget()
-        for curvename, choice in choices.items():
-            curve = plotwidget.curves[curvename]
-            curve.addFeet(CycleId(choice))
-
-    def launchFilter(self, filterfeet):
-        dlgFilter = dialogs.DlgFilter(parent=self, filterfeet=filterfeet)
-        if not dlgFilter.exec_():
-            return
-        createnew, curvechoices = dlgFilter.result
-        plotwidget = self.tabWidget.currentWidget()
-        if filterfeet:
-            filterfunc = plotwidget.filterFeet
-        else:
-            filterfunc = plotwidget.filterCurve
-        for curvename, choice in curvechoices.items():
-            if choice == 'None':
-                continue
-            curve = plotwidget.curves[curvename]
-            filterfunc(curve, choice, asnew=createnew)
-
-    def launchTransformation(self):
-        plotwidget = self.tabWidget.currentWidget()
-        param = Parameter("Choose Transformation", list(transformations.Transformations.keys()))
-        qresult = dialogs.askUserValue(param)
-        trans = transformations.Transformations[qresult]
-        for curve in trans(plotwidget):
-            plotwidget.addCurve(curve)
-
-    def launchReadData(self, newwidget=True):
+    def launchReadData(self, newwidget=True, cb=None):
         try:
             self.hasdata.disconnect()
         except:
             pass
-        if newwidget:
+        if cb is not None:
+            title = "Load Data"
+            self.hasdata.connect(cb)
+        elif newwidget:
             title = "New Plot"
             self.hasdata.connect(self.createNewPlotWithData)
         else:
@@ -155,8 +91,11 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         reader = csvio.Reader(csvrequest, self.hasdata, self.haserror)
         QtCore.QThreadPool.globalInstance().start(reader)
 
-    def appendToPlotWithData(self, plotdata):
-        plotwidget = self.tabWidget.currentWidget()
+    def appendToPlotWithData(self, plotdata, destidx=None):
+        if destidx is None:
+            plotwidget = self.tabWidget.currentWidget()
+        else:
+            plotwidget = self.tabWidget.widget(destidx)
         if plotwidget is None:
             self.haserror.emit('No plot selected.')
             return
@@ -179,52 +118,3 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         tabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
         self.tabWidget.setCurrentIndex(tabindex)
         self.statusBar.showMessage("Loading... done")
-
-    def launchNewPlotFromSelection(self):
-        oldtabindex = self.tabWidget.currentIndex()
-        oldname = self.tabWidget.tabText(oldtabindex)
-        sourcewidget = self.tabWidget.widget(oldtabindex)
-        xmin, xmax = sourcewidget.vbrange
-
-        newname = '{}-sub'.format(oldname)
-        plotdata = PlotData(name=newname)
-
-        plotwidget = TSWidget(plotdata=plotdata, parent=self)
-        newtabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
-        for c in sourcewidget.curves.values():
-            series = c.series.loc[xmin:xmax]
-            plotwidget.addSeriesAsCurve(series)
-        self.tabWidget.setCurrentIndex(newtabindex)
-
-    def launchAppendToPlotFromSelection(self):
-        ntabs = self.tabWidget.count()
-        tabnames = [self.tabWidget.tabText(idx) for idx in range(ntabs)]
-        desttabname, ok = QtGui.QInputDialog.getItem(self, 'Select destination', 'Destination plot', tabnames, editable=False)
-        if not ok:
-            return
-        destidx = tabnames.index(desttabname)
-        destwidget = self.tabWidget.widget(destidx)
-
-        qmsg = "Timeshift new curves to make the beginnings coincide?"
-        reply = QtGui.QMessageBox.question(self, 'Append to plot', qmsg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        dorealign = (reply == QtGui.QMessageBox.Yes)
-
-        oldtabindex = self.tabWidget.currentIndex()
-        oldname = self.tabWidget.tabText(oldtabindex)
-        sourcewidget = self.tabWidget.widget(oldtabindex)
-        xmin, xmax = sourcewidget.vbrange
-
-        for c in sourcewidget.curves.values():
-            series = c.series.loc[xmin:xmax]
-            destwidget.addSeriesAsCurve(series, dorealign=dorealign)
-        self.tabWidget.setCurrentIndex(destidx)
-
-    def fileQuit(self):
-        self.close()
-
-    def closeTab(self, i):
-        w = self.tabWidget.widget(i)
-        self.tabWidget.removeTab(i)
-        w.close()
-        w.deleteLater()
-        del w
