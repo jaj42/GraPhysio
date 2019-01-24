@@ -32,11 +32,12 @@ class TSWidget(PlotWidget):
             oldcurve.render()
 
     def filterFeet(self, curve, filtername, asnew=False):
-        oldstarts = curve.feet['start']
-        oldstops = curve.feet['stop']
+        feetdict = curve.feetitem.indices
+        oldstarts = feetdict['start']
+        oldstops = feetdict['stop']
         starts, stops = algorithms.filterFeet(oldstarts, oldstops, filtername, dialogs.askUserValue)
-        curve.feet['start'] = starts
-        curve.feet['stop'] = stops
+        feetdict['start'] = starts
+        feetdict['stop'] = stops
         curve.feetitem.render()
 
     def keyPressEvent(self, event):
