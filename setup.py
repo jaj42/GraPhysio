@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name = 'graphysio',
-      version = '0.98',
+      version = '0.99',
       description = 'Graphical visualization of physiologic time series',
       url = 'https://github.com/jaj42/graphysio',
       author = 'Jona JOACHIM',
@@ -10,6 +10,6 @@ setup(name = 'graphysio',
       python_requires = '>=3.4',
       install_requires = ['pyqtgraph', 'pandas', 'numpy', 'scipy', 'sympy'],
       scripts = ['scripts/graphysioui.py'],
-      packages = ['graphysio', 'graphysio.ui'],
+      packages = ['graphysio', 'graphysio.plotwidgets', 'graphysio.ui'],
       include_package_data = True
 )
