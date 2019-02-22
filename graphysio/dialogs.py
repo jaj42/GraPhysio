@@ -6,6 +6,7 @@ import pyqtgraph as pg
 from graphysio import algorithms, utils, types
 from graphysio.types import CsvRequest
 
+
 class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
     def __init__(self, parent=None, title="New Plot", directory=""):
         super().__init__(parent=parent)
@@ -426,6 +427,27 @@ class DlgCurveProperties(*utils.loadUiFile('curveproperties.ui')):
             return
         self.color = color
         self.btnColor.setStyleSheet('background-color: {}'.format(color.name()))
+
+class DlgSetDateTime(*utils.loadUiFile('datetime.ui')):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.setupUi(self)
+
+        self.timestamp = 0
+
+        self.btnOk.clicked.connect(self.ok)
+        self.btnCancel.clicked.connect(self.reject)
+
+    def ok(self):
+        date = self.edDate.date()
+        time = self.edTime.time()
+        dt = QtCore.QDateTime(date, time, QtCore.Qt.UTC)
+        self.timestamp = dt.toMSecsSinceEpoch() * 1000
+        self.accept()
+
+    @property
+    def result(self):
+        return self.timestamp
 
 def askUserValue(param):
     if param.request is str:
