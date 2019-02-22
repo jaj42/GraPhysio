@@ -1,4 +1,5 @@
 import os, csv
+from datetime import datetime
 
 from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
@@ -429,7 +430,7 @@ class DlgCurveProperties(*utils.loadUiFile('curveproperties.ui')):
         self.btnColor.setStyleSheet('background-color: {}'.format(color.name()))
 
 class DlgSetDateTime(*utils.loadUiFile('datetime.ui')):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, prevdatetime=None):
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -438,11 +439,21 @@ class DlgSetDateTime(*utils.loadUiFile('datetime.ui')):
         self.btnOk.clicked.connect(self.ok)
         self.btnCancel.clicked.connect(self.reject)
 
+        if prevdatetime is None:
+            datetime = QtCore.QDateTime.currentDateTime()
+        else:
+            datetime = QtCore.QDateTime.fromMSecsSinceEpoch(prevdatetime / 1e6)
+        curdate = datetime.date()
+        curtime = datetime.time()
+        self.widgetCalendar.setSelectedDate(curdate)
+        self.edDate.setDate(curdate)
+        self.edTime.setTime(curtime)
+
     def ok(self):
         date = self.edDate.date()
         time = self.edTime.time()
         dt = QtCore.QDateTime(date, time, QtCore.Qt.UTC)
-        self.timestamp = dt.toMSecsSinceEpoch() * 1000
+        self.timestamp = dt.toMSecsSinceEpoch() * 1e6
         self.accept()
 
     @property
@@ -460,6 +471,10 @@ def askUserValue(param):
         request = ['Yes', 'No']
         tmpvalue, isok = QtGui.QInputDialog.getItem(None, 'Enter value', param.description, request, editable=False)
         value = (tmpvalue == 'Yes')
+    elif param.request is datetime:
+        dlg = DlgSetDateTime()
+        isok = dlg.exec_()
+        value = dlg.result
     elif type(param.request) is list:
         value, isok = QtGui.QInputDialog.getItem(None, 'Enter value', param.description, param.request, editable=False)
     else:

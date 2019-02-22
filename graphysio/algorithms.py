@@ -1,6 +1,7 @@
 import itertools
 from functools import partial
 from collections import namedtuple
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -35,6 +36,7 @@ Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cuto
            'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
            'Lag' : Filter(name='lag', parameters=[Parameter('Amount (s)', float)]),
            'Normalize' : Filter(name='norm1', parameters=[]),
+           'Set start date/time' : Filter(name='setdatetime', parameters=[Parameter('DateTime', datetime)]),
            'Tolerant Normalize' : Filter(name='norm2', parameters=[]),
            'Enter expression (variable = x)' : Filter(name='expression', parameters=[Parameter('Expression', str)]),
            'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
@@ -66,6 +68,14 @@ def expression(series, samplerate, parameters):
     evalthis = partial(evaleq, eq)
     newseries = series.apply(evalthis).astype(np.float64)
     newname = "{}-{}".format(series.name, 'filtered')
+    return (newseries.rename(newname), samplerate)
+
+def setdatetime(series, samplerate, parameters):
+    timestamp, = parameters
+    newseries = series.copy()
+    diff = timestamp - newseries.index[0]
+    newseries.index += diff
+    newname = "{}-{}".format(series.name, timestamp)
     return (newseries.rename(newname), samplerate)
 
 def savgol(series, samplerate, parameters):
@@ -175,6 +185,7 @@ filtfuncs = {'savgol'     : savgol,
              'norm1'      : norm1,
              'norm2'      : norm2,
              'expression' : expression,
+             'setdatetime' : setdatetime,
              'fillnan'    : fillnan}
 
 def filter(curve, filtname, paramgetter):
