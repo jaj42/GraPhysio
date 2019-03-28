@@ -6,7 +6,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from scipy import signal, interpolate
-from sympy.parsing.sympy_parser import parse_expr
 
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
@@ -61,13 +60,16 @@ def norm2(series, samplerate, parameters):
     newname = "{}-{}".format(series.name, 'norm')
     return (series.rename(newname), samplerate)
 
-evaleq = lambda eq, x: eq.evalf(subs={'x' : x})
+from sympy import lambdify
+from sympy.abc import x
+from sympy.parsing.sympy_parser import parse_expr
 def expression(series, samplerate, parameters):
     express, = parameters
-    eq = parse_expr(express)
-    evalthis = partial(evaleq, eq)
-    newseries = series.apply(evalthis).astype(np.float64)
+    expr = parse_expr(express)
+    f = lambdify(x, expr, 'numpy')
+    filtered = f(series.values)
     newname = "{}-{}".format(series.name, 'filtered')
+    newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries.rename(newname), samplerate)
 
 def setdatetime(series, samplerate, parameters):
