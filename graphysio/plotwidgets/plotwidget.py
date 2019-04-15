@@ -86,6 +86,14 @@ class PlotWidget(pg.PlotWidget):
         self.legend.removeItem(curve.name())
         curve.invisible.emit()
 
+    def validateNewCurveName(self, proposedname, alwaysShow=False):
+        if proposedname not in self.curves and not alwaysShow:
+            return proposedname
+        newname, okPressed = QtGui.QInputDialog.getText(self, "Series name", "Series with identical names will be merged.", text=proposedname)
+        if not okPressed:
+            return None
+        return newname
+
     @property
     def vbrange(self):
         vbrange = self.vb.viewRange()

@@ -1,7 +1,8 @@
 import os, csv
+import string
 from datetime import datetime
 
-from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 
 from graphysio import algorithms, utils, types
@@ -459,6 +460,36 @@ class DlgSetDateTime(*utils.loadUiFile('datetime.ui')):
     @property
     def result(self):
         return self.timestamp
+
+class DlgCurveAlgebra(QtWidgets.QDialog):
+    def __init__(self, parent=None, curvecorr={}):
+        super().__init__(parent=parent)
+        self.setupUi(curvecorr)
+    
+    def setupUi(self, curvecorr):
+        vstack = QtWidgets.QVBoxLayout(self)
+
+        self.lbl = QtWidgets.QLabel('Enter formula for new curve:')
+        vstack.addWidget(self.lbl)
+
+        self.formula = QtWidgets.QLineEdit('a^2 + log(2*b)')
+        vstack.addWidget(self.formula)
+
+        curveslbl = '\n'.join(['{}: {}'.format(x,y) for x,y in curvecorr.items()])
+        self.curveletters = QtWidgets.QLabel(curveslbl)
+        vstack.addWidget(self.curveletters)
+
+        self.buttonbox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        vstack.addWidget(self.buttonbox)
+
+        self.buttonbox.accepted.connect(self.accept)
+        self.buttonbox.rejected.connect(self.reject)
+
+        self.setLayout(vstack)
+
+    @property
+    def result(self):
+        return self.formula.text()
 
 def askUserValue(param):
     if param.request is str:

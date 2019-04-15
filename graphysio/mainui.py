@@ -41,7 +41,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 f()
             except Exception as e:
                 # Re-raise errors here for DEBUG
-                raise e
+                #raise e
                 self.haserror.emit(e)
         return wrapped
 
@@ -102,13 +102,11 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         dorealign = dialogs.userConfirm('Timeshift new curves to make the beginnings coincide?', title='Append to plot')
 
         for fieldname in plotdata.data:
-            if fieldname in plotwidget.curves:
-                # Name conflict with existing series
-                newname, okPressed = QtGui.QInputDialog.getText(self, "Series name conflict", "Series with identical names will be merged.", text=fieldname)
-                if not okPressed:
-                    return
-                if newname != fieldname:
-                    plotdata.data.rename(columns={fieldname : newname}, inplace=True)
+            newname = plotwidget.validateNewCurveName(fieldname)
+            if newname is None:
+                continue
+            if newname != fieldname:
+                plotdata.data.rename(columns={fieldname : newname}, inplace=True)
 
         plotwidget.appendData(plotdata, dorealign)
         self.statusBar.showMessage("Loading... done")

@@ -127,8 +127,8 @@ class PULoop(object):
     @property
     def cardpoints(self):
         if self.__cardpoints is None:
-            idxpmax = self.p.argmax()
-            idxvmax = self.u.argmax()
+            idxpmax = self.p.idxmax()
+            idxvmax = self.u.idxmax()
             A = Point(self.u.iloc[0], self.p.iloc[0])
             B = Point(self.u.loc[idxvmax], self.p.loc[idxvmax])
             C = Point(self.u.loc[idxpmax], self.p.loc[idxpmax])

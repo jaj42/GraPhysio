@@ -1,8 +1,10 @@
+import string
 from functools import partial
 
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+import sympy
 
 from pyqtgraph.Qt import QtGui, QtCore
 
@@ -149,23 +151,46 @@ class TSWidget(PlotWidget):
         newname = '{}-{}-loops'.format(self.name, p.name())
         self.parent.addTab(loopwidget, newname)
 
+    def launchCurveAlgebra(self):
+        curvecorr = {n : c for n,c in zip(list(string.ascii_lowercase)
+                                         ,list(self.curves.keys()))}
+        dlgCurveAlgebra = dialogs.DlgCurveAlgebra(self, curvecorr)
+        if not dlgCurveAlgebra.exec_():
+            return
+        formula = dlgCurveAlgebra.result
+        e = sympy.sympify(formula)
+        s = list(e.free_symbols)
+        schar = sorted([str(x) for x in s])
+        namesusedcurves = [curvecorr[x] for x in schar]
+        usedcurves = [self.curves[x] for x in namesusedcurves]
+        sers = [c.series for c in usedcurves]
+        df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
+        df = df.dropna(how='all').interpolate()
+        args = [df[s].values for s in namesusedcurves]
+        l = sympy.lambdify(s, e, 'numpy')
+        newvals = l(*args)
+        newname = self.validateNewCurveName(formula, True)
+        newseries = pd.Series(newvals, index=df.index, name=newname)
+        self.addSeriesAsCurve(newseries)
+
     @property
     def menu(self):
-        mcurves = {'Visible &Curves'  : self.showCurveList
-                  ,'Cycle &Detection' : self.launchCycleDetection
-                  ,'&Filter Curve'    : partial(self.launchFilter, filterfeet=False)
-                  ,'&Filter Feet'     : partial(self.launchFilter, filterfeet=True)
-                  ,'&Transformation'  : self.launchTransformation
+        mcurves = {'Visible Curves'  : self.showCurveList
+                  ,'Cycle Detection' : self.launchCycleDetection
+                  ,'Filter Curve'    : partial(self.launchFilter, filterfeet=False)
+                  ,'Filter Feet'     : partial(self.launchFilter, filterfeet=True)
+                  ,'Transformation'  : self.launchTransformation
                   }
-        mselect = {'As &new plot' :          self.launchNewPlotFromSelection
-                  ,'&Append to other plot' : self.launchAppendToPlotFromSelection
-                  ,'Generate PU-&Loops' :    self.launchLoop
+        mselect = {'As new plot'          : self.launchNewPlotFromSelection
+                  ,'Append to other plot' : self.launchAppendToPlotFromSelection
+                  ,'Generate PU-Loops'    : self.launchLoop
                   }
-        mplot = {'&POI Selector' : self.launchPOIWidget}
-        mexport = {'&Series to CSV'           : self.exporter.seriestocsv
-                  ,'&Time info to CSV'        : self.exporter.periodstocsv
-                  ,'&Cycle info to CSV'       : self.exporter.cyclepointstocsv
-                  ,'&Cycles to CSV directory' : self.exporter.cyclestocsv
+        mplot = {'POI Selector'  : self.launchPOIWidget
+                ,'Curve Algebra' : self.launchCurveAlgebra}
+        mexport = {'Series to CSV'           : self.exporter.seriestocsv
+                  ,'Time info to CSV'        : self.exporter.periodstocsv
+                  ,'Cycle info to CSV'       : self.exporter.cyclepointstocsv
+                  ,'Cycles to CSV directory' : self.exporter.cyclestocsv
                   }
         m = {'Curves' : mcurves
             ,'Plot'   : mplot
