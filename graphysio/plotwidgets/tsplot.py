@@ -158,16 +158,18 @@ class TSWidget(PlotWidget):
         if not dlgCurveAlgebra.exec_():
             return
         formula = dlgCurveAlgebra.result
-        e = sympy.sympify(formula)
-        s = list(e.free_symbols)
-        schar = sorted([str(x) for x in s])
-        namesusedcurves = [curvecorr[x] for x in schar]
-        usedcurves = [self.curves[x] for x in namesusedcurves]
-        sers = [c.series for c in usedcurves]
+        expr = sympy.sympify(formula)
+        symbols = list(expr.free_symbols)
+        schar = sorted([str(x) for x in symbols])
+        curvenames = [curvecorr[x] for x in schar]
+        sers = [self.curves[c].series for c in curvenames]
+        if len(sers) < 1:
+            # Scalar
+            return
         df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
         df = df.dropna(how='all').interpolate()
-        args = [df[s].values for s in namesusedcurves]
-        l = sympy.lambdify(s, e, 'numpy')
+        args = [df[c].values for c in curvenames]
+        l = sympy.lambdify(symbols, expr, 'numpy')
         newvals = l(*args)
         newname = self.validateNewCurveName(formula, True)
         newseries = pd.Series(newvals, index=df.index, name=newname)
