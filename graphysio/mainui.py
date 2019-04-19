@@ -46,7 +46,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
         return wrapped
 
     def addTab(self, *args,**kwargs):
-        return self.tabWidget.addTab(*args,**kwargs)
+        tabindex = self.tabWidget.addTab(*args,**kwargs)
+        self.tabWidget.setCurrentIndex(tabindex)
 
     def closeTab(self, i):
         w = self.tabWidget.widget(i)
@@ -113,6 +114,5 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
     def createNewPlotWithData(self, plotdata):
         plotwidget = TSWidget(plotdata=plotdata, parent=self)
-        tabindex = self.tabWidget.addTab(plotwidget, plotdata.name)
-        self.tabWidget.setCurrentIndex(tabindex)
+        self.addTab(plotwidget, plotdata.name)
         self.statusBar.showMessage("Loading... done")
