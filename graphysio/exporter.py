@@ -27,6 +27,7 @@ class TsExporter():
         if not filepath:
             # Cancel pressed
             return
+        filepath = os.path.normpath(filepath)
         self.outdir = os.path.dirname(filepath)
         xmin, xmax = self.parent.vbrange
         series = [curve.series[~curve.series.index.duplicated()] for curve in self.parent.curves.values()]
@@ -62,7 +63,7 @@ class TsExporter():
         if not outdirtmp:
             # Cancel pressed
             return
-        self.outdir = outdirtmp
+        self.outdir = os.path.normpath(outdirtmp)
 
         # Some non trivial manipulations to get the cycles from all
         # curves, then reorganize to group by the n-th cycle from each
@@ -105,6 +106,7 @@ class TsExporter():
         if not filepath:
             # Cancel pressed
             return
+        filepath = os.path.normpath(filepath)
         self.outdir = os.path.dirname(filepath)
 
         starts = [curve.feet['start'] for curve in self.parent.curves.values() if 'start' in curve.feet]
@@ -125,7 +127,7 @@ class PuExporter():
         if not outdirtmp:
             # Cancel pressed
             return
-        self.outdir = outdirtmp
+        self.outdir = os.path.normpath(outdirtmp)
         self.writetable()
         self.writeloops()
 
@@ -168,6 +170,7 @@ class POIExporter():
         if not filepath:
             # Cancel pressed
             return
+        filepath = os.path.normpath(filepath)
         self.outdir = os.path.dirname(filepath)
 
         srcseries = self.parent.curve.series

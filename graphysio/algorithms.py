@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from scipy import signal, interpolate
 
+from graphysio.utils import truncatevecs
+
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
 
@@ -209,6 +211,7 @@ def filterFeet(starts, stops, filtname, paramgetter):
         minCycleLength = msMinDuration * 1e6 # Transform ms to ns
         cycleDurations = (stop - start for start, stop in zip(starts, stops))
         boolidx = [d >= minCycleLength for d in cycleDurations]
+        starts, stops, boolidx = truncatevecs([starts, stops, boolidx])
         newstarts = starts[boolidx]
         newstops = stops[boolidx]
     else:

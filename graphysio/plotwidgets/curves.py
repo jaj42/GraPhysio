@@ -93,6 +93,7 @@ class POIItem(pg.ScatterPlotItem):
             tmp = pd.DataFrame({'points' : points, 'sym' : self.sym[key]}, index=idxnona)
             data.append(tmp)
         if len(data) < 1:
+            self.clear()
             return
         feet = pd.concat(data)
         self.setData(x = feet.index.values,

@@ -12,7 +12,7 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     q = Parameter('Select Curve', curvenames)
     curvename = askUserValue(q)
     curve = plotwidget.curves[curvename]
-    if 'start' not in curve.feet or curve.feet['start'].size < 1:
+    if 'start' not in curve.feetitem.indices or curve.feetitem.indices['start'].size < 1:
         raise ValueError('No start information for curve')
 
     wave = curve.series
@@ -39,7 +39,7 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
 def feettocurve(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     feetitemhash = {}
     for curve in plotwidget.curves.values():
-        feetitemhash.update({"{}-{}".format(curve.name(), feetname) : (curve, feetname) for feetname in curve.feet.keys()})
+        feetitemhash.update({"{}-{}".format(curve.name(), feetname) : (curve, feetname) for feetname in curve.feetitem.indices.keys()})
     param = Parameter("Choose points to create curve", list(feetitemhash.keys()))
     qresult = askUserValue(param)
     curve, feetname = feetitemhash[qresult]
