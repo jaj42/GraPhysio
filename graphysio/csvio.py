@@ -41,16 +41,10 @@ class Reader(QtCore.QRunnable):
             data = data.apply(pdtonum)
             data = data.dropna(axis='rows', how='all')
         else:
-            datacolumns = data.columns.drop(self.csvrequest.dtfield)
-            # Make all data numeric or drop if impossible
-            data[datacolumns] = data[datacolumns].apply(pdtonum)
-            # Make timestamp unique and use mean of values on duplicates
-            data = data.groupby(self.csvrequest.dtfield, as_index=False).mean()
-            # Remove empty rows
-            data = data.dropna(axis='rows', how='all', subset=datacolumns)
-            # Remove timestamp column from data
             timestamp = data[self.csvrequest.dtfield]
             data = data.drop(columns=self.csvrequest.dtfield)
+            # Force all columns to numeric
+            data = data.apply(pdtonum)
 
             if dtformat == '<seconds>':
                 timestamp = pdtonum(timestamp)
@@ -69,7 +63,7 @@ class Reader(QtCore.QRunnable):
             else:
                 timestamp = pd.to_datetime(timestamp, format = dtformat)
 
-            # Convert timestamp to UTC
+            # Convert timestamp to UTC and use as index
             timestamp = pd.Index(timestamp).tz_localize(self.csvrequest.timezone).tz_convert('UTC')
             timestamp = timestamp.astype(np.int64)
             data = data.set_index([timestamp])

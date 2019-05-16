@@ -17,6 +17,9 @@ class CurveItem(pg.PlotDataItem):
     def __init__(self, series, parent, pen=None):
         self.parent = parent
         self.series = series.dropna()
+        # Make timestamp unique and use mean of values on duplicates
+        series = series.groupby(series.index).mean()
+
         self.samplerate = estimateSampleRate(self.series)
 
         if pen is None:
