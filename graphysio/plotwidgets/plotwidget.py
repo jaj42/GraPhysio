@@ -16,10 +16,7 @@ class TimeAxisItem(pg.AxisItem):
             value = value / 1e6 # convert from ns to ms
             date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
             date = date.toTimeSpec(QtCore.Qt.UTC)
-            if i < 1:
-                datestr = date.toString("dd/MM/yyyy\nhh:mm:ss.zzz")
-            else:
-                datestr = date.toString("hh:mm:ss.zzz")
+            datestr = date.toString("dd/MM/yyyy\nhh:mm:ss.zzz")
             ret.append(datestr)
         return ret
 
