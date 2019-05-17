@@ -47,7 +47,8 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
 
     def addTab(self, *args,**kwargs):
         tabindex = self.tabWidget.addTab(*args,**kwargs)
-        self.tabWidget.setCurrentIndex(tabindex)
+        if tabindex is not None:
+            self.tabWidget.setCurrentIndex(tabindex)
 
     def closeTab(self, i):
         w = self.tabWidget.widget(i)
