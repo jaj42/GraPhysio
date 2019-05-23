@@ -104,8 +104,7 @@ class TSWidget(PlotWidget):
         curvename = dialogs.askUserValue(q)
         curve = self.curves[curvename]
         poiselector = POISelectorWidget(curve.series, parent=self.parent)
-        tabindex = self.parent.addTab(poiselector, curve.name())
-        self.parent.tabWidget.setCurrentIndex(tabindex)
+        self.parent.addTab(poiselector, curve.name())
 
     # Menu Selection
     def launchNewPlotFromSelection(self):
