@@ -87,7 +87,7 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
             return
         csvrequest = dlgNewplot.result
         self.dircache = csvrequest.folder
-        self.statusBar.showMessage("Loading... {}...".format(csvrequest.name))
+        self.lblStatus.setText("Loading... {}...".format(csvrequest.name))
 
         reader = csvio.Reader(csvrequest, self.hasdata, self.haserror)
         QtCore.QThreadPool.globalInstance().start(reader)
@@ -110,9 +110,9 @@ class MainUi(*utils.loadUiFile('mainwindow.ui')):
                 plotdata.data.rename(columns={fieldname : newname}, inplace=True)
 
         plotwidget.appendData(plotdata, dorealign)
-        self.statusBar.showMessage("Loading... done")
+        self.lblStatus.setText("Loading... done")
 
     def createNewPlotWithData(self, plotdata):
         plotwidget = TSWidget(plotdata=plotdata, parent=self)
         self.addTab(plotwidget, plotdata.name)
-        self.statusBar.showMessage("Loading... done")
+        self.lblStatus.setText("Loading... done")

@@ -273,7 +273,6 @@ def findPressureFeet(curve):
 
 def findFlowCycles(curve):
     series = curve.series.dropna()
-    samplerate = curve.samplerate
     bincycles = (series > series.min()).astype(int)
     idxstarts, = (bincycles.diff().shift(-1) > 0).nonzero()
     idxstops,  = (bincycles.diff() < 0).nonzero()
