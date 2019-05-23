@@ -1,6 +1,8 @@
 import os, csv
 from itertools import zip_longest
 
+from pathvalidate import sanitize_filename
+
 import pandas as pd
 
 from pyqtgraph.Qt import QtGui
@@ -16,7 +18,7 @@ class TsExporter():
         self.outdir = os.path.expanduser('~')
 
     def seriestocsv(self):
-        filename = "{}-subset.csv".format(self.name)
+        filename = sanitize_filename("{}.csv".format(self.name))
         defaultpath = os.path.join(self.outdir, filename)
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
@@ -90,12 +92,12 @@ class TsExporter():
             df = pd.concat(cycle, axis=1)
             df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
 
-            filename = "{}-{}.csv".format(self.name, n+1)
+            filename = sanitize_filename("{}-{}.csv".format(self.name, n+1))
             filepath = os.path.join(self.outdir, filename)
             df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
 
     def cyclepointstocsv(self):
-        filename = "{}-feet.csv".format(self.name)
+        filename = sanitize_filename("{}-feet.csv".format(self.name))
         defaultpath = os.path.join(self.outdir, filename)
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
@@ -140,14 +142,14 @@ class PuExporter():
             data.append(tmpdict)
         df = pd.DataFrame(data)
         df.index += 1
-        filename = "{}-loopdata.csv".format(self.name)
+        filename = sanitize_filename("{}-loopdata.csv".format(self.name))
         filepath = os.path.join(self.outdir, filename)
         df.to_csv(filepath, index_label='idx')
 
     def writeloops(self):
         for n, loop in enumerate(self.parent.loops):
             df = loop.df
-            filename = "{}-{}.csv".format(self.name, n+1)
+            filename = sanitize_filename("{}-{}.csv".format(self.name, n+1))
             filepath = os.path.join(self.outdir, filename)
             df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
             df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
@@ -159,7 +161,7 @@ class POIExporter():
         self.outdir = os.path.expanduser('~')
 
     def poitocsv(self):
-        filename = "{}-poi.csv".format(self.name)
+        filename = sanitize_filename("{}-poi.csv".format(self.name))
         defaultpath = os.path.join(self.outdir, filename)
         filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
                                                      filter  = "CSV files (*.csv *.dat)",
