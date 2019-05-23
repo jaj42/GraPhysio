@@ -12,8 +12,6 @@ from graphysio.utils import truncatevecs
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
 
-DEBUGWIDGET = None
-
 class TF(object):
     def __init__(self, num, den, name=''):
         self.num  = num
@@ -291,10 +289,6 @@ def findFlowCycles(curve):
     return (cycleStarts.index, cycleStops.index)
 
 def findPressureFull(curve):
-    from graphysio.debug import mplwidget
-    global DEBUGWIDGET
-    DEBUGWIDGET = mplwidget
-
     series = curve.series.dropna()
     samplerate = curve.samplerate
 
@@ -303,9 +297,6 @@ def findPressureFull(curve):
     # Smoothen the derivatives
     fstderiv, _ = savgol(fstderivraw, samplerate, (.16, 2))
     sndderiv, _ = savgol(sndderivraw, samplerate, (.16, 2))
-
-    if DEBUGWIDGET:
-        DEBUGWIDGET.axes.plot(series.index.values, series.values)
 
     cycles = []
     starts, durations = curve.getCycleIndices()
@@ -316,9 +307,6 @@ def findPressureFull(curve):
         sbp = findPOI(series, [start, stop], 'max', windowsize=.05)
         peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=.15)
         dic = findHorizontal(fstderiv, peridic)
-        if DEBUGWIDGET:
-            DEBUGWIDGET.axes.axvline(x=peridic)
-            DEBUGWIDGET.axes.axvline(x=dic, color='r')
         cycle = (dia, sbp, dic)
         cycles.append(cycle)
 
@@ -370,7 +358,6 @@ def genWindows(soi, interval, windowspan):
         yield window.index.values
 
 def findPOI(soi, interval, kind, windowsize, forcesign=True):
-    global DEBUGWIDGET
     if kind not in ['min', 'max']:
         raise ValueError(kind)
     argkind = 'idx' + kind
@@ -379,8 +366,6 @@ def findPOI(soi, interval, kind, windowsize, forcesign=True):
     previous = -np.inf if kind == 'max' else np.inf
     for window in genWindows(soi, interval, windowsize):
         zoi = soi.loc[window]
-        if DEBUGWIDGET:
-            DEBUGWIDGET.axes.plot(window, zoi.values * 50)
         new = getattr(zoi, kind)()
         if isbetter(new, previous, kind, forcesign):
             goodwindow = window
@@ -426,13 +411,10 @@ def findPOIGreedy(soi, start, kind):
     return soi.index[curloc]
 
 def findHorizontal(soi, loc):
-    global DEBUGWIDGET
     if loc is None:
         return None
     step = 8000000 # 8 ms (from ns)
     end = loc + 10 * step
     zoi = soi.loc[loc:end]
-    if DEBUGWIDGET:
-        DEBUGWIDGET.axes.plot(zoi.index.values, zoi.values * 50)
     horidx = zoi.abs().idxmin()
     return horidx
