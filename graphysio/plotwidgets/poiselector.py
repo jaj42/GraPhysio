@@ -51,7 +51,6 @@ class POISelectorPlot(PlotWidget):
         pos = evt[0]  ## using signal proxy turns original arguments into a tuple
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.getViewBox().mapSceneToView(pos)
-            index = int(mousePoint.x())
             self.vLine.setPos(mousePoint.x())
 
     @staticmethod

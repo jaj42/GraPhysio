@@ -96,7 +96,7 @@ class DlgNewPlot(ui.Ui_NewPlot, QtWidgets.QDialog):
         encoding = self.txtEncoding.currentText()
         with open(filepath, 'r', encoding=encoding) as csvfile:
             # Artificially drop n first lines as requested
-            for i in range(self.spnLinedrop.value()):
+            for _ in range(self.spnLinedrop.value()):
                 next(csvfile)
             csvreader = csv.DictReader(csvfile, delimiter=sep)
             row = next(csvreader)
