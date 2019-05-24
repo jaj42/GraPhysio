@@ -4,14 +4,15 @@ from functools import partial
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+from PyQt5 import QtWidgets
 
-from graphysio import exporter, utils
+from graphysio import exporter, utils, ui
 
 Point     = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
 Angles    = namedtuple('Angles', ['alpha', 'beta', 'gala'])
 
-class LoopWidget(*utils.loadUiFile('loopwidget.ui')):
+class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
     def __init__(self, u, p, subsetrange, parent):
         super().__init__(parent=parent)
         self.setupUi(self)

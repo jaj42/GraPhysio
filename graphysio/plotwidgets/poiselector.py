@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 
-from pyqtgraph.Qt import QtGui, QtCore
+from PyQt5 import QtCore, QtWidgets, QtGui
 
-from graphysio import exporter, utils
+from graphysio import exporter, utils, ui
 from graphysio.types import Parameter
 from graphysio.plotwidgets import PlotWidget
 from graphysio.algorithms import findPOIGreedy, savgol
@@ -18,7 +18,7 @@ class FixIndex(Enum):
     sndderiv = '2nd derivative peak'
 
 
-class POISelectorWidget(*utils.loadUiFile('poiwidget.ui')):
+class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
     @staticmethod
     def buttonClicked(self, qbutton):
         fixval = FixIndex(qbutton.text())

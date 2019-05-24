@@ -5,11 +5,12 @@ from datetime import datetime
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 
-from graphysio import algorithms, utils, types
+from graphysio import algorithms, utils, types, ui
 from graphysio.types import CsvRequest
 
 
-class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
+
+class DlgNewPlot(ui.Ui_NewPlot, QtWidgets.QDialog):
     def __init__(self, parent=None, title="New Plot", directory=""):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -171,7 +172,7 @@ class DlgNewPlot(*utils.loadUiFile('newplot.ui')):
         self.csvrequest.timezone = self.txtTimezone.currentText()
         self.accept()
 
-class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
+class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -202,7 +203,7 @@ class DlgCycleDetection(*utils.loadUiFile('cycledetect.ui')):
         return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
 
 
-class DlgFilter(*utils.loadUiFile('filter.ui')):
+class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
     def __init__(self, parent=None, filterfeet=False):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -253,7 +254,7 @@ class DlgFilter(*utils.loadUiFile('filter.ui')):
         return (createnew, curvefilters)
 
 
-class DlgSetupPULoop(*utils.loadUiFile('setuppuloop.ui')):
+class DlgSetupPULoop(ui.Ui_SetupPULoop, QtWidgets.QDialog):
     def __init__(self, sourcewidget, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -276,7 +277,7 @@ class DlgSetupPULoop(*utils.loadUiFile('setuppuloop.ui')):
         return (uname, pname)
 
 
-class DlgPeriodExport(*utils.loadUiFile('periodexport.ui')):
+class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
     def __init__(self, begin, end, patient="", directory="", parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -320,7 +321,7 @@ class DlgPeriodExport(*utils.loadUiFile('periodexport.ui')):
     def filepath(self):
         return self.txtFile.text()
 
-class DlgCurveSelection(*utils.loadUiFile('curveselect.ui')):
+class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
     def __init__(self, visible=[], hidden=[], parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -368,7 +369,7 @@ class DlgCurveSelection(*utils.loadUiFile('curveselect.ui')):
         invisible = [self.curvehash[item.text()] for item in unchecked]
         return (visible, invisible)
 
-class DlgCurveProperties(*utils.loadUiFile('curveproperties.ui')):
+class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
     def __init__(self, curve, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -430,7 +431,7 @@ class DlgCurveProperties(*utils.loadUiFile('curveproperties.ui')):
         self.color = color
         self.btnColor.setStyleSheet('background-color: {}'.format(color.name()))
 
-class DlgSetDateTime(*utils.loadUiFile('datetime.ui')):
+class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
     def __init__(self, parent=None, prevdatetime=None):
         super().__init__(parent=parent)
         self.setupUi(self)

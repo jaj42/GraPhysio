@@ -4,12 +4,13 @@ from functools import partial
 import pandas as pd
 import numpy as np
 
-from pyqtgraph.Qt import QtGui, QtCore
+from PyQt5 import QtCore, QtWidgets
 
-from graphysio import dialogs, utils, csvio
+from graphysio import dialogs, utils, csvio, ui
 from graphysio.plotwidgets import TSWidget
 
-class MainUi(*utils.loadUiFile('mainwindow.ui')):
+
+class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
     hasdata  = QtCore.pyqtSignal(object)
     haserror = QtCore.pyqtSignal(object)
 

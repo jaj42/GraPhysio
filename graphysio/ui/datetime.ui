@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>SetDateTime</class>
+ <widget class="QDialog" name="SetDateTime">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>489</width>
+    <width>574</width>
     <height>366</height>
    </rect>
   </property>
@@ -144,8 +144,6 @@
   <zorder>edTime</zorder>
   <zorder>label_2</zorder>
   <zorder>label</zorder>
-  <zorder>horizontalLayoutWidget</zorder>
-  <zorder>horizontalLayoutWidget_2</zorder>
   <zorder>edDate</zorder>
  </widget>
  <resources/>
