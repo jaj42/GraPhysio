@@ -1,14 +1,11 @@
 from enum import Enum
 from functools import partial
 
-import numpy as np
-import pandas as pd
 import pyqtgraph as pg
 
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui
 
-from graphysio import exporter, utils, ui
-from graphysio.types import Parameter
+from graphysio import exporter, ui
 from graphysio.plotwidgets import PlotWidget
 from graphysio.algorithms import findPOIGreedy, savgol
 

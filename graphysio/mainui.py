@@ -1,8 +1,5 @@
-import sys, csv, os
+import os
 from functools import partial
-
-import pandas as pd
-import numpy as np
 
 from PyQt5 import QtCore, QtWidgets
 
@@ -46,7 +43,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
                 self.haserror.emit(e)
         return wrapped
 
-    def addTab(self, *args,**kwargs):
+    def addTab(self, *args, **kwargs):
         tabindex = self.tabWidget.addTab(*args,**kwargs)
         self.tabWidget.setCurrentIndex(tabindex)
 

@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import imp
 
 from itertools import cycle

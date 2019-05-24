@@ -6,7 +6,7 @@ import pandas as pd
 import pyqtgraph as pg
 from PyQt5 import QtWidgets
 
-from graphysio import exporter, utils, ui
+from graphysio import exporter, ui
 
 Point     = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
