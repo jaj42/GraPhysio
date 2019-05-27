@@ -85,7 +85,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             return
         csvrequest = dlgNewplot.result
         self.dircache = csvrequest.folder
-        self.lblStatus.setText("Loading... {}...".format(csvrequest.name))
+        self.lblStatus.setText(f'Loading... {csvrequest.name}...')
 
         reader = csvio.Reader(csvrequest, self.hasdata, self.haserror)
         QtCore.QThreadPool.globalInstance().start(reader)

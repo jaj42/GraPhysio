@@ -65,7 +65,7 @@ class DlgNewPlot(ui.Ui_NewPlot, QtWidgets.QDialog):
         delims = self.estimateDelimiters(filepath)
         self.txtSep.setEditText(delims[0])
         self.txtDecimal.setEditText(delims[1])
-        self.txtDateTime.setEditText("%Y-%m-%d %H:%M:%S{}%f".format(delims[1]))
+        self.txtDateTime.setEditText(f'%Y-%m-%d %H:%M:%S{delims[1]}%f')
 
     def estimateDelimiters(self, filepath):
         encoding = self.txtEncoding.currentText()
@@ -404,7 +404,7 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
         self.grpName.setTitle(curve.name())
         self.txtName.setText(curve.name())
         self.spnWidth.setValue(width)
-        self.btnColor.setStyleSheet('background-color: {}'.format(color.name()))
+        self.btnColor.setStyleSheet(f'background-color: {color.name()}')
         self.lblSamplerate.setText(str(curve.samplerate))
 
     def ok(self):
@@ -429,7 +429,7 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
         if not color.isValid():
             return
         self.color = color
-        self.btnColor.setStyleSheet('background-color: {}'.format(color.name()))
+        self.btnColor.setStyleSheet(f'background-color: {color.name()}')
 
 class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
     def __init__(self, parent=None, prevdatetime=None):
@@ -476,7 +476,7 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
         self.formula = QtWidgets.QLineEdit('a^2 + log(2*b)')
         vstack.addWidget(self.formula)
 
-        curveslbl = '\n'.join(['{}: {}'.format(x,y) for x,y in curvecorr.items()])
+        curveslbl = '\n'.join([f'{x}: {y}' for x,y in curvecorr.items()])
         self.curveletters = QtWidgets.QLabel(curveslbl)
         vstack.addWidget(self.curveletters)
 

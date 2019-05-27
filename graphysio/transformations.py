@@ -31,7 +31,7 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
         pivalues.append(pi)
 
     piseries = pd.Series(pivalues, index=begins)
-    piseries.name = "{}-{}".format(wave.name, 'perf')
+    piseries.name = f'{wave.name}-perf'
 
     newcurve = CurveItemWithPOI(parent=plotwidget, series=piseries, pen=plotwidget.getPen())
     return [newcurve]
@@ -39,7 +39,7 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
 def feettocurve(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     feetitemhash = {}
     for curve in plotwidget.curves.values():
-        feetitemhash.update({"{}-{}".format(curve.name(), feetname) : (curve, feetname) for feetname in curve.feetitem.indices.keys()})
+        feetitemhash.update({f'{curve.name()}-{feetname}' : (curve, feetname) for feetname in curve.feetitem.indices.keys()})
     param = Parameter("Choose points to create curve", list(feetitemhash.keys()))
     qresult = askUserValue(param)
     curve, feetname = feetitemhash[qresult]

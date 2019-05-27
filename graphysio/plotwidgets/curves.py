@@ -142,7 +142,7 @@ class CurveItemWithPOI(CurveItem):
 
     def __init__(self, series, parent, pen=None):
         super().__init__(series, parent, pen)
-        feetname = '{}-feet'.format(series.name)
+        feetname = f'{series.name}-feet'
         self.feetitem = POIItem(self, name=feetname, pen=pen)
         parent.addItem(self.feetitem)
         self.feetitem.sigClicked.connect(self.sigPointClicked)

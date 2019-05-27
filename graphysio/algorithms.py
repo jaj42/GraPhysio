@@ -51,13 +51,13 @@ updateTFs()
 def norm1(series, samplerate, parameters):
     series -= np.mean(series)
     series /= np.max(series) - np.min(series)
-    newname = "{}-{}".format(series.name, 'norm')
+    newname = f'{series.name}-norm'
     return (series.rename(newname), samplerate)
 
 def norm2(series, samplerate, parameters):
     series -= np.mean(series)
     series /= np.std(series)
-    newname = "{}-{}".format(series.name, 'norm')
+    newname = f'{series.name}-norm'
     return (series.rename(newname), samplerate)
 
 from sympy import lambdify
@@ -68,7 +68,7 @@ def expression(series, samplerate, parameters):
     expr = parse_expr(express)
     f = lambdify(x, expr, 'numpy')
     filtered = f(series.values)
-    newname = "{}-{}".format(series.name, 'filtered')
+    newname = f'{series.name}-filtered'
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries.rename(newname), samplerate)
 
@@ -77,7 +77,7 @@ def setdatetime(series, samplerate, parameters):
     newseries = series.copy()
     diff = timestamp - newseries.index[0]
     newseries.index += diff
-    newname = "{}-{}".format(series.name, timestamp)
+    newname = f'{series.name}-{timestamp}'
     return (newseries.rename(newname), samplerate)
 
 def savgol(series, samplerate, parameters):
@@ -87,21 +87,21 @@ def savgol(series, samplerate, parameters):
         # window is even, we need odd
         window += 1
     filtered = signal.savgol_filter(series.values, int(window), order)
-    newname = "{}-{}".format(series.name, 'filtered')
+    newname = f'{series.name}-filtered'
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
 
 def lag(series, samplerate, parameters):
     timedelta, = parameters
     nindex = series.index.values + timedelta * 1e9
-    newname = "{}-{}s".format(series.name, timedelta)
+    newname = f'{series.name}-{timedelta}s'
     newseries = pd.Series(series.values, index=nindex, name=newname)
     return (newseries, samplerate)
 
 def affine(series, samplerate, parameters):
     a, b = parameters
     filtered = a * series + b
-    newname = "{}-{}-{}-{}".format(series.name, 'affine', a, b)
+    newname = f'{series.name}-affine-{a}-{b}'
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
 
@@ -111,7 +111,7 @@ def tf(series, samplerate, parameters):
     b, a = tf.discretize(samplerate)
     seriesnona = series.dropna()
     filtered = signal.lfilter(b, a, seriesnona)
-    newname = "{}-{}".format(seriesnona.name, tf.name)
+    newname = f'{seriesnona.name}-{tf.name}'
     newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
     return (newseries, samplerate)
 
@@ -121,7 +121,7 @@ def lowpass(series, samplerate, parameters):
     b, a = signal.butter(order, Wn)
     seriesnona = series.dropna()
     filtered = signal.lfilter(b, a, seriesnona)
-    newname = "{}-lp{}".format(seriesnona.name, Fc)
+    newname = f'{seriesnona.name}-lp{Fc}'
     newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
     return (newseries, samplerate)
 
@@ -131,7 +131,7 @@ def ventilation(series, samplerate, parameters):
     b, a = signal.butter(order, Wn, btype='bandstop')
     filtered = signal.lfilter(b, a, series)
     print(filtered)
-    newname = "{}-novent".format(series.name)
+    newname = f'{series.name}-novent'
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
 
@@ -142,14 +142,14 @@ def interp(series, samplerate, parameters):
     step = 1e9 / newsamplerate # 1e9 to convert Hz to ns
     newidx = np.arange(oldidx[0], oldidx[-1], step, dtype=np.int64)
     resampled = f(newidx)
-    newname = "{}-{}Hz".format(series.name, newsamplerate)
+    newname = f'{series.name}-{newsamplerate}Hz'
     newseries = pd.Series(resampled, index=newidx, name=newname)
     return (newseries, newsamplerate)
 
 def dopplercut(series, samplerate, parameters):
     minvel, = parameters
     notlow, = (series < minvel).nonzero()
-    newname = "{}-{}+".format(series.name, minvel)
+    newname = f'{series.name}-{minvel}+'
     newseries = series.rename(newname)
     newseries.iloc[notlow] = 0
     return (newseries, samplerate)
@@ -157,13 +157,13 @@ def dopplercut(series, samplerate, parameters):
 def diff(series, samplerate, parameters):
     order, = parameters
     diffed = np.diff(series.values, order)
-    newname = "{}-diff{}".format(series.name, order)
+    newname = f'{series.name}-diff{order}'
     newseries = pd.Series(diffed, index=series.index[order:], name=newname)
     return (newseries.rename(newname), samplerate)
 
 def fillnan(series, samplerate, parameters):
     newseries = series.interpolate(method='index', limit_direction='both')
-    newname = "{}-nona".format(series.name)
+    newname = f'{series.name}-nona'
     return (newseries.rename(newname), samplerate)
 
 def pscale(series, samplerate, parameters):
@@ -171,7 +171,7 @@ def pscale(series, samplerate, parameters):
     detrend = series - series.mean()
     scaled = detrend * (sbp - dbp) / (series.max() - series.min())
     newseries = scaled + mbp
-    newname = "{}-pscale".format(series.name)
+    newname = f'{series.name}-pscale'
     return (newseries.rename(newname), samplerate)
 
 filtfuncs = {'savgol'     : savgol,
@@ -213,7 +213,7 @@ def filterFeet(starts, stops, filtname, paramgetter):
         newstarts = starts[boolidx]
         newstops = stops[boolidx]
     else:
-        errmsg = 'Unknown filter: {}'.format(filtname)
+        errmsg = f'Unknown filter: {filtname}'
         raise ValueError(errmsg)
     return (newstarts, newstops)
 
@@ -283,7 +283,7 @@ def findFlowCycles(curve):
     try:
         cycleStops = cycleStops[cycleStops.index > cycleStarts.index[0]]
     except IndexError as e:
-        raise TypeError("No cycle detected: {}".format(e))
+        raise TypeError(f'No cycle detected: {e}')
 
     return (cycleStarts.index, cycleStops.index)
 

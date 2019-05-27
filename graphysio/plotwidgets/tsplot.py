@@ -114,7 +114,7 @@ class TSWidget(PlotWidget):
             series = c.series.loc[xmin:xmax]
             sers.append(series)
         df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
-        newname = '{}-sub'.format(self.name)
+        newname = f'{self.name}-sub'
         plotdata = PlotData(data=df, name=newname)
         self.parent.createNewPlotWithData(plotdata)
 
@@ -135,7 +135,7 @@ class TSWidget(PlotWidget):
             series = c.series.loc[xmin:xmax]
             sers.append(series)
         df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
-        newname = '{}-sub'.format(self.name)
+        newname = f'{self.name}-sub'
         plotdata = PlotData(data=df, name=newname)
         self.parent.appendToPlotWithData(plotdata, destidx=tabdict[desttabname])
 
@@ -147,7 +147,7 @@ class TSWidget(PlotWidget):
         u = self.curves[uname]
         p = self.curves[pname]
         loopwidget = LoopWidget(u, p, self.vbrange, parent=self.parent)
-        newname = '{}-{}-loops'.format(self.name, p.name())
+        newname = f'{self.name}-{p.name()}-loops'
         self.parent.addTab(loopwidget, newname)
 
     def launchCurveAlgebra(self):
