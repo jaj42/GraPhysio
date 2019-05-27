@@ -10,6 +10,7 @@ from graphysio.plotwidgets import TSWidget
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
     hasdata  = QtCore.pyqtSignal(object)
     haserror = QtCore.pyqtSignal(object)
+    setcoords = QtCore.pyqtSignal(float, float)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -31,6 +32,15 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.menuFile.addAction('&Quit', self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
         self.haserror.connect(utils.displayError)
+        self.setcoords.connect(self.setCoords)
+
+    def setCoords(self, x, y):
+        dt = x / 1e6 # convert from ns to ms
+        date = QtCore.QDateTime.fromMSecsSinceEpoch(dt)
+        date = date.toTimeSpec(QtCore.Qt.UTC)
+        timestr = date.toString("mm:ss.zzz")
+        y = round(y, 2)
+        self.lblCoords.setText(f'Time: {timestr}, Value: {y}')
 
     def errguard(self, f):
         # Lift exceptions to UI reported errors

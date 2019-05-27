@@ -37,6 +37,8 @@ class PlotWidget(pg.PlotWidget):
         self.vb = self.getViewBox()
         self.vb.setMouseMode(self.vb.RectMode)
 
+        self.setCursor(QtCore.Qt.CrossCursor)
+
     def appendData(self, newplotdata, dorealign=False):
         for seriesname in newplotdata.data:
             self.addSeriesAsCurve(newplotdata.data[seriesname], dorealign=dorealign)

@@ -16,10 +16,19 @@ from graphysio.plotwidgets.curves import CurveItemWithPOI
 
 
 class TSWidget(PlotWidget):
+    @staticmethod
+    def mouseMoved(self, evt):
+        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+        if self.sceneBoundingRect().contains(pos):
+            mousePoint = self.getViewBox().mapSceneToView(pos)
+            self.parent.setcoords.emit(mousePoint.x(), mousePoint.y())
+
     def __init__(self, plotdata, parent=None):
         super().__init__(plotdata.name, parent=parent)
         self.exporter = exporter.TsExporter(self, plotdata.name)
         self.appendData(plotdata)
+        mouseMoved = partial(self.mouseMoved, self)
+        self.sigproxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
 
     def filterCurve(self, oldcurve, filtername, asnew=False):
         newseries, newsamplerate = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
