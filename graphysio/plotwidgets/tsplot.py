@@ -31,6 +31,7 @@ class TSWidget(PlotWidget):
             newseries = newseries.dropna()
             if len(newseries) < 1:
                 return
+            newseries = newseries.groupby(newseries.index).mean()
             oldcurve.series = newseries
             oldcurve.samplerate = newsamplerate
             oldcurve.render()

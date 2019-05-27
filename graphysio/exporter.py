@@ -151,7 +151,7 @@ class PuExporter():
             df = loop.df
             filename = sanitize_filename(f'{self.name}-{n+1}.csv')
             filepath = os.path.join(self.outdir, filename)
-            df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
+            df['datetime'] = pd.to_datetime(df.index, unit='ns')
             df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
 
 class POIExporter():
