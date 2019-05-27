@@ -29,6 +29,8 @@ class TSWidget(PlotWidget):
         else:
             newseries = newseries.rename(oldcurve.series.name)
             newseries = newseries.dropna()
+            if len(newseries) < 1:
+                return
             oldcurve.series = newseries
             oldcurve.samplerate = newsamplerate
             oldcurve.render()

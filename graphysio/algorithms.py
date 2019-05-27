@@ -124,11 +124,12 @@ def lowpass(series, samplerate, parameters):
     return (newseries, samplerate)
 
 def ventilation(series, samplerate, parameters):
-    order = 8
-    Wn = [Fc * 2 / samplerate for Fc in (.13, .36)]
+    order = 12
+    # Filter between 10 and 20 per minute
+    bornes_hz = np.array([10, 20]) / 60
+    Wn = [Fc * 2 / samplerate for Fc in bornes_hz]
     b, a = signal.butter(order, Wn, btype='bandstop')
-    filtered = signal.lfilter(b, a, series)
-    print(filtered)
+    filtered = signal.filtfilt(b, a, series.values)
     newname = f'{series.name}-novent'
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
