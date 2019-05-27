@@ -70,15 +70,15 @@ def expression(series, samplerate, parameters):
     filtered = f(series.values)
     newname = f'{series.name}-filtered'
     newseries = pd.Series(filtered, index=series.index, name=newname)
-    return (newseries.rename(newname), samplerate)
+    return (newseries, samplerate)
 
 def setdatetime(series, samplerate, parameters):
     timestamp, = parameters
     newseries = series.copy()
     diff = timestamp - newseries.index[0]
     newseries.index += diff
-    newname = f'{series.name}-{timestamp}'
-    return (newseries.rename(newname), samplerate)
+    newseries = newseries.rename(f'{series.name}-{timestamp}')
+    return (newseries, samplerate)
 
 def savgol(series, samplerate, parameters):
     window, order = parameters
@@ -157,20 +157,20 @@ def diff(series, samplerate, parameters):
     diffed = np.diff(series.values, order)
     newname = f'{series.name}-diff{order}'
     newseries = pd.Series(diffed, index=series.index[order:], name=newname)
-    return (newseries.rename(newname), samplerate)
+    return (newseries, samplerate)
 
 def fillnan(series, samplerate, parameters):
     newseries = series.interpolate(method='index', limit_direction='both')
-    newname = f'{series.name}-nona'
-    return (newseries.rename(newname), samplerate)
+    newseries = newseries.rename(f'{series.name}-nona')
+    return (newseries, samplerate)
 
 def pscale(series, samplerate, parameters):
     sbp, dbp, mbp = parameters
     detrend = series - series.mean()
     scaled = detrend * (sbp - dbp) / (series.max() - series.min())
     newseries = scaled + mbp
-    newname = f'{series.name}-pscale'
-    return (newseries.rename(newname), samplerate)
+    newseries = newseries.rename(f'{series.name}-pscale')
+    return (newseries, samplerate)
 
 filtfuncs = {'savgol'     : savgol,
              'affine'     : affine,

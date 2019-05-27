@@ -27,8 +27,8 @@ class TSWidget(PlotWidget):
             newcurve = self.addSeriesAsCurve(series=newseries)
             newcurve.samplerate = newsamplerate
         else:
-            oldname = oldcurve.series.name
-            newseries.name = oldname
+            newseries = newseries.rename(oldcurve.series.name)
+            newseries = newseries.dropna()
             oldcurve.series = newseries
             oldcurve.samplerate = newsamplerate
             oldcurve.render()
