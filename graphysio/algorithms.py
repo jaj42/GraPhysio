@@ -109,20 +109,18 @@ def tf(series, samplerate, parameters):
     filtname, = parameters
     tf = TFs[filtname]
     b, a = tf.discretize(samplerate)
-    seriesnona = series.dropna()
-    filtered = signal.lfilter(b, a, seriesnona)
-    newname = f'{seriesnona.name}-{tf.name}'
-    newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
+    filtered = signal.lfilter(b, a, series)
+    newname = f'{series.name}-{tf.name}'
+    newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
 
 def lowpass(series, samplerate, parameters):
     Fc, order = parameters
     Wn = Fc * 2 / samplerate
     b, a = signal.butter(order, Wn)
-    seriesnona = series.dropna()
-    filtered = signal.lfilter(b, a, seriesnona)
-    newname = f'{seriesnona.name}-lp{Fc}'
-    newseries = pd.Series(filtered, index=seriesnona.index, name=newname)
+    filtered = signal.lfilter(b, a, series)
+    newname = f'{series.name}-lp{Fc}'
+    newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
 
 def ventilation(series, samplerate, parameters):
@@ -218,7 +216,7 @@ def filterFeet(starts, stops, filtname, paramgetter):
     return (newstarts, newstops)
 
 def findPressureFeet(curve):
-    series = curve.series.dropna()
+    series = curve.series
     samplerate = curve.samplerate
 
     fstderiv = series.diff().shift(-1)
@@ -272,7 +270,7 @@ def findPressureFeet(curve):
     return cycleStarts
 
 def findFlowCycles(curve):
-    series = curve.series.dropna()
+    series = curve.series
     bincycles = (series > series.min()).astype(int)
     idxstarts, = (bincycles.diff().shift(-1) > 0).nonzero()
     idxstops,  = (bincycles.diff() < 0).nonzero()
@@ -288,7 +286,7 @@ def findFlowCycles(curve):
     return (cycleStarts.index, cycleStops.index)
 
 def findPressureFull(curve):
-    series = curve.series.dropna()
+    series = curve.series
     samplerate = curve.samplerate
 
     fstderivraw = series.diff().iloc[1:]

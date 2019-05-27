@@ -28,7 +28,7 @@ def loadUiFile(uiFile):
     return uiClasses
 
 def estimateSampleRate(series):
-    intervals = np.diff(series.dropna().index)
+    intervals = np.diff(series.index)
     # 1e9 to account for ns -> Hz
     fs = 1e9 / np.median(intervals)
     if fs == np.inf:
