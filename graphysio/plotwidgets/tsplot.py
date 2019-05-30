@@ -8,8 +8,9 @@ import sympy
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import algorithms, exporter, utils, dialogs, transformations
+from graphysio import exporter, utils, dialogs, transformations
 from graphysio.types import CycleId, Parameter, PlotData
+from graphysio.algorithms import filters
 
 from graphysio.plotwidgets import PlotWidget, LoopWidget, POISelectorWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
@@ -31,7 +32,7 @@ class TSWidget(PlotWidget):
         self.sigproxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
 
     def filterCurve(self, oldcurve, filtername, asnew=False):
-        newseries, newsamplerate = algorithms.filter(oldcurve, filtername, dialogs.askUserValue)
+        newseries, newsamplerate = filters.filter(oldcurve, filtername, dialogs.askUserValue)
         if asnew:
             newcurve = self.addSeriesAsCurve(series=newseries)
             newcurve.samplerate = newsamplerate
@@ -49,7 +50,7 @@ class TSWidget(PlotWidget):
         feetdict = curve.feetitem.indices
         oldstarts = feetdict['start']
         oldstops = feetdict['stop']
-        starts, stops = algorithms.filterFeet(oldstarts, oldstops, filtername, dialogs.askUserValue)
+        starts, stops = filters.filterFeet(oldstarts, oldstops, filtername, dialogs.askUserValue)
         feetdict['start'] = starts
         feetdict['stop'] = stops
         curve.feetitem.render()

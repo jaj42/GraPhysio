@@ -1,7 +1,7 @@
 import os
 from enum import Enum
 
-from graphysio.algorithms import Filter, Parameter
+from graphysio.algorithms.filters import Filter, Parameter
 
 class FootType(Enum):
     start    = 'start'

@@ -6,9 +6,10 @@ import pyqtgraph as pg
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import algorithms, utils
+from graphysio import utils
 from graphysio.types import CycleId
 from graphysio.utils import estimateSampleRate
+from graphysio.algorithms import waveform
 
 class CurveItem(pg.PlotDataItem):
     visible = QtCore.pyqtSignal()
@@ -164,16 +165,16 @@ class CurveItemWithPOI(CurveItem):
         if cycleid is CycleId.none:
             return
         elif cycleid is CycleId.velocity:
-            starts, stops = algorithms.findFlowCycles(self)
+            starts, stops = waveform.findFlowCycles(self)
             self.feetitem.indices['start'] = starts
             self.feetitem.indices['stop'] = stops
         elif cycleid is CycleId.foot:
-            foot = algorithms.findPressureFeet(self)
+            foot = waveform.findPressureFeet(self)
             self.feetitem.indices['start'] = foot
         elif cycleid is CycleId.pressure:
             if not 'start' in self.feetitem.indices:
                 self.addFeet(CycleId.foot)
-            dia, sbp, dic = algorithms.findPressureFull(self)
+            dia, sbp, dic = waveform.findPressureFull(self)
             self.feetitem.indices['diastole'] = dia
             self.feetitem.indices['systole']  = sbp
             self.feetitem.indices['dicrotic'] = dic

@@ -5,9 +5,9 @@ from datetime import datetime
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 
-from graphysio import algorithms, utils, types, ui
+from graphysio import utils, types, ui
 from graphysio.types import CsvRequest
-
+from graphysio.algorithms import filters
 
 
 class DlgNewPlot(ui.Ui_NewPlot, QtWidgets.QDialog):
@@ -237,9 +237,9 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
         curves = list(plotframe.curves.keys())
         if filterfeet:
             self.chkNewcurve.hide()
-            fillTable(curves, 'curve', algorithms.FeetFilters)
+            fillTable(curves, 'curve', filters.FeetFilters)
         else:
-            fillTable(curves, 'curve', algorithms.Filters)
+            fillTable(curves, 'curve', filters.Filters)
 
         self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
