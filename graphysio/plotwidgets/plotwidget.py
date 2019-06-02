@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
@@ -51,9 +53,11 @@ class PlotWidget(pg.PlotWidget):
         return next(self.colors)
 
     def addSeriesAsCurve(self, series, pen=None, dorealign=False, withfeet=True):
+        if len(series) < 1:
+            return
         if dorealign and self.curves:
             # Timeshift new curves to make the beginnings coincide
-            begins = (curve.series.index[0] for curve in self.curves.values() if len(curve.series.index) > 0)
+            begins = [curve.series.index[0] for curve in self.curves.values()]
             offset = min(begins) - series.index[0]
             series.index += offset
         try:
@@ -85,7 +89,7 @@ class PlotWidget(pg.PlotWidget):
         self.legend.removeItem(curve.name())
         curve.invisible.emit()
 
-    def validateNewCurveName(self, proposedname, alwaysShow=False):
+    def validateNewCurveName(self, proposedname: str, alwaysShow: bool = False) -> Optional[str]:
         if proposedname not in self.curves and not alwaysShow:
             return proposedname
         newname, okPressed = QtGui.QInputDialog.getText(self, "Series name", "Series with identical names will be merged.", text=proposedname)

@@ -101,6 +101,23 @@ class TSWidget(PlotWidget):
             curve = self.curves[curvename]
             filterfunc(curve, choice, asnew=createnew)
 
+    def setDateTime(self):
+        if len(self.curves) < 1:
+            return
+        sortedcurves = sorted(self.curves.values(), key=lambda curve: curve.series.index[0])
+        fstcurve = sortedcurves[0]
+        curtimestamp = fstcurve.series.index[0]
+        dlg = dialogs.DlgSetDateTime(prevdatetime=curtimestamp)
+        isok = dlg.exec_()
+        if not isok:
+            return
+        newtimestamp  = dlg.result
+        offset = newtimestamp - curtimestamp
+        print(curtimestamp, newtimestamp, offset)
+        for curve in self.curves.values():
+            curve.series.index += offset
+            curve.render()
+
     def launchTransformation(self):
         param = Parameter("Choose Transformation", list(transformations.Transformations.keys()))
         qresult = dialogs.askUserValue(param)
@@ -194,6 +211,7 @@ class TSWidget(PlotWidget):
                   ,'Filter Curve'    : partial(self.launchFilter, filterfeet=False)
                   ,'Filter Feet'     : partial(self.launchFilter, filterfeet=True)
                   ,'Transformation'  : self.launchTransformation
+                  ,'Set Date / Time' : self.setDateTime
                   }
         mselect = {'As new plot'          : self.launchNewPlotFromSelection
                   ,'Append to other plot' : self.launchAppendToPlotFromSelection
