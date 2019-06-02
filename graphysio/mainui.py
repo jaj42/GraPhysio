@@ -1,4 +1,5 @@
 import os
+import itertools
 from functools import partial
 
 from PyQt5 import QtCore, QtWidgets
@@ -53,11 +54,22 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
                 self.haserror.emit(e)
         return wrapped
 
-    def addTab(self, *args, **kwargs):
-        tabindex = self.tabWidget.addTab(*args,**kwargs)
+    def addTab(self, widget: QtWidgets.QWidget, tabname: str) -> None:
+        tabnames = []
+        for i in range(self.tabWidget.count()):
+            tabnames.append(self.tabWidget.tabText(i))
+        if tabname in tabnames:
+            tmptabname = tabname
+            # Duplicate tab name. Add a number to the end
+            for i in itertools.count():
+                tmptabname = f'{tabname}{i+1}'
+                if tmptabname not in tabnames:
+                    break
+            tabname = tmptabname
+        tabindex = self.tabWidget.addTab(widget, tabname)
         self.tabWidget.setCurrentIndex(tabindex)
 
-    def closeTab(self, i):
+    def closeTab(self, i) -> None:
         w = self.tabWidget.widget(i)
         self.tabWidget.removeTab(i)
         w.close()
