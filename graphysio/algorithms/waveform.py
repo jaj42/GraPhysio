@@ -118,8 +118,9 @@ def findPressureCycles(curve):
 
 def findPressureFull(curve):
     dia, sbp = findPressureCycles(curve)
+    upstroke_duration = np.abs(sbp - dia)
     dia1, sbp1 = truncatevecs([dia[1:], sbp])
-    dic = findDicProj(curve.series, dia1, sbp1)
+    dic = findDicProj(curve.series, dia1, sbp1, upstroke_duration)
     return [dia, sbp, dic]
 
 # Utility function for point placing
@@ -230,9 +231,9 @@ def findHorizontal(soi, loc):
 def distance(l1, l2, p):
     return np.cross(l2-l1, p-l1) / np.linalg.norm(l2-l1)
 
-def findDicProj(series, dia, sbp):
+def findDicProj(series, dia, sbp, upstroke_duration):
     dics = []
-    for si, di in zip(sbp, dia):
+    for si, di, up in zip(sbp, dia, upstroke_duration):
         zoi = series.loc[si:di]
         if len(zoi) < 1:
             continue
@@ -240,8 +241,9 @@ def findDicProj(series, dia, sbp):
         p2 = np.array([di, zoi.iloc[-1]])
         p3 = np.vstack([zoi.index, zoi.values]).transpose()
         d = distance(p1, p2, p3)
-        if len(d) < 1:
-            continue
-        argmin = np.argmin(d)
+        # Limit search zone to the beginning of the segment
+        search_len = len(series.loc[si:si+2*up])
+        search_zone = d[0:search_len]
+        argmin = np.argmin(search_zone)
         dics.append(zoi.index[argmin])
     return pd.Index(dics)
