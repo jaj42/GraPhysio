@@ -12,7 +12,7 @@ from graphysio import exporter, utils, dialogs, transformations
 from graphysio.types import CycleId, Parameter, PlotData
 from graphysio.algorithms import filters
 
-from graphysio.plotwidgets import PlotWidget, LoopWidget, POISelectorWidget
+from graphysio.plotwidgets import PlotWidget, LoopWidget, POISelectorWidget, SpectrogramWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
 
 
@@ -111,9 +111,8 @@ class TSWidget(PlotWidget):
         isok = dlg.exec_()
         if not isok:
             return
-        newtimestamp  = dlg.result
+        newtimestamp = dlg.result
         offset = newtimestamp - curtimestamp
-        print(curtimestamp, newtimestamp, offset)
         for curve in self.curves.values():
             curve.series.index += offset
             curve.render()
@@ -132,9 +131,46 @@ class TSWidget(PlotWidget):
         curvenames = list(self.curves.keys())
         q = Parameter('Select Curve', curvenames)
         curvename = dialogs.askUserValue(q)
+        if not curvename:
+            return
         curve = self.curves[curvename]
         poiselector = POISelectorWidget(curve.series, parent=self.parent)
         self.parent.addTab(poiselector, curve.name())
+
+    def launchSpectrogram(self):
+        curvenames = list(self.curves.keys())
+        q = Parameter('Select Curve', curvenames)
+        curvename = dialogs.askUserValue(q)
+        if not curvename:
+            return
+        curve = self.curves[curvename]
+        spectro = SpectrogramWidget(curve.series, curve.samplerate, 500)
+        self.parent.addTab(spectro, curve.name())
+
+    def launchCurveAlgebra(self):
+        curvecorr = {n : c for n,c in zip(list(string.ascii_lowercase)
+                                         ,list(self.curves.keys()))}
+        dlgCurveAlgebra = dialogs.DlgCurveAlgebra(self, curvecorr)
+        if not dlgCurveAlgebra.exec_():
+            return
+        formula = dlgCurveAlgebra.result
+        expr = sympy.sympify(formula)
+        symbols = list(expr.free_symbols)
+        schar = sorted([str(x) for x in symbols])
+        curvenames = [curvecorr[x] for x in schar]
+        sers = [self.curves[c].series for c in curvenames]
+        if len(sers) < 1:
+            # Scalar
+            return
+        df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
+        df = df.dropna(how='all').interpolate()
+        args = [df[c].values for c in curvenames]
+        l = sympy.lambdify(symbols, expr, 'numpy')
+        newvals = l(*args)
+        newname = self.validateNewCurveName(formula, True)
+        newseries = pd.Series(newvals, index=df.index, name=newname)
+        self.addSeriesAsCurve(newseries)
+
 
     # Menu Selection
     def launchNewPlotFromSelection(self):
@@ -180,30 +216,6 @@ class TSWidget(PlotWidget):
         newname = f'{self.name}-{p.name()}-loops'
         self.parent.addTab(loopwidget, newname)
 
-    def launchCurveAlgebra(self):
-        curvecorr = {n : c for n,c in zip(list(string.ascii_lowercase)
-                                         ,list(self.curves.keys()))}
-        dlgCurveAlgebra = dialogs.DlgCurveAlgebra(self, curvecorr)
-        if not dlgCurveAlgebra.exec_():
-            return
-        formula = dlgCurveAlgebra.result
-        expr = sympy.sympify(formula)
-        symbols = list(expr.free_symbols)
-        schar = sorted([str(x) for x in symbols])
-        curvenames = [curvecorr[x] for x in schar]
-        sers = [self.curves[c].series for c in curvenames]
-        if len(sers) < 1:
-            # Scalar
-            return
-        df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
-        df = df.dropna(how='all').interpolate()
-        args = [df[c].values for c in curvenames]
-        l = sympy.lambdify(symbols, expr, 'numpy')
-        newvals = l(*args)
-        newname = self.validateNewCurveName(formula, True)
-        newseries = pd.Series(newvals, index=df.index, name=newname)
-        self.addSeriesAsCurve(newseries)
-
     @property
     def menu(self):
         mcurves = {'Visible Curves'  : self.showCurveList
@@ -218,6 +230,7 @@ class TSWidget(PlotWidget):
                   ,'Generate PU-Loops'    : self.launchLoop
                   }
         mplot = {'POI Selector'  : self.launchPOIWidget
+                ,'Spectrogram'   : self.launchSpectrogram
                 ,'Curve Algebra' : self.launchCurveAlgebra}
         mexport = {'Series to CSV'           : self.exporter.seriestocsv
                   ,'Time info to CSV'        : self.exporter.periodstocsv
