@@ -7,12 +7,17 @@ from datetime import datetime
 import pathlib
 from pathvalidate import sanitize_filepath
 
+from pint import UnitRegistry
+from pint.errors import (DimensionalityError, UndefinedUnitError)
+
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 
 from graphysio import utils, types, ui
 from graphysio.types import CsvRequest
 from graphysio.algorithms import filters
+
+ureg = UnitRegistry()
 
 
 class DlgNewPlot(ui.Ui_NewPlot, QtWidgets.QDialog):
@@ -498,7 +503,17 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
         return self.formula.text()
 
 def askUserValue(param):
-    if param.request is str:
+    if param.request == 'time':
+        value, isok = QtGui.QInputDialog.getText(None, 'Enter time', param.description)
+        try:
+            value = ureg.Quantity(value)
+            if value.dimensionless:
+                # Default to second if no unit is specified
+                value = ureg.Quantity(value.magnitude, 's')
+            value = value.to_base_units().magnitude
+        except (DimensionalityError, UndefinedUnitError, ValueError):
+            return None
+    elif param.request is str:
         value, isok = QtGui.QInputDialog.getText(None, 'Enter value', param.description)
     elif param.request is int:
         value, isok = QtGui.QInputDialog.getInt(None, 'Enter value', param.description)

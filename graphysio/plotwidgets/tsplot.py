@@ -141,10 +141,12 @@ class TSWidget(PlotWidget):
         curvenames = list(self.curves.keys())
         q = Parameter('Select Curve', curvenames)
         curvename = dialogs.askUserValue(q)
+        q = Parameter('Enter time window', 'time')
+        window = dialogs.askUserValue(q)
         if not curvename:
             return
         curve = self.curves[curvename]
-        spectro = SpectrogramWidget(curve.series, curve.samplerate, 5)
+        spectro = SpectrogramWidget(curve.series, curve.samplerate, window)
         self.parent.addTab(spectro, curve.name())
 
     def launchCurveAlgebra(self):
