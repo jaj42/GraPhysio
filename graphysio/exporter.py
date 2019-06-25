@@ -1,13 +1,10 @@
 import os, csv
 from itertools import zip_longest
 
-from pathvalidate import sanitize_filename
-
 import pandas as pd
 
-from pyqtgraph.Qt import QtGui
-
-from graphysio.dialogs import DlgPeriodExport
+from pathvalidate import sanitize_filename
+from graphysio.dialogs import DlgPeriodExport, askDirPath, askFilePath
 
 class TsExporter():
     periodfields = ['patient', 'begin', 'end', 'periodid', 'comment']
@@ -17,19 +14,10 @@ class TsExporter():
         self.name = name
         self.outdir = os.path.expanduser('~')
 
-    def seriestocsv(self):
-        filename = sanitize_filename(f'{self.name}.csv')
-        defaultpath = os.path.join(self.outdir, filename)
-        filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
-                                                     filter  = "CSV files (*.csv *.dat)",
-                                                     directory = defaultpath)
-        if type(filepath) is not str:
-            # PyQt5 API change
-            filepath = filepath[0]
-        if not filepath:
-            # Cancel pressed
+    def seriestocsv(self) -> None:
+        filepath = askFilePath('Export to', f'{self.name}.csv', self.outdir)
+        if filepath is None:
             return
-        filepath = os.path.normpath(filepath)
         self.outdir = os.path.dirname(filepath)
         xmin, xmax = self.parent.vbrange
         series = [curve.series[~curve.series.index.duplicated()] for curve in self.parent.curves.values()]
@@ -59,13 +47,11 @@ class TsExporter():
                              'periodid' : dlg.periodname,
                              'comment'  : dlg.comment})
 
-    def cyclestocsv(self):
-        outdirtmp = QtGui.QFileDialog.getExistingDirectory(caption = "Export to",
-                                                           directory = self.outdir)
-        if not outdirtmp:
+    def cyclestocsv(self) -> None:
+        outdir = askDirPath("Export to", self.outdir)
+        if outdir is None:
             # Cancel pressed
             return
-        self.outdir = os.path.normpath(outdirtmp)
 
         # Some non trivial manipulations to get the cycles from all
         # curves, then reorganize to group by the n-th cycle from each
@@ -96,19 +82,11 @@ class TsExporter():
             filepath = os.path.join(self.outdir, filename)
             df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
 
-    def cyclepointstocsv(self):
-        filename = sanitize_filename(f'{self.name}-feet.csv')
-        defaultpath = os.path.join(self.outdir, filename)
-        filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
-                                                     filter  = "CSV files (*.csv *.dat)",
-                                                     directory = defaultpath)
-        if type(filepath) is not str:
-            # PyQt5 API change
-            filepath = filepath[0]
-        if not filepath:
+    def cyclepointstocsv(self) -> None:
+        filepath = askFilePath('Export to', f'{self.name}-feet.csv', self.outdir)
+        if filepath is None:
             # Cancel pressed
             return
-        filepath = os.path.normpath(filepath)
         self.outdir = os.path.dirname(filepath)
 
         starts = [curve.feet['start'] for curve in self.parent.curves.values() if 'start' in curve.feet]
@@ -124,12 +102,10 @@ class PuExporter():
         self.outdir = os.path.expanduser('~')
 
     def exportloops(self):
-        outdirtmp = QtGui.QFileDialog.getExistingDirectory(caption = "Export to",
-                                                           directory = self.outdir)
-        if not outdirtmp:
+        outdir = askDirPath('Export to', self.outdir)
+        if outdir is None:
             # Cancel pressed
             return
-        self.outdir = os.path.normpath(outdirtmp)
         self.writetable()
         self.writeloops()
 
@@ -161,18 +137,10 @@ class POIExporter():
         self.outdir = os.path.expanduser('~')
 
     def poitocsv(self):
-        filename = sanitize_filename(f'{self.name}-poi.csv')
-        defaultpath = os.path.join(self.outdir, filename)
-        filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
-                                                     filter  = "CSV files (*.csv *.dat)",
-                                                     directory = defaultpath)
-        if type(filepath) is not str:
-            # PyQt5 API change
-            filepath = filepath[0]
-        if not filepath:
+        filepath = askFilePath('Export to', f'{self.name}-poi.csv', self.outdir)
+        if filepath is None:
             # Cancel pressed
             return
-        filepath = os.path.normpath(filepath)
         self.outdir = os.path.dirname(filepath)
 
         srcseries = self.parent.curve.series

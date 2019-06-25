@@ -1,6 +1,11 @@
+from typing import Optional
+
 import os, csv
 import string
 from datetime import datetime
+
+import pathlib
+from pathvalidate import sanitize_filepath
 
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
@@ -517,9 +522,51 @@ def askUserValue(param):
     else:
         return None
 
-def userConfirm(question, title=None):
-    if title is None:
+def userConfirm(question: str, title: str = '') -> bool:
+    if not title:
         title = question
     reply = QtGui.QMessageBox.question(None, title, question, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
     confirmed = (reply == QtGui.QMessageBox.Yes)
     return confirmed
+
+def askFilePath(
+    caption: str,
+    filename: str = '',
+    folder: str = '',
+    filter: str = "CSV files (*.csv *.dat)"
+) -> Optional[pathlib.Path]:
+    if not folder:
+        default = pathlib.Path.home()
+    else:
+        default = pathlib.Path(folder)
+
+    if filename:
+        default = pathlib.Path(default, filename)
+
+    filepath = QtGui.QFileDialog.getSaveFileName(
+        caption   = caption,
+        filter    = filter,
+        directory = str(default)
+    )
+    if type(filepath) is not str:
+        # PyQt5 API change
+        filepath = filepath[0]
+    if not filepath:
+        # Cancel pressed
+        return None
+    filepath = sanitize_filepath(filepath)
+    return pathlib.Path(filepath).resolve()
+
+def askDirPath(
+    caption: str,
+    folder: str = ''
+) -> Optional[pathlib.Path]:
+    if not folder:
+        folder = str(pathlib.Path.home())
+
+    outdirtmp = QtGui.QFileDialog.getExistingDirectory(caption = caption,
+                                                       directory = folder)
+    if not outdirtmp:
+        # Cancel pressed
+        return None
+    return pathlib.Path(outdirtmp).resolve()

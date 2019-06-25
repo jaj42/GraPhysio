@@ -144,7 +144,7 @@ class TSWidget(PlotWidget):
         if not curvename:
             return
         curve = self.curves[curvename]
-        spectro = SpectrogramWidget(curve.series, curve.samplerate, 500)
+        spectro = SpectrogramWidget(curve.series, curve.samplerate, 5)
         self.parent.addTab(spectro, curve.name())
 
     def launchCurveAlgebra(self):
