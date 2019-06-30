@@ -18,9 +18,10 @@ class SpectroTimeAxisItem(pg.AxisItem):
 
     def tickStrings(self, values, scale, spacing):
         ret = []
+        value_to_time = self.chunksize / self.samplerate + self.initvalue
         for value in values:
             value = 1e3*value # s to ms
-            value = value * self.chunksize / self.samplerate + self.initvalue
+            value = value * value_to_time
             date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
             date = date.toTimeSpec(QtCore.Qt.UTC)
             datestr = date.toString("dd/MM/yyyy\nhh:mm:ss.zzz")
@@ -53,6 +54,7 @@ class SpectrogramWidget(pg.PlotWidget):
 
         self.img = pg.ImageItem()
         self.addItem(self.img)
+        self.setLabel('left', 'Frequency', units='Hz')
 
         # bipolar colormap
         pos = np.array([0., 0.25, 0.5, 0.75, 1.])
@@ -64,15 +66,12 @@ class SpectrogramWidget(pg.PlotWidget):
                          ], dtype=np.ubyte)
         cmap = pg.ColorMap(pos, color)
         lut = cmap.getLookupTable(0.0, 1.0, 256)
-
         self.img.setLookupTable(lut)
 
-        #self.setLabel('left', 'Frequency', units='Hz')
-
-        self.calculate()
+        self.calculate_psd()
         self.render()
 
-    def idxtohz(self, idxval: int) -> float:
+    def idx_to_hz(self, idxval):
         conv = self.fs / self.chunksize
         return conv * idxval
 
@@ -82,28 +81,19 @@ class SpectrogramWidget(pg.PlotWidget):
         for i, columncs in enumerate(psdcs):
             thres = perc * columncs[-1] / 100
             sefidx = np.where(columncs > thres)
-            buf[i] = self.idxtohz(sefidx[0][0])
+            try:
+                buf[i] = self.idx_to_hz(sefidx[0][0])
+            except IndexError:
+                pass
         return buf
 
-    def calculate(self):
+    def calculate_psd(self):
         nsplit = int(len(self.data) / self.chunksize)
         chunks = self.data[0:nsplit*self.chunksize]
         chunks = np.split(chunks, nsplit)
         chunks = np.vstack(chunks)
-        # normalized, windowed frequencies in data chunk
         spec = np.fft.rfft(chunks*self.win) / self.chunksize
-        # Power spectrum density
         self.psd = np.real(spec) ** 2
-
-    def render(self):
-        # TODO make lo / hi adjustable
-        psdnona = self.psd[~np.isnan(self.psd)]
-        hi = np.percentile(psdnona, 95)
-        lo = np.percentile(psdnona, 5)
-        #print(f'PSD Lo: {lo}, Hi: {hi}')
-        self.img.scale(1, self.fs / self.chunksize)
-        self.img.setLevels([lo,hi])
-        self.img.setImage(self.psd, autoLevels=False)
 
     def genIndex(self):
         nwindows = self.psd.shape[0]
@@ -125,8 +115,18 @@ class SpectrogramWidget(pg.PlotWidget):
         plotdata = PlotData(data, name=curvename)
         self.parent.createNewPlotWithData(plotdata)
 
+    def render(self):
+        # TODO make lo / hi adjustable
+        psdnona = self.psd[~np.isnan(self.psd)]
+        hi = np.percentile(psdnona, 95)
+        lo = np.percentile(psdnona, 5)
+        #print(f'PSD Lo: {lo}, Hi: {hi}')
+        self.img.scale(1, self.fs / self.chunksize)
+        self.img.setLevels([lo,hi])
+        self.img.setImage(self.psd, autoLevels=False)
+
     @property
     def menu(self):
-        mplot = {'Extract SEF'  : self.launchSEFExtract}
+        mplot = {'Extract SEF' : self.launchSEFExtract}
         m = {'Plot': mplot}
         return m
