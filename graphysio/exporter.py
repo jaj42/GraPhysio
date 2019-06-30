@@ -106,6 +106,7 @@ class PuExporter():
         if outdir is None:
             # Cancel pressed
             return
+        self.outdir = outdir
         self.writetable()
         self.writeloops()
 
