@@ -1,0 +1,11 @@
+PyQt5==5.12.1
+pyqtgraph==0.10.0
+Pint==0.9
+scipy==1.2.1
+setuptools==40.8.0
+numpy==1.16.2
+pandas==0.23.3+dfsg
+pathvalidate==0.28.1
+ipython==7.6.0
+sympy==1.4
+typing==3.7.4
