@@ -1,16 +1,13 @@
 language: python
 python:
-  - "3.6"
-
+- '3.6'
 install:
-  - pip install -r requirements.txt
-
+- pip install -r requirements.txt
 script:
 - echo "skipping tests"
-
 deploy:
   provider: pypi
   skip_existing: true
-  user: "jaj"
+  user: jaj
   password:
-    secure: aOZOzjB8iXA5n03sRnLSEc3UBriW6o5oz+O39kHWld3Qcc8JGfvUWpvIouBCh/WynAORvDsY+JMRLHuLSY4dfgfphbqUC+aqzty+YPQtcFA0bo/CcPtSaWVByYw0+C4xBHRUNsSztomDcDhduXP2XMTWXNqlhJnkMp0BdfweZTPxAax9EPY3WRi0dHMJQxN5o/GLXBtM4QQWYU2czFCnGs59dTiZ/4FfiMhQK7OEY72L28HfsPBwAi9R2VJzmLTGdAj12s0QM74ZJhDYLOZ9/542RZUxIPqIq8ZjqY2ECnKtIWeNrbJHkp8RaeJ1C5i0fxbf+3xxh/trgF3t9NdiJ+4jibQZxtYvgVFsP9u7x+df/FPIhTJiCvVV4GQOHsYGCIyIoDSdrZ2zN3M2ghdp1t4YKN9TU4l/9jN2zMW2gDXTtM8256SJmrysbYRepElHLSgx76vWm8MEScDXc8D7b/9fpGg0JLcTxCZiM+OcLqzP5mH3TBuWjtqSF/u8/VNy5D5jqFmn5UMKZzpsI8TLluiYl7iW6318UL1L8NznpADNOHGWTwbPBTQ9VSPAZ+bpXpTyPC0Qmu0FsIxauSMMu9r53+6WHSoCY7LDzxWXgby7twT32kduYo0O3WZUHFyDN3uR4GG413iKLsQxH3CKcwKCJie09MzlyNlUj75D2VY=
+    secure: icD0XCqn9f4qnpc51Ezrau0Dbi7PBr+gYwOcHSG9VpGwy21STkS5+J7+GbvjXtxKJGjLqlMHbNXAE+ZroxGkVkUUSUgGgAeuuSe5wiJDNSe0uZOohPaGGLWyGbmFCseh1Cv94GI3X14kaZD27tLw427+pWqGW6PrHuERrn0Ll4TCVrLml8Tfl1I3zZU/7xxJZSd7pqVewcynI5MjScjm9nowH9ItLHBBJ3Lh0nL5XIf31OdaOSXKdV9SqQHWztqyv+fLQ9byKMW/zCvgKHTUjw6D2/6kxpWy6WI87Frz6/Yhc6SNR/b2rgYdcZRB3B5eU0Gy2g3dkiyn7zeTtjml/aHktVNax6I47Mp2uiU+mQgpl3W8DrzRR2baabXUj0MLdMVYJ5CFm83kDvCx44JX5WM1fIl09Tt3g4ad5bHbEfd0U3JguWeN3qh9QUV/c/YUR8DPKvv4hqFj7H6eHL6NOe/MoxHcN5JeyEqi0jJx7RCvFEzSbxtt6j9aAftaKy1DD4Mp95bbZmsuD+LtUg/NmcrDSNln1tzQuACpEpCGqBpaQ1sRHG+zNuXwzbAuMbOKC1Z23sR8cZCHGxiH538w4FoEHAA8PJMuVsAm4hv4+ziZPsf1mL48CY0GzgY1Ha5ET2B8qoO74qYsCHdGvsaXs1oB3n7sTd88+ntj37hzI54=
