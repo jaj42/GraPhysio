@@ -7,7 +7,8 @@ from PyQt5 import QtWidgets, QtGui
 
 from graphysio import exporter, ui
 from graphysio.plotwidgets import PlotWidget
-from graphysio.algorithms.filters import findPOIGreedy, savgol
+from graphysio.algorithms.filters import savgol
+from graphysio.algorithms.waveform import findPOIGreedy
 
 class FixIndex(Enum):
     disabled = 'Disabled'
