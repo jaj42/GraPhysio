@@ -4,10 +4,39 @@ import numpy as np
 import pandas as pd
 
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 
 from graphysio import dialogs
 from graphysio.types import Parameter, PlotData
+
+class SpectrogramWidget(QtWidgets.QWidget):
+    def __init__(self, series, Fs, s_chunklen, parent=None):
+        super().__init__(parent=parent)
+        self.spectro = SpectrogramPlotWidget(series, Fs, s_chunklen, parent)
+        self.loslider = QtWidgets.QSlider()
+        self.hislider = QtWidgets.QSlider()
+        layout = QtWidgets.QHBoxLayout()
+
+        lolayout = QtWidgets.QVBoxLayout()
+        lothres = QtWidgets.QLabel('Low')
+        lolayout.addWidget(lothres)
+        lolayout.addWidget(self.loslider)
+
+        hilayout = QtWidgets.QVBoxLayout()
+        hithres = QtWidgets.QLabel('High')
+        hilayout.addWidget(hithres)
+        hilayout.addWidget(self.hislider)
+
+        layout.addWidget(self.spectro)
+        layout.addWidget(lolayout)
+        layout.addWidget(hilayout)
+        self.setLayout(layout)
+
+    @property
+    def menu(self):
+        mplot = {'Extract SEF' : self.spectro.launchSEFExtract}
+        m = {'Plot': mplot}
+        return m
 
 class SpectroTimeAxisItem(pg.AxisItem):
     def __init__(self, initvalue, samplerate, chunksize, *args, **kwargs):
@@ -31,7 +60,7 @@ class SpectroTimeAxisItem(pg.AxisItem):
 #To set:
 # levels
 # color gradient
-class SpectrogramWidget(pg.PlotWidget):
+class SpectrogramPlotWidget(pg.PlotWidget):
     def __init__(self, series, Fs, s_chunklen, parent=None):
         # s_chunklen in seconds
         self.name = series.name
@@ -124,9 +153,3 @@ class SpectrogramWidget(pg.PlotWidget):
         self.img.scale(1, self.fs / self.chunksize)
         self.img.setLevels([lo,hi])
         self.img.setImage(self.psd, autoLevels=False)
-
-    @property
-    def menu(self):
-        mplot = {'Extract SEF' : self.launchSEFExtract}
-        m = {'Plot': mplot}
-        return m
