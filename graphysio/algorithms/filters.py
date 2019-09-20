@@ -1,3 +1,5 @@
+from typing import Dict
+
 import itertools
 from functools import partial
 from collections import namedtuple
@@ -7,7 +9,7 @@ import numpy as np
 import pandas as pd
 from scipy import signal, interpolate
 
-from graphysio.utils import truncatevecs
+from graphysio.utils import truncatevecs, estimateSampleRate
 
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
@@ -23,30 +25,35 @@ class TF(object):
         (dnum, dden, _) = signal.cont2discrete(systf, 1 / samplerate)
         return (np.squeeze(dnum), np.squeeze(dden))
 
-TFs = {}
 interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
+Filters = {
+    'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
+    'Filter ventilation' : Filter(name='ventilation', parameters=[]),
+    'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
+    'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', float), Parameter('Interpolation type', interpkind)]),
+    'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
+    'Fill NaNs' : Filter(name='fillnan', parameters=[]),
+    'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
+    'Lag' : Filter(name='lag', parameters=[Parameter('Amount (s)', float)]),
+    'Normalize' : Filter(name='norm1', parameters=[]),
+    'Set start date/time' : Filter(name='setdatetime', parameters=[Parameter('DateTime', datetime)]),
+    'Tolerant Normalize' : Filter(name='norm2', parameters=[]),
+    'Enter expression (variable = x)' : Filter(name='expression', parameters=[Parameter('Expression', str)]),
+    'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
+    'Moving average' : Filter(name='ma', parameters=[Parameter('Window size (s)', float)]),
+    'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])
+}
 
-Filters = {'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
-           'Filter ventilation' : Filter(name='ventilation', parameters=[]),
-           'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
-           'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', float), Parameter('Interpolation type', interpkind)]),
-           'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
-           'Fill NaNs' : Filter(name='fillnan', parameters=[]),
-           'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
-           'Lag' : Filter(name='lag', parameters=[Parameter('Amount (s)', float)]),
-           'Normalize' : Filter(name='norm1', parameters=[]),
-           'Set start date/time' : Filter(name='setdatetime', parameters=[Parameter('DateTime', datetime)]),
-           'Tolerant Normalize' : Filter(name='norm2', parameters=[]),
-           'Enter expression (variable = x)' : Filter(name='expression', parameters=[Parameter('Expression', str)]),
-           'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
-           'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])}
+FeetFilters = {
+    'Short cycles' : Filter(name='shortcycles', parameters=[Parameter('Minimum duration (ms)', int)])
+}
 
-FeetFilters = {'Short cycles' : Filter(name='shortcycles', parameters=[Parameter('Minimum duration (ms)', int)])}
-
+TFs: Dict[str, TF] = {}
 def updateTFs():
     tflist = list(TFs.keys())
+    if not tflist:
+        return
     Filters['Transfer function'] = Filter(name='tf', parameters=[Parameter('Transfer function', tflist)])
-updateTFs()
 
 def norm1(series, samplerate, parameters):
     series -= np.mean(series)
@@ -79,6 +86,19 @@ def setdatetime(series, samplerate, parameters):
     newseries.index += diff
     newseries = newseries.rename(f'{series.name}-{timestamp}')
     return (newseries, samplerate)
+
+def ma(series, samplerate, parameters):
+    window_s, = parameters
+    winsize = int(window_s * samplerate)
+    nwindows = int(series.size / winsize)
+    v_windows = np.lib.stride_tricks.as_strided(series.values, shape=(nwindows, winsize))
+    v_result = np.apply_along_axis(np.mean, 1, v_windows)
+    i_windows = np.lib.stride_tricks.as_strided(series.index, shape=(nwindows, winsize))
+    i_result = np.apply_along_axis(np.mean, 1, i_windows)
+    newname = f'{series.name}-ma{window_s}s'
+    newseries = pd.Series(v_result, index=i_result, name=newname)
+    newsamplerate = samplerate / winsize
+    return (newseries, newsamplerate)
 
 def savgol(series, samplerate, parameters):
     window, order = parameters
@@ -177,6 +197,7 @@ filtfuncs = {'savgol'     : savgol,
              'affine'     : affine,
              'lag'        : lag,
              'tf'         : tf,
+             'ma'         : ma,
              'lowpass'    : lowpass,
              'ventilation': ventilation,
              'interp'     : interp,
