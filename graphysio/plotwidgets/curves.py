@@ -40,7 +40,8 @@ class CurveItem(pg.PlotDataItem):
     def extend(self, newseries):
         merged1 = self.series.append(newseries)
         merged2 = merged1.sort_index()
-        self.series = merged2
+        newseries = merged2.groupby(merged2.index).mean()
+        self.series = newseries
         self.render()
 
 

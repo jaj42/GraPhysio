@@ -34,6 +34,9 @@ class TSWidget(PlotWidget):
     def filterCurve(self, oldcurve, filtername, asnew=False):
         newseries, newsamplerate = filters.filter(oldcurve, filtername, dialogs.askUserValue)
         if asnew:
+            newname = self.validateNewCurveName(newseries.name)
+            if newname != newseries.name:
+                newseries = newseries.rename(newname)
             newcurve = self.addSeriesAsCurve(series=newseries)
             newcurve.samplerate = newsamplerate
         else:
@@ -42,6 +45,7 @@ class TSWidget(PlotWidget):
             if len(newseries) < 1:
                 return
             newseries = newseries.groupby(newseries.index).mean()
+            oldcurve.clear()
             oldcurve.series = newseries
             oldcurve.samplerate = newsamplerate
             oldcurve.render()
