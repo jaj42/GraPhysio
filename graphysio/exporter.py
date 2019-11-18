@@ -89,11 +89,12 @@ class TsExporter():
             return
         self.outdir = os.path.dirname(filepath)
 
-        starts = [curve.feet['start'] for curve in self.parent.curves.values() if 'start' in curve.feet]
-        feetidx = [pd.Series(item.index) for item in starts]
-        feetnames = [item.name for item in starts]
-        df = pd.concat(feetidx, axis=1, keys=feetnames)
-        df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f")
+        feetseries = []
+        for c in self.parent.curves.values():
+            for k, v in c.feetitem.indices.items():
+                feetseries.append(pd.Series(v, name=f'{c.name()}-{k}'))
+        df = pd.concat(feetseries, axis=1)
+        df.to_csv(filepath, index_label='idx')
 
 class PuExporter():
     def __init__(self, parent, name):
