@@ -174,7 +174,7 @@ class TSWidget(PlotWidget):
         l = sympy.lambdify(symbols, expr, 'numpy')
         newvals = l(*args)
         newname = self.validateNewCurveName(formula, True)
-        newseries = pd.Series(newvals, index=df.index, name=newname)
+        newseries = pd.Series(newvals, index=df.index, name=newname, dtype='double')
         self.addSeriesAsCurve(newseries)
 
 
