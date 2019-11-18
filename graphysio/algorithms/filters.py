@@ -45,7 +45,7 @@ Filters = {
 }
 
 FeetFilters = {
-    'Short cycles' : Filter(name='shortcycles', parameters=[Parameter('Minimum duration (ms)', int)])
+    'Short cycles' : Filter(name='shortcycles', parameters=[Parameter('Minimum duration', 'time')])
 }
 
 TFs: Dict[str, TF] = {}
@@ -225,8 +225,8 @@ def filterFeet(starts, stops, filtname, paramgetter):
         if len(stops) < 1:
             # No stop information
             raise ValueError('No stop feet')
-        msMinDuration, = parameters
-        minCycleLength = msMinDuration * 1e6 # Transform ms to ns
+        minDuration, = parameters
+        minCycleLength = minDuration * 1e9 # Transform ms to ns
         cycleDurations = (stop - start for start, stop in zip(starts, stops))
         boolidx = [d >= minCycleLength for d in cycleDurations]
         starts, stops, boolidx = truncatevecs([starts, stops, boolidx])
