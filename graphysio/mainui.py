@@ -39,9 +39,8 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         dt = x / 1e6 # convert from ns to ms
         date = QtCore.QDateTime.fromMSecsSinceEpoch(dt)
         date = date.toTimeSpec(QtCore.Qt.UTC)
-        timestr = date.toString("mm:ss.zzz")
-        y = round(y, 2)
-        self.lblCoords.setText(f'Time: {timestr}, Value: {y}')
+        timestr = date.toString("dd/MM/yyyy hh:mm:ss.zzz")
+        self.lblCoords.setText(f'Time: {timestr}, Value: {y:.2E}')
 
     def errguard(self, f):
         # Lift exceptions to UI reported errors
@@ -130,9 +129,11 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
                 plotdata.data.rename(columns={fieldname : newname}, inplace=True)
 
         plotwidget.appendData(plotdata, dorealign)
+        plotwidget.properties['dircache'] = self.dircache
         self.lblStatus.setText("Loading... done")
 
     def createNewPlotWithData(self, plotdata):
         plotwidget = TSWidget(plotdata=plotdata, parent=self)
+        plotwidget.properties['dircache'] = self.dircache
         self.addTab(plotwidget, plotdata.name)
         self.lblStatus.setText("Loading... done")

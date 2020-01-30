@@ -12,7 +12,10 @@ class TsExporter():
     def __init__(self, parent, name):
         self.parent = parent
         self.name = name
-        self.outdir = os.path.expanduser('~')
+        try:
+            self.outdir = parent.properties['dircache']
+        except KeyError:
+            self.outdir = os.path.expanduser('~')
 
     def seriestocsv(self) -> None:
         filepath = askFilePath('Export to', f'{self.name}.csv', self.outdir)
@@ -100,7 +103,10 @@ class PuExporter():
     def __init__(self, parent, name):
         self.parent = parent
         self.name = name
-        self.outdir = os.path.expanduser('~')
+        try:
+            self.outdir = parent.properties['dircache']
+        except KeyError:
+            self.outdir = os.path.expanduser('~')
 
     def exportloops(self):
         outdir = askDirPath('Export to', self.outdir)
