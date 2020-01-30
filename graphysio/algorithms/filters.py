@@ -40,7 +40,7 @@ Filters = {
     'Tolerant Normalize' : Filter(name='norm2', parameters=[]),
     'Enter expression (variable = x)' : Filter(name='expression', parameters=[Parameter('Expression', str)]),
     'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
-    'Moving average' : Filter(name='ma', parameters=[Parameter('Window size (s)', float)]),
+    'Strided Moving average' : Filter(name='sma', parameters=[Parameter('Window size (s)', float)]),
     'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])
 }
 
@@ -87,16 +87,15 @@ def setdatetime(series, samplerate, parameters):
     newseries = newseries.rename(f'{series.name}-{timestamp}')
     return (newseries, samplerate)
 
-def ma(series, samplerate, parameters):
+def sma(series, samplerate, parameters):
     window_s, = parameters
     winsize = int(window_s * samplerate)
     nwindows = int(series.size / winsize)
-    v_windows = np.lib.stride_tricks.as_strided(series.values, shape=(nwindows, winsize))
-    v_result = np.apply_along_axis(np.mean, 1, v_windows)
-    i_windows = np.lib.stride_tricks.as_strided(series.index, shape=(nwindows, winsize))
-    i_result = np.apply_along_axis(np.mean, 1, i_windows)
-    newname = f'{series.name}-ma{window_s}s'
-    newseries = pd.Series(v_result, index=i_result, name=newname)
+    stacked = np.vstack([series.index.values, series.values])
+    windows = np.lib.stride_tricks.as_strided(stacked, shape=(2, nwindows, winsize))
+    result = np.apply_along_axis(np.mean, 2, windows)
+    newname = f'{series.name}-sma{window_s}s'
+    newseries = pd.Series(result[1], index=result[0], name=newname)
     newsamplerate = samplerate / winsize
     return (newseries, newsamplerate)
 
@@ -197,7 +196,7 @@ filtfuncs = {'savgol'     : savgol,
              'affine'     : affine,
              'lag'        : lag,
              'tf'         : tf,
-             'ma'         : ma,
+             'sma'        : sma,
              'lowpass'    : lowpass,
              'ventilation': ventilation,
              'interp'     : interp,
