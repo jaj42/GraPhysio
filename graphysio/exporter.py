@@ -142,7 +142,10 @@ class POIExporter():
     def __init__(self, parent, name):
         self.parent = parent
         self.name = name
-        self.outdir = os.path.expanduser('~')
+        try:
+            self.outdir = parent.properties['dircache']
+        except KeyError:
+            self.outdir = os.path.expanduser('~')
 
     def poitocsv(self):
         filepath = askFilePath('Export to', f'{self.name}-poi.csv', self.outdir)
