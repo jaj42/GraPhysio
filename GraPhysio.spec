@@ -2,17 +2,18 @@
 import sys
 sys.setrecursionlimit(5000)
 
-import inspect
-from os import path
-import pint
-pintdir = path.dirname(inspect.getfile(pint))
+#import inspect
+#from os import path
+#import pint
+#pintdir = path.dirname(inspect.getfile(pint))
+#             datas=[(f'{pintdir}/constants_en.txt', './pint/constants_en.txt')],
 
 block_cipher = None
 
 a = Analysis(['graphysio/__main__.py'],
              pathex=['/home/jaj/devel/GraPhysio'],
              binaries=[],
-             datas=[(f'{pintdir}/constants_en.txt', './pint/constants_en.txt')],
+             datas=[],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
