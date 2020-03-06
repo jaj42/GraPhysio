@@ -1,13 +1,27 @@
-language: python
-python:
-- '3.6'
+# https://blog.travis-ci.com/2018-10-11-windows-early-release
+# https://docs.travis-ci.com/user/reference/windows
+# https://chocolatey.org/packages/python
+# https://www.pyinstaller.org
+# https://travis-ci.community/t/pyinstaller-can-build-and-run-a-windows-exe-but-no-console-output-is-visible/2767
+
+os: windows      # Windows Server, version 1803
+language: shell  # 'language: python' is not yet supported on Windows
+
+env:
+  global:
+    - PY3PATH=/c/Python38:/c/Python38/Scripts
+    - PATH=$PY3PATH:$PATH
+  
+before_install:
+  - choco install python --version 3.8.2
+  - python --version
+  - python -m ensurepip
+
 install:
-- pip install -r requirements.txt
+  - pip install -r requirements.txt
+  - pip install pyinstaller
+
 script:
-- echo "skipping tests"
-deploy:
-  provider: pypi
-  skip_existing: true
-  user: jaj
-  password:
-    secure: YLdYvwUb02avnnt67IeSUm8C7t3MKzeg/Bd14eXvpNX8VNvtGfmiunEuJfcigtpGCZq4Jzdj+VqTakO+PBNtxPsI0eJKzYvY/t4j8YvU01dwnT/TWYVOwrGAtD2gO+8fUTi7vjWHT3NPQ5SQckrl9y9AoQmg7ui0Ns9U46xqRvgm1dBtDAJWjMl8W1DtGTfa+d90bry4hH4Fdmq6vABwd3cA+hbgTpAhUN1KntTvdgE4KiqXyG0g+ZoJHrh2t4VQ5DK4E8lKgmbjeI2XrJyni2nd7QntDhi5k39M69gMT5reqcRdLwpWVPE99Is0xmmt3XnCz85GWEXw+bYeiDIxn3mlFo6XF6xf3F22WrHO17pzeCGqfdlaU5jLtaQuryxGYggG5cyd1kAi+luK7LXMjN5KqGtrJ8obRhRbN3J+bcGO4BAuQxYiViVHW6PceGxwQSidxTfrzsTxHG3Jn4Phc+bOGn61debiQ3uQt1x+mhPz22qMZlCPUgejysJANK57CHhhcddn++PyzQSxKF+1Ea/RbuIM82qwDXqHl53otJJkN3p81y8FbpbYVKaPr8Psly1uHwoSHFKKHeHB4nEtdANwsDe+kBY/+6FcKWMRWtlhl2Q2ty6MdMfp4zclkUkWqRwUHrK8JPg3+Y4q/LMIUJF3Qa/z15amYg7yfOrkbOw=
+  - pyinstaller --onefile GraPhysio.spec
+  - sleep 1  # Allow pyinstaller to finish writing to stdout
+  - ls -l dist
