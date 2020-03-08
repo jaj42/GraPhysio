@@ -21,7 +21,6 @@ install:
   - pip install pyinstaller
 
 script:
-  - pyinstaller --name GraPhysio.exe --onefile GraPhysio.spec
+  - pyinstaller --onefile GraPhysio.spec
   - sleep 1  # Allow pyinstaller to finish writing to stdout
   - ls -l dist
-  - dist/GraPhysio.exe
