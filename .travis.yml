@@ -1,12 +1,12 @@
 version: ~> 1.0
 
-os:
-  - linux
-  - windows
-
-import:
-  - source: .travis/win_exe.yml
-    if: os = windows
-  - source: .travis/pypi.yml
-    if: os = linux
-
+matrix:
+  include:
+    - language: shell
+      import:
+        - source: .travis/win_exe.yml
+          if: os = windows
+    - language: python
+      import:
+        - source: .travis/pypi.yml
+          if: os = linux
