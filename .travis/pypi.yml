@@ -1,0 +1,13 @@
+language: python
+python:
+- '3.8'
+install:
+- pip install -r requirements.txt
+script:
+- echo "skipping tests"
+deploy:
+  provider: pypi
+  skip_existing: true
+  user: jaj
+  password:
+    secure: YLdYvwUb02avnnt67IeSUm8C7t3MKzeg/Bd14eXvpNX8VNvtGfmiunEuJfcigtpGCZq4Jzdj+VqTakO+PBNtxPsI0eJKzYvY/t4j8YvU01dwnT/TWYVOwrGAtD2gO+8fUTi7vjWHT3NPQ5SQckrl9y9AoQmg7ui0Ns9U46xqRvgm1dBtDAJWjMl8W1DtGTfa+d90bry4hH4Fdmq6vABwd3cA+hbgTpAhUN1KntTvdgE4KiqXyG0g+ZoJHrh2t4VQ5DK4E8lKgmbjeI2XrJyni2nd7QntDhi5k39M69gMT5reqcRdLwpWVPE99Is0xmmt3XnCz85GWEXw+bYeiDIxn3mlFo6XF6xf3F22WrHO17pzeCGqfdlaU5jLtaQuryxGYggG5cyd1kAi+luK7LXMjN5KqGtrJ8obRhRbN3J+bcGO4BAuQxYiViVHW6PceGxwQSidxTfrzsTxHG3Jn4Phc+bOGn61debiQ3uQt1x+mhPz22qMZlCPUgejysJANK57CHhhcddn++PyzQSxKF+1Ea/RbuIM82qwDXqHl53otJJkN3p81y8FbpbYVKaPr8Psly1uHwoSHFKKHeHB4nEtdANwsDe+kBY/+6FcKWMRWtlhl2Q2ty6MdMfp4zclkUkWqRwUHrK8JPg3+Y4q/LMIUJF3Qa/z15amYg7yfOrkbOw=

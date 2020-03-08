@@ -1,0 +1,27 @@
+# https://blog.travis-ci.com/2018-10-11-windows-early-release
+# https://docs.travis-ci.com/user/reference/windows
+# https://chocolatey.org/packages/python
+# https://www.pyinstaller.org
+# https://travis-ci.community/t/pyinstaller-can-build-and-run-a-windows-exe-but-no-console-output-is-visible/2767
+
+language: shell  # 'language: python' is not yet supported on Windows
+
+env:
+  global:
+    - PY3PATH=/c/Python38:/c/Python38/Scripts
+    - PATH=$PY3PATH:$PATH
+  
+before_install:
+  - choco install python --version 3.8.2
+  - python --version
+  - python -m ensurepip
+
+install:
+  - pip install -r requirements.txt
+  - pip install pyinstaller
+
+script:
+  - pyinstaller --name GraPhysio.exe --onefile GraPhysio.spec
+  - sleep 1  # Allow pyinstaller to finish writing to stdout
+  - ls -l dist
+  - dist/GraPhysio.exe
