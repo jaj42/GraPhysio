@@ -1,12 +1,12 @@
 version: ~> 1.0
 
-matrix:
+jobs:
   include:
-    - language: shell
-      import:
-        - source: .travis/win_exe.yml
-          if: os = windows
-    - language: python
-      import:
-        - source: .travis/pypi.yml
-          if: os = linux
+    - os: windows
+      language: shell
+      import: .travis/win_exe.yml
+    - os: linux
+      language: python
+      python: '3.8'
+      import: .travis/pypi.yml
+
