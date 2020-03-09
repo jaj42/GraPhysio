@@ -9,7 +9,7 @@ jobs:
       language: shell
 
 import:
-  - source: .travis/pypi.yml
+  - source: jaj42/GraPhysio:.travis/pypi.yml@master
     if: os = linux
-  - source: .travis/winexe.yml
+  - source: jaj42/GraPhysio:.travis/winexe.yml@master
     if: os = windows
