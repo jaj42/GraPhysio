@@ -5,8 +5,11 @@ jobs:
     - os: linux
       language: python
       python: '3.8'
-      import: .travis/pypi.yml
     - os: windows
       language: shell
-      import: .travis/winexe.yml
 
+import:
+  - source: .travis/pypi.yml
+    if: os = linux
+  - source: .travis/winexe.yml
+    if: os = windows
