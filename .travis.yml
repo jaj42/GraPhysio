@@ -5,11 +5,13 @@ jobs:
     - os: linux
       language: python
       python: '3.8'
+      env: BUILD_BRANCH=pypi
     - os: windows
       language: shell
+      env: BUILD_BRANCH=winexe
 
 import:
-  - source: jaj42/GraPhysio:.travis/pypi.yml@master
-    if: os = linux
-  - source: jaj42/GraPhysio:.travis/winexe.yml@master
-    if: os = windows
+  - source: .travis/pypi.yml
+    if: env(BUILD_BRANCH) = pypi
+  - source: .travis/winexe.yml
+    if: env(BUILD_BRANCH) = winexe
