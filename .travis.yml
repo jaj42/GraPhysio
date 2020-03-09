@@ -2,11 +2,11 @@ version: ~> 1.0
 
 jobs:
   include:
-    - os: windows
-      language: shell
-      import: .travis/win_exe.yml
     - os: linux
       language: python
       python: '3.8'
       import: .travis/pypi.yml
+    - os: windows
+      language: shell
+      import: .travis/winexe.yml
 
