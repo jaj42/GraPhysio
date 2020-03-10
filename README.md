@@ -1,21 +1,23 @@
 # GraPhysio
-GraPhysio is a graphical data visualizer for physiologic data signals
-from ICU patient monitors.
+GraPhysio is a graphical time series visualizer created for physiologic
+data signals from ICU patient monitors. It is however not limited to this.
+It currently supports reading from CSV files.
+It can handle low frequency and high frequency data as well as aggregating
+and synchronizing signals from different sources.
+GraPhysio supports basic mathematical operations and filters and can help
+selecting and exporting time periods.
+Performance is good depending on your hardware for files up to 1 GB.
 
 ## Install instructions
-To make GraPhysio work you need Python version >=3.4 as well as PyQt.
-GraPhysio makes heavy use of scientific Python libraries like Pandas,
-NumPy and SciPy. Plotting relies on the excellent PyQtGraph library.
-You may want to install one of the scientific Python packages like
-[Anaconda](https://www.continuum.io/downloads) if you don't want to
-manually handle the dependencies. Make sure to grab the Python 3
-version.
+To make GraPhysio work you need Python 3.6 or greater.
 
 You can then install the latest version of GraPhysio by tying the
 following command:
 
-> pip install graphysio
+> python -m pip install graphysio
 
 You can launch GraPhysio by typing:
 
-> graphysioui.py
+> python -m graphysio
+
+Alternatively, on Windows, you can use the release binaries.
