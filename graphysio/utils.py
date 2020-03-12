@@ -2,10 +2,15 @@ import os
 import sys
 import imp
 
+from functools import partial
 from itertools import cycle
 
 import numpy as np
 from pyqtgraph.Qt import QtGui, loadUiType
+
+import pathvalidate
+sanitize_filename = partial(pathvalidate.sanitize_filename, platform='auto')
+sanitize_filepath = partial(pathvalidate.sanitize_filepath, platform='auto')
 
 def Colors():
     qtcolors = [

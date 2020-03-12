@@ -5,7 +5,6 @@ import string
 from datetime import datetime
 
 import pathlib
-from pathvalidate import sanitize_filepath
 
 from pint import UnitRegistry
 from pint.errors import (DimensionalityError, UndefinedUnitError)
@@ -16,6 +15,7 @@ import pyqtgraph as pg
 from graphysio import utils, types, ui
 from graphysio.types import CsvRequest
 from graphysio.algorithms import filters
+from graphysio.utils import sanitize_filepath
 
 ureg = UnitRegistry()
 

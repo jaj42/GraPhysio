@@ -1,10 +1,12 @@
 import os, csv
 from itertools import zip_longest
+from functools import partial
 
 import pandas as pd
 
-from pathvalidate import sanitize_filename
 from graphysio.dialogs import DlgPeriodExport, askDirPath, askFilePath
+from graphysio.utils import sanitize_filename
+
 
 class TsExporter():
     periodfields = ['patient', 'begin', 'end', 'periodid', 'comment']
