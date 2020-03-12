@@ -29,18 +29,19 @@ interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
 Filters = {
     'Lowpass filter' : Filter(name='lowpass', parameters=[Parameter('Cutoff frequency (Hz)', int), Parameter('Filter order', int)]),
     'Filter ventilation' : Filter(name='ventilation', parameters=[]),
-    'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window size (s)', float), Parameter('Polynomial order', int)]),
+    'Savitzky-Golay' : Filter(name='savgol', parameters=[Parameter('Window duration', 'time'), Parameter('Polynomial order', int)]),
     'Interpolate' : Filter(name='interp', parameters=[Parameter('New sampling rate (Hz)', float), Parameter('Interpolation type', interpkind)]),
     'Doppler cut' : Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
     'Fill NaNs' : Filter(name='fillnan', parameters=[]),
     'Differentiate' : Filter(name='diff', parameters=[Parameter('Order', int)]),
+    'Integrate' : Filter(name='integrate', parameters=[Parameter('Window duration', 'time')]),
     'Lag' : Filter(name='lag', parameters=[Parameter('Amount (s)', float)]),
     'Normalize' : Filter(name='norm1', parameters=[]),
     'Set start date/time' : Filter(name='setdatetime', parameters=[Parameter('DateTime', datetime)]),
     'Tolerant Normalize' : Filter(name='norm2', parameters=[]),
     'Enter expression (variable = x)' : Filter(name='expression', parameters=[Parameter('Expression', str)]),
     'Pressure scale' : Filter(name='pscale', parameters=[Parameter('Systole', int), Parameter('Diastole', int), Parameter('Mean', int)]),
-    'Strided Moving average' : Filter(name='sma', parameters=[Parameter('Window size (s)', float)]),
+    'Strided Moving average' : Filter(name='sma', parameters=[Parameter('Window duration', 'time')]),
     'Affine scale' : Filter(name='affine', parameters=[Parameter('Scale factor', float), Parameter('Translation factor', float)])
 }
 
@@ -172,6 +173,14 @@ def dopplercut(series, samplerate, parameters):
     newseries.iloc[notlow] = 0
     return (newseries, samplerate)
 
+def integrate(series, samplerate, parameters):
+    duration, = parameters
+    window = int(np.floor(duration * samplerate))
+    integrated = series.rolling(window, center=True).sum()
+    newname = f'{series.name}-integrate{duration}s'
+    newseries = integrated.rename(newname)
+    return (newseries, samplerate)
+
 def diff(series, samplerate, parameters):
     order, = parameters
     diffed = np.diff(series.values, order)
@@ -201,6 +210,7 @@ filtfuncs = {'savgol'     : savgol,
              'ventilation': ventilation,
              'interp'     : interp,
              'dopplercut' : dopplercut,
+             'integrate'  : integrate,
              'diff'       : diff,
              'pscale'     : pscale,
              'norm1'      : norm1,
