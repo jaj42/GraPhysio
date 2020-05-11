@@ -2,6 +2,10 @@ import os
 import itertools
 from functools import partial
 
+# Error printing
+import sys
+import traceback
+
 from PyQt5 import QtCore, QtWidgets
 
 from graphysio import dialogs, utils, csvio, ui
@@ -40,7 +44,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         date = QtCore.QDateTime.fromMSecsSinceEpoch(dt)
         date = date.toTimeSpec(QtCore.Qt.UTC)
         timestr = date.toString("dd/MM/yyyy hh:mm:ss.zzz")
-        self.lblCoords.setText(f'Time: {timestr}, Value: {y:.2E}')
+        self.lblCoords.setText(f'Time: {timestr}, Value: {y}')
 
     def errguard(self, f):
         # Lift exceptions to UI reported errors
@@ -48,8 +52,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             try:
                 f()
             except Exception as e:
-                # Re-raise errors here for DEBUG
-                #raise e
+                traceback.print_exc(file=sys.stdout)
                 self.haserror.emit(e)
         return wrapped
 
