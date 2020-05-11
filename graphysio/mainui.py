@@ -8,13 +8,13 @@ import traceback
 
 from PyQt5 import QtCore, QtWidgets
 
-from graphysio import dialogs, utils, csvio, ui
+from graphysio import dialogs, utils, ui, readdata
 from graphysio.plotwidgets import TSWidget
 
 
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
-    hasdata  = QtCore.pyqtSignal(object)
-    haserror = QtCore.pyqtSignal(object)
+    hasdata   = QtCore.pyqtSignal(object)
+    haserror  = QtCore.pyqtSignal(object)
     setcoords = QtCore.pyqtSignal(float, float)
 
     def __init__(self, parent=None):
@@ -25,11 +25,20 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
         self.tabWidget.currentChanged.connect(self.tabChanged)
 
+        getCLIShell = partial(utils.getshell, ui=self)
         launchNewPlot    = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
-        getCLIShell = partial(utils.getshell, ui=self)
-        self.menuFile.addAction('&New Plot',       self.errguard(launchNewPlot),    QtCore.Qt.CTRL + QtCore.Qt.Key_N)
-        self.menuFile.addAction('&Append to Plot', self.errguard(launchAppendPlot), QtCore.Qt.CTRL + QtCore.Qt.Key_A)
+
+        mnewplot = self.menuFile.addMenu('New Plot')
+        for lbl in readdata.readers:
+            f = partial(launchNewPlot, datasource=lbl)
+            mnewplot.addAction(f'From {lbl.capitalize()}', self.errguard(f))
+
+        mappplot = self.menuFile.addMenu('Append to Plot')
+        for lbl in readdata.readers:
+            f = partial(launchAppendPlot, datasource=lbl)
+            mappplot.addAction(f'From {lbl.capitalize()}', self.errguard(f))
+
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
         self.menuFile.addAction('Get CLI shell', self.errguard(getCLIShell))
@@ -89,7 +98,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             for title, item in submenu.items():
                 menu.addAction(title, item)
 
-    def launchReadData(self, newwidget=True, cb=None):
+    def launchReadData(self, datasource, newwidget=True, cb=None):
         try:
             self.hasdata.disconnect()
         except:
@@ -104,14 +113,16 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             title = "Append to Plot"
             self.hasdata.connect(self.appendToPlotWithData)
 
-        dlgNewplot = dialogs.DlgNewPlot(parent=self, title=title, directory=self.dircache)
+        DlgNewPlot = readdata.dlgNewPlots[datasource]
+        dlgNewplot = DlgNewPlot(parent=self, title=title, directory=self.dircache)
         if not dlgNewplot.exec_():
             return
-        csvrequest = dlgNewplot.result
-        self.dircache = csvrequest.folder
-        self.lblStatus.setText(f'Loading... {csvrequest.name}...')
+        datarequest = dlgNewplot.result
+        self.dircache = datarequest.folder
+        self.lblStatus.setText(f'Loading... {datarequest.name}...')
 
-        reader = csvio.Reader(csvrequest, self.hasdata, self.haserror)
+        Reader = readdata.readers[datasource]
+        reader = Reader(datarequest, self.hasdata, self.haserror)
         QtCore.QThreadPool.globalInstance().start(reader)
 
     def appendToPlotWithData(self, plotdata, destidx=None):

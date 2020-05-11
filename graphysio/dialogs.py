@@ -1,9 +1,5 @@
 from typing import Optional
-
-import os, csv
-import string
 from datetime import datetime
-
 import pathlib
 
 from pint import UnitRegistry
@@ -12,175 +8,12 @@ from pint.errors import (DimensionalityError, UndefinedUnitError)
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 
-from graphysio import utils, types, ui
-from graphysio.types import CsvRequest
+from graphysio import types, ui
 from graphysio.algorithms import filters
 from graphysio.utils import sanitize_filepath
 
 ureg = UnitRegistry()
 
-
-class DlgNewPlot(ui.Ui_NewPlot, QtWidgets.QDialog):
-    def __init__(self, parent=None, title="New Plot", directory=""):
-        super().__init__(parent=parent)
-        self.setupUi(self)
-        self.setWindowTitle(title)
-
-        self.dircache = directory
-        self.csvrequest = CsvRequest()
-
-        # Attach models to ListViews
-        self.lstX = QtGui.QStandardItemModel()
-        self.lstY = QtGui.QStandardItemModel()
-        self.lstAll = QtGui.QStandardItemModel()
-
-        self.lstVX.setModel(self.lstX)
-        self.lstVY.setModel(self.lstY)
-        self.lstVAll.setModel(self.lstAll)
-
-        # Setup Field Table
-        self.lstVAll.verticalHeader().hide()
-        self.lstVAll.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
-        self.lstVAll.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-
-        # Connect callbacks
-        self.btnBrowse.clicked.connect(self.selectFile)
-        self.btnLoad.clicked.connect(self.loadCsvFields)
-        self.btnOk.clicked.connect(self.loadPlot)
-        self.btnCancel.clicked.connect(self.reject)
-        self.btnToX.clicked.connect(self.moveToX)
-        self.btnToY.clicked.connect(self.moveToY)
-        self.btnRemoveX.clicked.connect(self.delFromX)
-        self.btnRemoveY.clicked.connect(self.delFromY)
-        self.lstVX.currentIndexChanged.connect(self.xChanged)
-
-    @property
-    def result(self):
-        return self.csvrequest
-
-    # Methods / Callbacks
-    def selectFile(self):
-        filepath = QtGui.QFileDialog.getOpenFileName(parent = self,
-                                                     caption = "Open CSV file",
-                                                     directory = self.dircache)
-        # PyQt5 API change
-        if type(filepath) is not str:
-            filepath = filepath[0]
-
-        if not filepath:
-            return
-        self.dircache = os.path.dirname(filepath)
-        self.txtFile.setText(filepath)
-        # Guesstimate CSV field and decimal seperators
-        delims = self.estimateDelimiters(filepath)
-        self.txtSep.setEditText(delims[0])
-        self.txtDecimal.setEditText(delims[1])
-        self.txtDateTime.setEditText(f'%Y-%m-%d %H:%M:%S{delims[1]}%f')
-
-    def estimateDelimiters(self, filepath):
-        encoding = self.txtEncoding.currentText()
-        with open(filepath, 'r', encoding=encoding) as csvfile:
-            line1 = next(csvfile)
-            line2 = next(csvfile)
-            semipos = line1.find(';')
-            if semipos == -1:
-                seperator = ','
-            else:
-                seperator = ';'
-            periodpos = line2.find('.')
-            if periodpos == -1:
-                decimal   = ','
-            else:
-                decimal   = '.'
-        return (seperator, decimal)
-
-    def loadCsvFields(self):
-        sep = self.txtSep.currentText()
-        if sep == '<tab>':
-            sep = '\t'
-        filepath = self.txtFile.text()
-        # Use the csv module to retrieve csv fields
-        for lst in [self.lstAll, self.lstX, self.lstY]:
-            lst.clear()
-        self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
-        encoding = self.txtEncoding.currentText()
-        with open(filepath, 'r', encoding=encoding) as csvfile:
-            # Artificially drop n first lines as requested
-            for _ in range(self.spnLinedrop.value()):
-                next(csvfile)
-            csvreader = csv.DictReader(csvfile, delimiter=sep)
-            row = next(csvreader)
-            for key, value in row.items():
-                if key is None:
-                    continue
-                keyitem = QtGui.QStandardItem(key)
-                valueitem = QtGui.QStandardItem(value)
-                self.lstAll.appendRow([keyitem, valueitem])
-        self.lstAll.sort(0)
-
-    def xChanged(self, newtext):
-        if self.lstX.rowCount() > 0:
-            self.chkGenX.setCheckState(QtCore.Qt.Unchecked)
-        else:
-            self.chkGenX.setCheckState(QtCore.Qt.Checked)
-
-    def moveToX(self):
-        if self.lstX.rowCount() > 0:
-            # Only allow one element for X.
-            return
-        selection = self.lstVAll.selectedIndexes()
-        rowindex = selection[0].row()
-        row = self.lstAll.takeRow(rowindex)
-        self.lstX.appendRow(row)
-
-    def moveToY(self):
-        while True:
-            selection = self.lstVAll.selectedIndexes()
-            if len(selection) < 1:
-                break
-            rowindex = selection[0].row()
-            self.lstY.appendRow(self.lstAll.takeRow(rowindex))
-
-    def delFromX(self):
-        try:
-            row = self.lstX.takeRow(0)
-        except IndexError:
-            return
-        self.lstAll.appendRow(row)
-
-    def delFromY(self):
-        while True:
-            rowindexes = self.lstVY.selectedIndexes()
-            if len(rowindexes) < 1:
-                break
-            row = rowindexes[0].row()
-            self.lstAll.appendRow(self.lstY.takeRow(row))
-
-    def loadPlot(self):
-        yRows = [i.text() for i in self.lstY.findItems("", QtCore.Qt.MatchContains)]
-        xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
-
-        seperator = self.txtSep.currentText()
-        if seperator == '<tab>':
-            self.csvrequest.seperator = '\t'
-        else:
-            self.csvrequest.seperator = seperator
-
-        self.csvrequest.generatex = (self.chkGenX.checkState() > QtCore.Qt.Unchecked)
-        if self.csvrequest.generatex or len(xRows) < 1:
-            self.csvrequest.dtfield = None
-        else:
-            self.csvrequest.dtfield = xRows[0]
-
-        self.csvrequest.samplerate = self.spnFs.value()
-        self.csvrequest.yfields = yRows
-        self.csvrequest.filepath = self.txtFile.text()
-        self.csvrequest.decimal = self.txtDecimal.currentText()
-        self.csvrequest.datetime_format = self.txtDateTime.currentText()
-        self.csvrequest.droplines = self.spnLinedrop.value()
-        self.csvrequest.encoding = self.txtEncoding.currentText()
-        self.csvrequest.timezone = self.txtTimezone.currentText()
-        self.accept()
 
 class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
     def __init__(self, parent=None):
