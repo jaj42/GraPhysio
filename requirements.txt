@@ -8,4 +8,4 @@ pytz>=2019.1
 scipy>=1.3.0
 sympy>=1.4
 typing>=3.7.4
-pyarrow
+pyarrow>=0.17.0
