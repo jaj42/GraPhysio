@@ -29,7 +29,7 @@ class PlotWidget(pg.PlotWidget):
         self.name = name
         self.colors = Colors()
         self.hiddenitems = []
-        self._properties = {}
+        self.properties = {}
 
         axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         super().__init__(parent=parent, axisItems=axisItems, background='w')
@@ -107,7 +107,3 @@ class PlotWidget(pg.PlotWidget):
     @property
     def menu(self):
         return {}
-
-    @property
-    def properties(self):
-        return self._properties

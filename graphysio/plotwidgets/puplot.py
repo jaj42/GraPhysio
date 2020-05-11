@@ -16,6 +16,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
     def __init__(self, u, p, subsetrange, parent):
         super().__init__(parent=parent)
         self.setupUi(self)
+        self.properties = {}
 
         self.subsetrange = subsetrange
 
