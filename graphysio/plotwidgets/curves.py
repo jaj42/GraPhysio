@@ -20,7 +20,7 @@ class CurveItem(pg.PlotDataItem):
         # Drop NA. All following code can assume no NaNs.
         series = series.dropna()
         # Make timestamp unique and use mean of values on duplicates
-        series = series.groupby(series.index).mean()
+        series = series.groupby(level=0).mean()
 
         self.series = series
         self.samplerate = estimateSampleRate(self.series)
