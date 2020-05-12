@@ -10,9 +10,10 @@ from graphysio.plotwidgets import PlotWidget
 from graphysio.algorithms.filters import savgol
 from graphysio.algorithms.waveform import findPOIGreedy
 
+
 class FixIndex(Enum):
     disabled = 'Disabled'
-    minimum  = 'Local Minimum'
+    minimum = 'Local Minimum'
     sndderiv = '2nd derivative peak'
 
 
@@ -35,9 +36,14 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
 
     @property
     def menu(self):
-        m = {'Plot'   : {'&Import POIs' : partial(self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI)}
-            ,'Export' : {'&POI to CSV'  : self.poiselectorwidget.exporter.poitocsv}
-            }
+        m = {
+            'Plot': {
+                '&Import POIs': partial(
+                    self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI
+                )
+            },
+            'Export': {'&POI to CSV': self.poiselectorwidget.exporter.poitocsv},
+        }
         return m
 
 
@@ -77,16 +83,16 @@ class POISelectorPlot(PlotWidget):
         self.addItem(self.vLine, ignoreBounds=True)
 
         mouseMoved = partial(self.mouseMoved, self)
-        self.sigproxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
+        self.sigproxy = pg.SignalProxy(
+            self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved
+        )
         clicked = partial(self.clicked, self)
         self.scene().sigMouseClicked.connect(clicked)
 
     def loadPOI(self, plotdata):
-        columnname, ok = QtGui.QInputDialog.getItem(self,
-                                                    'Select POI series',
-                                                    'Load POI',
-                                                    plotdata.data.columns,
-                                                    editable=False)
+        columnname, ok = QtGui.QInputDialog.getItem(
+            self, 'Select POI series', 'Load POI', plotdata.data.columns, editable=False
+        )
         if not ok:
             return
         poiseries = plotdata.data[columnname].dropna().index
@@ -118,6 +124,6 @@ class POISelectorPlot(PlotWidget):
     def sndderiv(self):
         if self.__sndderiv is None:
             sndderiv = self.curve.series.diff().diff().iloc[1:]
-            sndderiv, _ = savgol(sndderiv, self.curve.samplerate, (.16, 2))
+            sndderiv, _ = savgol(sndderiv, self.curve.samplerate, (0.16, 2))
             self.__sndderiv = sndderiv.dropna()
         return self.__sndderiv

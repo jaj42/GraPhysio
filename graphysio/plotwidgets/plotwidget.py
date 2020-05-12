@@ -15,7 +15,7 @@ class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         ret = []
         for i, value in enumerate(values):
-            value = value / 1e6 # convert from ns to ms
+            value = value / 1e6  # convert from ns to ms
             date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
             date = date.toTimeSpec(QtCore.Qt.UTC)
             datestr = date.toString("dd/MM/yyyy\nhh:mm:ss.zzz")
@@ -48,7 +48,11 @@ class PlotWidget(pg.PlotWidget):
 
     @property
     def curves(self):
-        return {item.name() : item for item in self.listDataItems() if isinstance(item, curves.CurveItem)}
+        return {
+            item.name(): item
+            for item in self.listDataItems()
+            if isinstance(item, curves.CurveItem)
+        }
 
     def getPen(self):
         return next(self.colors)
@@ -90,10 +94,17 @@ class PlotWidget(pg.PlotWidget):
         self.legend.removeItem(curve.name())
         curve.invisible.emit()
 
-    def validateNewCurveName(self, proposedname: str, alwaysShow: bool = False) -> Optional[str]:
+    def validateNewCurveName(
+        self, proposedname: str, alwaysShow: bool = False
+    ) -> Optional[str]:
         if proposedname not in self.curves and not alwaysShow:
             return proposedname
-        newname, okPressed = QtGui.QInputDialog.getText(self, "Series name", "Series with identical names will be merged.", text=proposedname)
+        newname, okPressed = QtGui.QInputDialog.getText(
+            self,
+            "Series name",
+            "Series with identical names will be merged.",
+            text=proposedname,
+        )
         if not okPressed:
             return None
         return newname

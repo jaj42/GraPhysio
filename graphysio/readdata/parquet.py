@@ -35,7 +35,7 @@ class ParquetReader(QtCore.QRunnable):
         return plotdata
 
 
-class DataRequest():
+class DataRequest:
     def __init__(self, filepath=""):
         self.filepath = filepath
 
@@ -59,9 +59,9 @@ class DlgNewPlotParquet(QtCore.QObject):
         self.dircache = directory
 
     def exec_(self):
-        filepath = QtGui.QFileDialog.getOpenFileName(parent = None,
-                                                     caption = "Open Parquet file",
-                                                     directory = self.dircache)
+        filepath = QtGui.QFileDialog.getOpenFileName(
+            parent=None, caption="Open Parquet file", directory=self.dircache
+        )
         # PyQt5 API change
         if type(filepath) is not str:
             filepath = filepath[0]
@@ -69,4 +69,3 @@ class DlgNewPlotParquet(QtCore.QObject):
         if filepath:
             self.datarequest.filepath = filepath
             self.dlgdata.emit(self.datarequest)
-    

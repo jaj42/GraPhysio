@@ -9,6 +9,7 @@ from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 from graphysio import dialogs
 from graphysio.types import Parameter, PlotData
 
+
 class SpectrogramWidget(QtWidgets.QWidget):
     def __init__(self, series, Fs, s_chunklen, parent=None):
         super().__init__(parent=parent)
@@ -34,14 +35,15 @@ class SpectrogramWidget(QtWidgets.QWidget):
 
     @property
     def menu(self):
-        mplot = {'Extract SEF' : self.spectro.launchSEFExtract}
+        mplot = {'Extract SEF': self.spectro.launchSEFExtract}
         m = {'Plot': mplot}
         return m
+
 
 class SpectroTimeAxisItem(pg.AxisItem):
     def __init__(self, initvalue, samplerate, chunksize, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.initvalue = initvalue / 1e6   # ns to ms
+        self.initvalue = initvalue / 1e6  # ns to ms
         self.samplerate = samplerate
         self.chunksize = chunksize
 
@@ -49,7 +51,7 @@ class SpectroTimeAxisItem(pg.AxisItem):
         ret = []
         value_to_time = self.chunksize / self.samplerate + self.initvalue
         for value in values:
-            value = 1e3*value # s to ms
+            value = 1e3 * value  # s to ms
             value = value * value_to_time
             date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
             date = date.toTimeSpec(QtCore.Qt.UTC)
@@ -57,7 +59,8 @@ class SpectroTimeAxisItem(pg.AxisItem):
             ret.append(datestr)
         return ret
 
-#To set:
+
+# To set:
 # levels
 # color gradient
 class SpectrogramPlotWidget(pg.PlotWidget):
@@ -73,10 +76,10 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         self.win = np.hanning(self.chunksize)
 
         axisItem = SpectroTimeAxisItem(
-            initvalue = self.origidx[0],
-            samplerate = self.fs,
-            chunksize = self.chunksize,
-            orientation = 'bottom'
+            initvalue=self.origidx[0],
+            samplerate=self.fs,
+            chunksize=self.chunksize,
+            orientation='bottom',
         )
         axisItems = {'bottom': axisItem}
         super().__init__(parent=self.parent, axisItems=axisItems)
@@ -86,13 +89,17 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         self.setLabel('left', 'Frequency', units='Hz')
 
         # bipolar colormap
-        pos = np.array([0., 0.25, 0.5, 0.75, 1.])
-        color = np.array([[0, 0, 0, 255]
-                         ,[0, 0, 255, 255]
-                         ,[0, 255, 255, 255]
-                         ,[255, 255, 0, 255]
-                         ,[255, 0, 0, 255]
-                         ], dtype=np.ubyte)
+        pos = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
+        color = np.array(
+            [
+                [0, 0, 0, 255],
+                [0, 0, 255, 255],
+                [0, 255, 255, 255],
+                [255, 255, 0, 255],
+                [255, 0, 0, 255],
+            ],
+            dtype=np.ubyte,
+        )
         cmap = pg.ColorMap(pos, color)
         lut = cmap.getLookupTable(0.0, 1.0, 256)
         self.img.setLookupTable(lut)
@@ -118,16 +125,18 @@ class SpectrogramPlotWidget(pg.PlotWidget):
 
     def calculate_psd(self):
         nsplit = int(len(self.data) / self.chunksize)
-        chunks = self.data[0:nsplit*self.chunksize]
+        chunks = self.data[0 : nsplit * self.chunksize]
         chunks = np.split(chunks, nsplit)
         chunks = np.vstack(chunks)
-        spec = np.fft.rfft(chunks*self.win) / self.chunksize
+        spec = np.fft.rfft(chunks * self.win) / self.chunksize
         self.psd = np.real(spec) ** 2
 
     def genIndex(self):
         nwindows = self.psd.shape[0]
         winsize = self.chunksize
-        windows = np.lib.stride_tricks.as_strided(self.origidx, shape=(nwindows, winsize))
+        windows = np.lib.stride_tricks.as_strided(
+            self.origidx, shape=(nwindows, winsize)
+        )
         result = np.apply_along_axis(np.mean, 1, windows)
         index = result.astype(int)
         return index
@@ -140,7 +149,7 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         curvename = f'{self.name}-sef{sefperc}'
         sef = self.calcsef(sefperc)
         sefseries = pd.Series(sef, index=self.genIndex(), name=curvename)
-        data = {curvename : sefseries}
+        data = {curvename: sefseries}
         plotdata = PlotData(data, name=curvename)
         self.parent.createNewPlotWithData(plotdata)
 
@@ -149,7 +158,7 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         psdnona = self.psd[~np.isnan(self.psd)]
         hi = np.percentile(psdnona, 95)
         lo = np.percentile(psdnona, 5)
-        #print(f'PSD Lo: {lo}, Hi: {hi}')
+        # print(f'PSD Lo: {lo}, Hi: {hi}')
         self.img.scale(1, self.fs / self.chunksize)
-        self.img.setLevels([lo,hi])
+        self.img.setLevels([lo, hi])
         self.img.setImage(self.psd, autoLevels=False)

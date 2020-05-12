@@ -8,9 +8,10 @@ from PyQt5 import QtWidgets
 
 from graphysio import exporter, ui
 
-Point     = namedtuple('Point', ['x', 'y'])
+Point = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
-Angles    = namedtuple('Angles', ['alpha', 'beta', 'gala'])
+Angles = namedtuple('Angles', ['alpha', 'beta', 'gala'])
+
 
 class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
     def __init__(self, u, p, subsetrange, parent):
@@ -51,8 +52,8 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
         pbegins, pdurations = p.getCycleIndices(self.subsetrange)
         durations = map(min, zip(udurations, pdurations))
         for ubegin, pbegin, duration in zip(ubegins, pbegins, durations):
-            loopu = u.series.loc[ubegin:ubegin+duration]
-            loopp = p.series.loc[pbegin:pbegin+duration]
+            loopu = u.series.loc[ubegin : ubegin + duration]
+            loopp = p.series.loc[pbegin : pbegin + duration]
             self.loops.append(PULoop(loopu, loopp))
 
     def renderloop(self, idx=None):
@@ -66,7 +67,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
 
         self.lblIdx.setText(str(idx + 1))
 
-        delay = int(curloop.offset / 1e6) # ns to ms
+        delay = int(curloop.offset / 1e6)  # ns to ms
         self.lblDelay.setText(str(delay))
 
         round1 = partial(round, ndigits=1)
@@ -106,7 +107,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
 
     @property
     def menu(self):
-        m = {'Export' : {'&Loop Data to CSV directory' : self.exporter.exportloops}}
+        m = {'Export': {'&Loop Data to CSV directory': self.exporter.exportloops}}
         return m
 
 
@@ -142,10 +143,11 @@ class PULoop(object):
         if self.__angles is None:
             card = self.cardpoints
             alpha = calcangle(card.A, card.B)
-            beta  = calcangle(card.A, card.B, card.C)
-            gala  = calcangle(card.A, card.C)
+            beta = calcangle(card.A, card.B, card.C)
+            gala = calcangle(card.A, card.C)
             self.__angles = Angles(alpha, beta, gala)
         return self.__angles
+
 
 def calcangle(looporigin, pointb, pointa=None):
     orig = complex(looporigin.x, looporigin.y)

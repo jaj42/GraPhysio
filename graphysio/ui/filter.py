@@ -42,5 +42,3 @@ class Ui_Filter(object):
         self.chkNewcurve.setText(_translate("Filter", "Create new curve"))
         self.okButton.setText(_translate("Filter", "Ok"))
         self.cancelButton.setText(_translate("Filter", "Cancel"))
-
-

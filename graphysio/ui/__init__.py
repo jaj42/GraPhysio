@@ -1,6 +1,18 @@
-__all__ = ['curveproperties', 'curveselect', 'cycledetect', 'datetime', 'filter', 'loopwidget', 'mainwindow', 'newplot', 'periodexport', 'poiwidget', 'setuppuloop']
+__all__ = [
+    'curveproperties',
+    'curveselect',
+    'cycledetect',
+    'datetime',
+    'filter',
+    'loopwidget',
+    'mainwindow',
+    'newplot',
+    'periodexport',
+    'poiwidget',
+    'setuppuloop',
+]
 
-from .curveproperties import  Ui_CurveProperties
+from .curveproperties import Ui_CurveProperties
 from .curveselect import Ui_CurveSelection
 from .cycledetect import Ui_CycleDetection
 from .datetime import Ui_SetDateTime

@@ -8,7 +8,7 @@ from graphysio.dialogs import DlgPeriodExport, askDirPath, askFilePath
 from graphysio.utils import sanitize_filename
 
 
-class TsExporter():
+class TsExporter:
     periodfields = ['patient', 'begin', 'end', 'periodid', 'comment']
 
     def __init__(self, parent, name):
@@ -25,7 +25,10 @@ class TsExporter():
             return
         self.outdir = os.path.dirname(filepath)
         xmin, xmax = self.parent.vbrange
-        series = [curve.series[~curve.series.index.duplicated()] for curve in self.parent.curves.values()]
+        series = [
+            curve.series[~curve.series.index.duplicated()]
+            for curve in self.parent.curves.values()
+        ]
         data = pd.concat(series, axis=1).sort_index()
         data['datetime'] = pd.to_datetime(data.index, unit='ns')
         data = data.loc[xmin:xmax]
@@ -33,10 +36,9 @@ class TsExporter():
 
     def periodstocsv(self):
         xmin, xmax = self.parent.vbrange
-        dlg = DlgPeriodExport(begin   = xmin,
-                              end     = xmax,
-                              patient = self.name,
-                              directory = self.outdir)
+        dlg = DlgPeriodExport(
+            begin=xmin, end=xmax, patient=self.name, directory=self.outdir
+        )
 
         def cb(result):
             patient, comment, periodname, filepath = result
@@ -44,14 +46,20 @@ class TsExporter():
             self.outdir = os.path.dirname(filepath)
 
             with open(filepath, 'a', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL)
+                writer = csv.DictWriter(
+                    csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL
+                )
                 if not os.path.exists(filepath):
                     writer.writeheader()
-                writer.writerow({'patient' : patient,
-                                'begin'    : xmin,
-                                'end'      : xmax,
-                                'periodid' : periodname,
-                                'comment'  : comment})
+                writer.writerow(
+                    {
+                        'patient': patient,
+                        'begin': xmin,
+                        'end': xmax,
+                        'periodid': periodname,
+                        'comment': comment,
+                    }
+                )
 
         dlg.dlgdata.connect(cb)
         dlg.exec_()
@@ -67,7 +75,7 @@ class TsExporter():
         # curve and put those cycles into a dataframe for export.
         def getCurveCycles(curve):
             cycleIdx = curve.getCycleIndices()
-            cycles = (curve.series.loc[b:b+d] for b, d in zip(*cycleIdx))
+            cycles = (curve.series.loc[b : b + d] for b, d in zip(*cycleIdx))
             return cycles
 
         curves = self.parent.curves.values()
@@ -85,11 +93,13 @@ class TsExporter():
                 idxdelta = s.index[0] - idxstart
                 s.index -= idxdelta
             df = pd.concat(cycle, axis=1)
-            df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
+            df['datetime'] = pd.to_datetime(df.index, unit='ns')
 
             filename = sanitize_filename(f'{self.name}-{n+1}.csv')
             filepath = os.path.join(self.outdir, filename)
-            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
+            df.to_csv(
+                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens'
+            )
 
     def cyclepointstocsv(self) -> None:
         filepath = askFilePath('Export to', f'{self.name}-feet.csv', self.outdir)
@@ -105,7 +115,8 @@ class TsExporter():
         df = pd.concat(feetseries, axis=1)
         df.to_csv(filepath, index_label='idx')
 
-class PuExporter():
+
+class PuExporter:
     def __init__(self, parent, name):
         self.parent = parent
         self.name = name
@@ -128,7 +139,7 @@ class PuExporter():
         for loop in self.parent.loops:
             alpha, beta, gala = loop.angles
             delay = loop.offset / 1e6
-            tmpdict = {'alpha' : alpha, 'beta' : beta, 'gala' : gala, 'delay' : delay}
+            tmpdict = {'alpha': alpha, 'beta': beta, 'gala': gala, 'delay': delay}
             data.append(tmpdict)
         df = pd.DataFrame(data)
         df.index += 1
@@ -142,9 +153,12 @@ class PuExporter():
             filename = sanitize_filename(f'{self.name}-{n+1}.csv')
             filepath = os.path.join(self.outdir, filename)
             df['datetime'] = pd.to_datetime(df.index, unit='ns')
-            df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
+            df.to_csv(
+                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens'
+            )
 
-class POIExporter():
+
+class POIExporter:
     def __init__(self, parent, name):
         self.parent = parent
         self.name = name
@@ -165,5 +179,5 @@ class POIExporter():
         pois = srcseries[poiidx.dropna()].rename('poi')
         sers = [srcseries, pois]
         df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
-        df['datetime'] = pd.to_datetime(df.index, unit = 'ns')
+        df['datetime'] = pd.to_datetime(df.index, unit='ns')
         df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')

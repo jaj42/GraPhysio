@@ -4,7 +4,7 @@ import os
 import pathlib
 
 from pint import UnitRegistry
-from pint.errors import (DimensionalityError, UndefinedUnitError)
+from pint.errors import DimensionalityError, UndefinedUnitError
 
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
@@ -97,7 +97,7 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
         for itemname, value in self.choices.items():
             combo, itemtype = value
             curvefilters[itemname] = combo.currentText()
-        createnew = (self.chkNewcurve.checkState() > QtCore.Qt.Unchecked)
+        createnew = self.chkNewcurve.checkState() > QtCore.Qt.Unchecked
         result = (createnew, curvefilters)
         self.dlgdata.emit(result)
         super().accept()
@@ -147,10 +147,12 @@ class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
         self.btnBrowse.clicked.connect(self.selectFile)
 
     def selectFile(self):
-        filepath = QtGui.QFileDialog.getSaveFileName(caption = "Export to",
-                                                     filter  = "CSV files (*.csv *.dat)",
-                                                     options = QtGui.QFileDialog.DontConfirmOverwrite,
-                                                     directory = self.dircache)
+        filepath = QtGui.QFileDialog.getSaveFileName(
+            caption="Export to",
+            filter="CSV files (*.csv *.dat)",
+            options=QtGui.QFileDialog.DontConfirmOverwrite,
+            directory=self.dircache,
+        )
         # PyQt5 API change
         if type(filepath) is not str:
             filepath = filepath[0]
@@ -267,7 +269,7 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
         if symbol == 'none':
             symbol = None
 
-        #self.curve.setData(connect=connect, symbol=symbol)
+        # self.curve.setData(connect=connect, symbol=symbol)
         self.curve.setData(symbol=symbol)
 
         width = self.spnWidth.value()
@@ -319,7 +321,7 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
     def __init__(self, parent=None, curvecorr={}):
         super().__init__(parent=parent)
         self.setupUi(curvecorr)
-    
+
     def setupUi(self, curvecorr):
         vstack = QtWidgets.QVBoxLayout(self)
 
@@ -333,7 +335,9 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
         self.curveletters = QtWidgets.QLabel(curveslbl)
         vstack.addWidget(self.curveletters)
 
-        self.buttonbox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.buttonbox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
         vstack.addWidget(self.buttonbox)
 
         self.buttonbox.accepted.connect(self.accept)
@@ -363,17 +367,23 @@ def askUserValue(param):
     elif param.request is int:
         value, isok = QtGui.QInputDialog.getInt(None, 'Enter value', param.description)
     elif param.request is float:
-        value, isok = QtGui.QInputDialog.getDouble(None, 'Enter value', param.description, decimals=3)
+        value, isok = QtGui.QInputDialog.getDouble(
+            None, 'Enter value', param.description, decimals=3
+        )
     elif param.request is bool:
         request = ['Yes', 'No']
-        tmpvalue, isok = QtGui.QInputDialog.getItem(None, 'Enter value', param.description, request, editable=False)
-        value = (tmpvalue == 'Yes')
+        tmpvalue, isok = QtGui.QInputDialog.getItem(
+            None, 'Enter value', param.description, request, editable=False
+        )
+        value = tmpvalue == 'Yes'
     elif param.request is datetime:
         dlg = DlgSetDateTime()
         isok = dlg.exec_()
         value = dlg.result
     elif type(param.request) is list:
-        value, isok = QtGui.QInputDialog.getItem(None, 'Enter value', param.description, param.request, editable=False)
+        value, isok = QtGui.QInputDialog.getItem(
+            None, 'Enter value', param.description, param.request, editable=False
+        )
     else:
         raise TypeError("Unknown request type")
 
@@ -386,8 +396,10 @@ def askUserValue(param):
 def userConfirm(question: str, title: str = '') -> bool:
     if not title:
         title = question
-    reply = QtGui.QMessageBox.question(None, title, question, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-    confirmed = (reply == QtGui.QMessageBox.Yes)
+    reply = QtGui.QMessageBox.question(
+        None, title, question, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No
+    )
+    confirmed = reply == QtGui.QMessageBox.Yes
     return confirmed
 
 
@@ -395,7 +407,7 @@ def askFilePath(
     caption: str,
     filename: str = '',
     folder: str = '',
-    filter: str = "CSV files (*.csv *.dat)"
+    filter: str = "CSV files (*.csv *.dat)",
 ) -> Optional[pathlib.Path]:
     if not folder:
         default = pathlib.Path.home()
@@ -406,9 +418,7 @@ def askFilePath(
         default = pathlib.Path(default, filename)
 
     filepath = QtGui.QFileDialog.getSaveFileName(
-        caption   = caption,
-        filter    = filter,
-        directory = str(default)
+        caption=caption, filter=filter, directory=str(default)
     )
     if type(filepath) is not str:
         # PyQt5 API change
@@ -420,15 +430,13 @@ def askFilePath(
     return pathlib.Path(filepath).resolve()
 
 
-def askDirPath(
-    caption: str,
-    folder: str = ''
-) -> Optional[pathlib.Path]:
+def askDirPath(caption: str, folder: str = '') -> Optional[pathlib.Path]:
     if not folder:
         folder = str(pathlib.Path.home())
 
-    outdirtmp = QtGui.QFileDialog.getExistingDirectory(caption = caption,
-                                                       directory = folder)
+    outdirtmp = QtGui.QFileDialog.getExistingDirectory(
+        caption=caption, directory=folder
+    )
     if not outdirtmp:
         # Cancel pressed
         return None

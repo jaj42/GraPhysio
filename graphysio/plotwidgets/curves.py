@@ -11,6 +11,7 @@ from graphysio.types import CycleId
 from graphysio.utils import estimateSampleRate
 from graphysio.algorithms import waveform
 
+
 class CurveItem(pg.PlotDataItem):
     visible = QtCore.pyqtSignal()
     invisible = QtCore.pyqtSignal()
@@ -28,14 +29,11 @@ class CurveItem(pg.PlotDataItem):
         if pen is None:
             pen = QtGui.QColor(QtCore.Qt.black)
 
-        super().__init__(name = series.name,
-                         pen  = pen,
-                         antialias = True)
+        super().__init__(name=series.name, pen=pen, antialias=True)
         self.render()
 
     def render(self):
-        self.setData(x = self.series.index.values,
-                     y = self.series.values)
+        self.setData(x=self.series.index.values, y=self.series.values)
 
     def extend(self, newseries):
         merged1 = self.series.append(newseries)
@@ -46,15 +44,22 @@ class CurveItem(pg.PlotDataItem):
 
 
 class POIItem(pg.ScatterPlotItem):
-    sym = {'start' : 'star', 'stop' : 's', 'diastole' : 't1', 'systole' : 't', 'dicrotic' : 'd', 'point' : 'o'}
-    #Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
+    sym = {
+        'start': 'star',
+        'stop': 's',
+        'diastole': 't1',
+        'systole': 't',
+        'dicrotic': 'd',
+        'point': 'o',
+    }
+    # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
     def __init__(self, parent, name, pen=None):
         super().__init__(pen=pen)
         self.parent = parent
         self.indices = {}
         self.selected = []
-        self.resym = {value : key for key, value in self.sym.items()}
+        self.resym = {value: key for key, value in self.sym.items()}
         self.__name = name
         self.render()
 
@@ -97,15 +102,15 @@ class POIItem(pg.ScatterPlotItem):
                 continue
             idxnona = idx.dropna()
             points = self.parent.series.loc[idxnona]
-            tmp = pd.DataFrame({'points' : points, 'sym' : self.sym[key]}, index=idxnona)
+            tmp = pd.DataFrame({'points': points, 'sym': self.sym[key]}, index=idxnona)
             data.append(tmp)
         if len(data) < 1:
             self.clear()
             return
         feet = pd.concat(data)
-        self.setData(x = feet.index.values,
-                     y = feet['points'].values,
-                     symbol = feet['sym'].values)
+        self.setData(
+            x=feet.index.values, y=feet['points'].values, symbol=feet['sym'].values
+        )
 
     def isPointSelected(self, point):
         return point in self.selected
@@ -138,7 +143,7 @@ class CurveItemWithPOI(CurveItem):
 
     @staticmethod
     def sigPointClicked(feetitem, points):
-        point = points[0] # only one point per click
+        point = points[0]  # only one point per click
         if not feetitem.isPointSelected(point):
             feetitem.selectPoint(point)
         else:
@@ -177,7 +182,7 @@ class CurveItemWithPOI(CurveItem):
                 self.addFeet(CycleId.foot)
             dia, sbp, dic = waveform.findPressureFull(self)
             self.feetitem.indices['diastole'] = dia
-            self.feetitem.indices['systole']  = sbp
+            self.feetitem.indices['systole'] = sbp
             self.feetitem.indices['dicrotic'] = dic
         else:
             raise ValueError(cycleid)
@@ -186,8 +191,12 @@ class CurveItemWithPOI(CurveItem):
     def getCycleIndices(self, vrange=None):
         s = self.series
         clip = partial(utils.clip, vrange=vrange)
-        hasstarts = ('start' in self.feetitem.indices) and self.feetitem.indices['start'].size > 0
-        hasstops = ('stop' in self.feetitem.indices) and self.feetitem.indices['stop'].size > 0
+        hasstarts = ('start' in self.feetitem.indices) and self.feetitem.indices[
+            'start'
+        ].size > 0
+        hasstops = ('stop' in self.feetitem.indices) and self.feetitem.indices[
+            'stop'
+        ].size > 0
         if vrange:
             xmin, xmax = vrange
         else:

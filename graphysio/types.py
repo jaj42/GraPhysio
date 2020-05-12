@@ -3,31 +3,37 @@ from enum import Enum
 
 from graphysio.algorithms.filters import Filter, Parameter
 
+
 class FootType(Enum):
-    start    = 'start'
-    stop     = 'stop'
+    start = 'start'
+    stop = 'stop'
     diastole = 'diastole'
-    systole  = 'systole'
+    systole = 'systole'
     dicrotic = 'dicrotic'
 
+
 class CycleId(Enum):
-    none     = 'None'
-    foot     = 'Pressure foot'
+    none = 'None'
+    foot = 'Pressure foot'
     pressure = 'Pressure Full'
     velocity = 'Velocity'
 
-class CsvRequest():
-    def __init__(self, filepath  = "",
-                       seperator = ",",
-                       decimal   = ".",
-                       dtfield  = None,
-                       yfields = [],
-                       datetime_format = "%Y-%m-%d %H:%M:%S,%f",
-                       droplines = 0,
-                       generatex = False,
-                       timezone  = 'UTC',
-                       encoding  = 'latin1',
-                       samplerate = None):
+
+class CsvRequest:
+    def __init__(
+        self,
+        filepath="",
+        seperator=",",
+        decimal=".",
+        dtfield=None,
+        yfields=[],
+        datetime_format="%Y-%m-%d %H:%M:%S,%f",
+        droplines=0,
+        generatex=False,
+        timezone='UTC',
+        encoding='latin1',
+        samplerate=None,
+    ):
         self.filepath = filepath
         self.seperator = seperator
         self.decimal = decimal
@@ -55,10 +61,9 @@ class CsvRequest():
         folder = os.path.dirname(self.filepath)
         return folder
 
-class PlotData():
-    def __init__(self, data = [],
-                       filepath = "",
-                       name = None):
+
+class PlotData:
+    def __init__(self, data=[], filepath="", name=None):
         self.data = data
         self.filepath = filepath
         self._name = name

@@ -13,8 +13,8 @@ from graphysio.plotwidgets import TSWidget
 
 
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
-    hasdata   = QtCore.pyqtSignal(object)
-    haserror  = QtCore.pyqtSignal(object)
+    hasdata = QtCore.pyqtSignal(object)
+    haserror = QtCore.pyqtSignal(object)
     setcoords = QtCore.pyqtSignal(float, float)
 
     def __init__(self, parent=None):
@@ -26,7 +26,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.tabWidget.currentChanged.connect(self.tabChanged)
 
         getCLIShell = partial(utils.getshell, ui=self)
-        launchNewPlot    = partial(self.launchReadData, newwidget=True)
+        launchNewPlot = partial(self.launchReadData, newwidget=True)
         launchAppendPlot = partial(self.launchReadData, newwidget=False)
 
         mnewplot = self.menuFile.addMenu('New Plot')
@@ -49,7 +49,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.setcoords.connect(self.setCoords)
 
     def setCoords(self, x, y):
-        dt = x / 1e6 # convert from ns to ms
+        dt = x / 1e6  # convert from ns to ms
         date = QtCore.QDateTime.fromMSecsSinceEpoch(dt)
         date = date.toTimeSpec(QtCore.Qt.UTC)
         timestr = date.toString("dd/MM/yyyy hh:mm:ss.zzz")
@@ -63,6 +63,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             except Exception as e:
                 traceback.print_exc(file=sys.stdout)
                 self.haserror.emit(e)
+
         return wrapped
 
     def addTab(self, widget: QtWidgets.QWidget, tabname: str) -> None:
@@ -125,7 +126,6 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         dlgNewplot.dlgdata.connect(cb)
         dlgNewplot.exec_()
 
-
     def appendToPlotWithData(self, plotdata, destidx=None):
         if destidx is None:
             plotwidget = self.tabWidget.currentWidget()
@@ -134,14 +134,17 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         if plotwidget is None:
             self.haserror.emit('No plot selected.')
             return
-        dorealign = dialogs.userConfirm('Timeshift new curves to make the beginnings coincide?', title='Append to plot')
+        dorealign = dialogs.userConfirm(
+            'Timeshift new curves to make the beginnings coincide?',
+            title='Append to plot',
+        )
 
         for fieldname in plotdata.data:
             newname = plotwidget.validateNewCurveName(fieldname)
             if newname is None:
                 continue
             if newname != fieldname:
-                plotdata.data.rename(columns={fieldname : newname}, inplace=True)
+                plotdata.data.rename(columns={fieldname: newname}, inplace=True)
 
         plotwidget.appendData(plotdata, dorealign)
         plotwidget.properties['dircache'] = self.dircache

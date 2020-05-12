@@ -26,19 +26,23 @@ class CsvReader(QtCore.QRunnable):
             self.sigdata.emit(data)
 
     def getdata(self) -> types.PlotData:
-        data = pd.read_csv(self.csvrequest.filepath,
-                           sep       = self.csvrequest.seperator,
-                           usecols   = self.csvrequest.fields,
-                           decimal   = self.csvrequest.decimal,
-                           skiprows  = self.csvrequest.droplines,
-                           encoding  = self.csvrequest.encoding,
-                           index_col = False,
-                           engine    = 'c')
+        data = pd.read_csv(
+            self.csvrequest.filepath,
+            sep=self.csvrequest.seperator,
+            usecols=self.csvrequest.fields,
+            decimal=self.csvrequest.decimal,
+            skiprows=self.csvrequest.droplines,
+            encoding=self.csvrequest.encoding,
+            index_col=False,
+            engine='c',
+        )
 
         pdtonum = partial(pd.to_numeric, errors='coerce')
         dtformat = self.csvrequest.datetime_format
         if self.csvrequest.generatex:
-            data.index = (1e9 * data.index / self.csvrequest.samplerate).astype(np.int64)
+            data.index = (1e9 * data.index / self.csvrequest.samplerate).astype(
+                np.int64
+            )
             # Make all data numeric and remove empty rows
             data = data.apply(pdtonum)
             data = data.dropna(axis='rows', how='all')
@@ -66,7 +70,11 @@ class CsvReader(QtCore.QRunnable):
                 timestamp = pd.to_datetime(timestamp, format=dtformat)
 
             # Convert timestamp to UTC and use as index
-            timestamp = pd.Index(timestamp).tz_localize(self.csvrequest.timezone).tz_convert('UTC')
+            timestamp = (
+                pd.Index(timestamp)
+                .tz_localize(self.csvrequest.timezone)
+                .tz_convert('UTC')
+            )
             timestamp = timestamp.astype(np.int64)
             data = data.set_index([timestamp])
 
@@ -115,9 +123,9 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
 
     # Methods / Callbacks
     def selectFile(self):
-        filepath = QtGui.QFileDialog.getOpenFileName(parent = self,
-                                                     caption = "Open CSV file",
-                                                     directory = self.dircache)
+        filepath = QtGui.QFileDialog.getOpenFileName(
+            parent=self, caption="Open CSV file", directory=self.dircache
+        )
         # PyQt5 API change
         if type(filepath) is not str:
             filepath = filepath[0]
@@ -221,7 +229,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         else:
             self.csvrequest.seperator = seperator
 
-        self.csvrequest.generatex = (self.chkGenX.checkState() > QtCore.Qt.Unchecked)
+        self.csvrequest.generatex = self.chkGenX.checkState() > QtCore.Qt.Unchecked
         if self.csvrequest.generatex or len(xRows) < 1:
             self.csvrequest.dtfield = None
         else:

@@ -17,7 +17,9 @@ class Ui_SetupPULoop(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.formLayout_2 = QtWidgets.QFormLayout()
         self.formLayout_2.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
-        self.formLayout_2.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        self.formLayout_2.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.AllNonFixedFieldsGrow
+        )
         self.formLayout_2.setObjectName("formLayout_2")
         self.label = QtWidgets.QLabel(SetupPULoop)
         self.label.setObjectName("label")
@@ -53,5 +55,3 @@ class Ui_SetupPULoop(object):
         self.label_2.setText(_translate("SetupPULoop", "Pressure (P)"))
         self.okButton.setText(_translate("SetupPULoop", "Ok"))
         self.cancelButton.setText(_translate("SetupPULoop", "Cancel"))
-
-

@@ -38,5 +38,3 @@ class Ui_CycleDetection(object):
         CycleDetection.setWindowTitle(_translate("CycleDetection", "Cycle Detection"))
         self.okButton.setText(_translate("CycleDetection", "Ok"))
         self.cancelButton.setText(_translate("CycleDetection", "Cancel"))
-
-

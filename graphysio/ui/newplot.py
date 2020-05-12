@@ -114,7 +114,9 @@ class Ui_NewPlot(object):
         self.lstVX.setObjectName("lstVX")
         self.horizontalLayout_5.addWidget(self.lstVX)
         self.btnRemoveX = QtWidgets.QPushButton(self.groupBox_6)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnRemoveX.sizePolicy().hasHeightForWidth())
@@ -148,7 +150,9 @@ class Ui_NewPlot(object):
         self.lstVY.setObjectName("lstVY")
         self.horizontalLayout_6.addWidget(self.lstVY)
         self.btnRemoveY = QtWidgets.QPushButton(self.groupBox_5)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnRemoveY.sizePolicy().hasHeightForWidth())
@@ -185,7 +189,9 @@ class Ui_NewPlot(object):
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.btnOk = QtWidgets.QPushButton(NewPlot)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnOk.sizePolicy().hasHeightForWidth())
@@ -193,7 +199,9 @@ class Ui_NewPlot(object):
         self.btnOk.setObjectName("btnOk")
         self.horizontalLayout_3.addWidget(self.btnOk)
         self.btnCancel = QtWidgets.QPushButton(NewPlot)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnCancel.sizePolicy().hasHeightForWidth())
@@ -244,5 +252,3 @@ class Ui_NewPlot(object):
         self.btnToY.setText(_translate("NewPlot", "Move to Y"))
         self.btnOk.setText(_translate("NewPlot", "OK"))
         self.btnCancel.setText(_translate("NewPlot", "Cancel"))
-
-

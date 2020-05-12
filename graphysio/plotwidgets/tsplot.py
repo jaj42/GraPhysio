@@ -12,7 +12,12 @@ from graphysio import exporter, utils, dialogs, transformations
 from graphysio.types import CycleId, Parameter, PlotData
 from graphysio.algorithms import filters
 
-from graphysio.plotwidgets import PlotWidget, LoopWidget, POISelectorWidget, SpectrogramWidget
+from graphysio.plotwidgets import (
+    PlotWidget,
+    LoopWidget,
+    POISelectorWidget,
+    SpectrogramWidget,
+)
 from graphysio.plotwidgets.curves import CurveItemWithPOI
 
 
@@ -29,10 +34,14 @@ class TSWidget(PlotWidget):
         self.exporter = exporter.TsExporter(self, plotdata.name)
         self.appendData(plotdata)
         mouseMoved = partial(self.mouseMoved, self)
-        self.sigproxy = pg.SignalProxy(self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
+        self.sigproxy = pg.SignalProxy(
+            self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved
+        )
 
     def filterCurve(self, oldcurve, filtername, asnew=False):
-        newseries, newsamplerate = filters.filter(oldcurve, filtername, dialogs.askUserValue)
+        newseries, newsamplerate = filters.filter(
+            oldcurve, filtername, dialogs.askUserValue
+        )
         if asnew:
             newname = self.validateNewCurveName(newseries.name)
             if newname != newseries.name:
@@ -54,7 +63,9 @@ class TSWidget(PlotWidget):
         feetdict = curve.feetitem.indices
         oldstarts = feetdict['start']
         oldstops = feetdict['stop']
-        starts, stops = filters.filterFeet(oldstarts, oldstops, filtername, dialogs.askUserValue)
+        starts, stops = filters.filterFeet(
+            oldstarts, oldstops, filtername, dialogs.askUserValue
+        )
         feetdict['start'] = starts
         feetdict['stop'] = stops
         curve.feetitem.render()
@@ -66,7 +77,9 @@ class TSWidget(PlotWidget):
 
     # Menu Curves
     def showCurveList(self):
-        dlgCurveSelection = dialogs.DlgCurveSelection(parent=self.parent, visible=self.curves.values(), hidden=self.hiddenitems)
+        dlgCurveSelection = dialogs.DlgCurveSelection(
+            parent=self.parent, visible=self.curves.values(), hidden=self.hiddenitems
+        )
 
         def cb(result):
             visible, invisible = result
@@ -116,7 +129,9 @@ class TSWidget(PlotWidget):
     def setDateTime(self):
         if len(self.curves) < 1:
             return
-        sortedcurves = sorted(self.curves.values(), key=lambda curve: curve.series.index[0])
+        sortedcurves = sorted(
+            self.curves.values(), key=lambda curve: curve.series.index[0]
+        )
         fstcurve = sortedcurves[0]
         curtimestamp = fstcurve.series.index[0]
         dlg = dialogs.DlgSetDateTime(prevdatetime=curtimestamp)
@@ -131,7 +146,9 @@ class TSWidget(PlotWidget):
         dlg.exec_()
 
     def launchTransformation(self):
-        param = Parameter("Choose Transformation", list(transformations.Transformations.keys()))
+        param = Parameter(
+            "Choose Transformation", list(transformations.Transformations.keys())
+        )
         qresult = dialogs.askUserValue(param)
         if qresult is None:
             return
@@ -159,12 +176,13 @@ class TSWidget(PlotWidget):
         if not curvename:
             return
         curve = self.curves[curvename]
-        spectro = SpectrogramWidget(curve.series, curve.samplerate, window, parent=self.parent)
+        spectro = SpectrogramWidget(
+            curve.series, curve.samplerate, window, parent=self.parent
+        )
         self.parent.addTab(spectro, curve.name())
 
     def launchCurveAlgebra(self):
-        curvecorr = {n : c for n, c in zip(string.ascii_lowercase
-                                          ,self.curves.keys())}
+        curvecorr = {n: c for n, c in zip(string.ascii_lowercase, self.curves.keys())}
         dlgCurveAlgebra = dialogs.DlgCurveAlgebra(self, curvecorr)
 
         def cb(formula):
@@ -188,7 +206,6 @@ class TSWidget(PlotWidget):
         dlgCurveAlgebra.dlgdata.connect(cb)
         dlgCurveAlgebra.exec_()
 
-
     # Menu Selection
     def launchNewPlotFromSelection(self):
         xmin, xmax = self.vbrange
@@ -204,12 +221,14 @@ class TSWidget(PlotWidget):
     def launchAppendToPlotFromSelection(self):
         tabWidget = self.parent.tabWidget
         ntabs = tabWidget.count()
-        tabdict = {tabWidget.tabText(idx):idx for idx in range(ntabs)}
-        desttabname, ok = QtGui.QInputDialog.getItem(self,
-                                                     'Select destination',
-                                                     'Destination plot',
-                                                     list(tabdict.keys()),
-                                                     editable=False)
+        tabdict = {tabWidget.tabText(idx): idx for idx in range(ntabs)}
+        desttabname, ok = QtGui.QInputDialog.getItem(
+            self,
+            'Select destination',
+            'Destination plot',
+            list(tabdict.keys()),
+            editable=False,
+        )
         if not ok:
             return
         xmin, xmax = self.vbrange
@@ -238,28 +257,29 @@ class TSWidget(PlotWidget):
 
     @property
     def menu(self):
-        mcurves = {'Visible Curves'  : self.showCurveList
-                  ,'Cycle Detection' : self.launchCycleDetection
-                  ,'Filter Curve'    : partial(self.launchFilter, filterfeet=False)
-                  ,'Filter Feet'     : partial(self.launchFilter, filterfeet=True)
-                  ,'Transformation'  : self.launchTransformation
-                  ,'Set Date / Time' : self.setDateTime
-                  }
-        mselect = {'As new plot'          : self.launchNewPlotFromSelection
-                  ,'Append to other plot' : self.launchAppendToPlotFromSelection
-                  ,'Generate PU-Loops'    : self.launchLoop
-                  }
-        mplot = {'POI Selector'  : self.launchPOIWidget
-                ,'Spectrogram'   : self.launchSpectrogram
-                ,'Curve Algebra' : self.launchCurveAlgebra}
-        mexport = {'Series to CSV'           : self.exporter.seriestocsv
-                  ,'Time info to CSV'        : self.exporter.periodstocsv
-                  ,'Cycle info to CSV'       : self.exporter.cyclepointstocsv
-                  ,'Cycles to CSV directory' : self.exporter.cyclestocsv
-                  }
-        m = {'Curves' : mcurves
-            ,'Plot'   : mplot
-            ,'Seletion' : mselect
-            ,'Export' : mexport
-            }
+        mcurves = {
+            'Visible Curves': self.showCurveList,
+            'Cycle Detection': self.launchCycleDetection,
+            'Filter Curve': partial(self.launchFilter, filterfeet=False),
+            'Filter Feet': partial(self.launchFilter, filterfeet=True),
+            'Transformation': self.launchTransformation,
+            'Set Date / Time': self.setDateTime,
+        }
+        mselect = {
+            'As new plot': self.launchNewPlotFromSelection,
+            'Append to other plot': self.launchAppendToPlotFromSelection,
+            'Generate PU-Loops': self.launchLoop,
+        }
+        mplot = {
+            'POI Selector': self.launchPOIWidget,
+            'Spectrogram': self.launchSpectrogram,
+            'Curve Algebra': self.launchCurveAlgebra,
+        }
+        mexport = {
+            'Series to CSV': self.exporter.seriestocsv,
+            'Time info to CSV': self.exporter.periodstocsv,
+            'Cycle info to CSV': self.exporter.cyclepointstocsv,
+            'Cycles to CSV directory': self.exporter.cyclestocsv,
+        }
+        m = {'Curves': mcurves, 'Plot': mplot, 'Seletion': mselect, 'Export': mexport}
         return m
