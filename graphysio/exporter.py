@@ -27,7 +27,7 @@ class TsExporter():
         xmin, xmax = self.parent.vbrange
         series = [curve.series[~curve.series.index.duplicated()] for curve in self.parent.curves.values()]
         data = pd.concat(series, axis=1).sort_index()
-        data['datetime'] = pd.to_datetime(data.index, unit = 'ns')
+        data['datetime'] = pd.to_datetime(data.index, unit='ns')
         data = data.loc[xmin:xmax]
         data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
 
@@ -37,20 +37,24 @@ class TsExporter():
                               end     = xmax,
                               patient = self.name,
                               directory = self.outdir)
-        if not dlg.exec_():
-            return
-        self.name = dlg.patient
-        self.outdir = os.path.dirname(dlg.filepath)
 
-        with open(dlg.filepath, 'a', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL)
-            if not os.path.exists(dlg.filepath):
-                writer.writeheader()
-            writer.writerow({'patient'  : dlg.patient,
-                             'begin'    : xmin,
-                             'end'      : xmax,
-                             'periodid' : dlg.periodname,
-                             'comment'  : dlg.comment})
+        def cb(result):
+            patient, comment, periodname, filepath = result
+            self.name = patient
+            self.outdir = os.path.dirname(filepath)
+
+            with open(filepath, 'a', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL)
+                if not os.path.exists(filepath):
+                    writer.writeheader()
+                writer.writerow({'patient' : patient,
+                                'begin'    : xmin,
+                                'end'      : xmax,
+                                'periodid' : periodname,
+                                'comment'  : comment})
+
+        dlg.dlgdata.connect(cb)
+        dlg.exec_()
 
     def cyclestocsv(self) -> None:
         outdir = askDirPath("Export to", self.outdir)

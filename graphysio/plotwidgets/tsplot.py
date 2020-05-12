@@ -67,19 +67,22 @@ class TSWidget(PlotWidget):
     # Menu Curves
     def showCurveList(self):
         dlgCurveSelection = dialogs.DlgCurveSelection(parent=self.parent, visible=self.curves.values(), hidden=self.hiddenitems)
-        if not dlgCurveSelection.exec_():
-            return
-        visible, invisible = dlgCurveSelection.result
-        newvisible = [item for item in visible if item not in self.curves.values()]
-        newinvisible = [item for item in invisible if item not in self.hiddenitems]
-        for item in newvisible:
-            self.addCurve(item)
-            if item in self.hiddenitems:
-                self.hiddenitems.remove(item)
-        for item in newinvisible:
-            self.removeCurve(item)
-            if item not in self.hiddenitems:
-                self.hiddenitems.append(item)
+
+        def cb(result):
+            visible, invisible = result
+            newvisible = [item for item in visible if item not in self.curves.values()]
+            newinvisible = [item for item in invisible if item not in self.hiddenitems]
+            for item in newvisible:
+                self.addCurve(item)
+                if item in self.hiddenitems:
+                    self.hiddenitems.remove(item)
+            for item in newinvisible:
+                self.removeCurve(item)
+                if item not in self.hiddenitems:
+                    self.hiddenitems.append(item)
+
+        dlgCurveSelection.dlgdata.connect(cb)
+        dlgCurveSelection.exec_()
 
     def launchCycleDetection(self):
         dlgCycles = dialogs.DlgCycleDetection(parent=self.parent)

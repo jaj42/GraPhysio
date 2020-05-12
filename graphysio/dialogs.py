@@ -1,5 +1,6 @@
 from typing import Optional
 from datetime import datetime
+import os
 import pathlib
 
 from pint import UnitRegistry
@@ -129,6 +130,8 @@ class DlgSetupPULoop(ui.Ui_SetupPULoop, QtWidgets.QDialog):
 
 
 class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, begin, end, patient="", directory="", parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -156,23 +159,19 @@ class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
             self.txtFile.setText(filepath)
             self.dircache = os.path.dirname(filepath)
 
-    @property
-    def patient(self):
-        return self.txtPatient.text()
+    def accept(self):
+        patient = self.txtPatient.text()
+        comment = self.txtComment.text()
+        periodname = self.txtPeriod.currentText()
+        filepath = self.txtFile.text()
+        result = (patient, comment, periodname, filepath)
+        self.dlgdata.emit(result)
+        super().accept()
 
-    @property
-    def comment(self):
-        return self.txtComment.text()
-
-    @property
-    def periodname(self):
-        return self.txtPeriod.currentText()
-
-    @property
-    def filepath(self):
-        return self.txtFile.text()
 
 class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, visible=[], hidden=[], parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -210,15 +209,17 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
             item.setCheckState(QtCore.Qt.Unchecked)
         self.lstCurves.addItem(item)
 
-    @property
-    def result(self):
+    def accept(self):
         items = self.lstCurves.findItems("", QtCore.Qt.MatchContains)
         ischecked = lambda item: not (item.checkState() == QtCore.Qt.Unchecked)
         checked = list(filter(ischecked, items))
         unchecked = [item for item in items if item not in checked]
         visible = [self.curvehash[item.text()] for item in checked]
         invisible = [self.curvehash[item.text()] for item in unchecked]
-        return (visible, invisible)
+        result = (visible, invisible)
+        self.dlgdata.emit(result)
+        super().accept()
+
 
 class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
     def __init__(self, curve, parent=None):
@@ -282,6 +283,7 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
         self.color = color
         self.btnColor.setStyleSheet(f'background-color: {color.name()}')
 
+
 class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
     def __init__(self, parent=None, prevdatetime=None):
         super().__init__(parent=parent)
@@ -313,6 +315,7 @@ class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
     def result(self):
         return self.timestamp
 
+
 class DlgCurveAlgebra(QtWidgets.QDialog):
     def __init__(self, parent=None, curvecorr={}):
         super().__init__(parent=parent)
@@ -342,6 +345,7 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
     @property
     def result(self):
         return self.formula.text()
+
 
 def askUserValue(param):
     if param.request == 'time':
@@ -378,12 +382,14 @@ def askUserValue(param):
     else:
         return None
 
+
 def userConfirm(question: str, title: str = '') -> bool:
     if not title:
         title = question
     reply = QtGui.QMessageBox.question(None, title, question, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
     confirmed = (reply == QtGui.QMessageBox.Yes)
     return confirmed
+
 
 def askFilePath(
     caption: str,
@@ -412,6 +418,7 @@ def askFilePath(
         return None
     filepath = sanitize_filepath(filepath)
     return pathlib.Path(filepath).resolve()
+
 
 def askDirPath(
     caption: str,
