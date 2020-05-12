@@ -120,14 +120,15 @@ class TSWidget(PlotWidget):
         fstcurve = sortedcurves[0]
         curtimestamp = fstcurve.series.index[0]
         dlg = dialogs.DlgSetDateTime(prevdatetime=curtimestamp)
-        isok = dlg.exec_()
-        if not isok:
-            return
-        newtimestamp = dlg.result
-        offset = newtimestamp - curtimestamp
-        for curve in self.curves.values():
-            curve.series.index += offset
-            curve.render()
+
+        def cb(newtimestamp):
+            offset = newtimestamp - curtimestamp
+            for curve in self.curves.values():
+                curve.series.index += offset
+                curve.render()
+
+        dlg.dlgdata.connect(cb)
+        dlg.exec_()
 
     def launchTransformation(self):
         param = Parameter("Choose Transformation", list(transformations.Transformations.keys()))
@@ -162,28 +163,30 @@ class TSWidget(PlotWidget):
         self.parent.addTab(spectro, curve.name())
 
     def launchCurveAlgebra(self):
-        curvecorr = {n : c for n,c in zip(list(string.ascii_lowercase)
-                                         ,list(self.curves.keys()))}
+        curvecorr = {n : c for n, c in zip(string.ascii_lowercase
+                                          ,self.curves.keys())}
         dlgCurveAlgebra = dialogs.DlgCurveAlgebra(self, curvecorr)
-        if not dlgCurveAlgebra.exec_():
-            return
-        formula = dlgCurveAlgebra.result
-        expr = sympy.sympify(formula)
-        symbols = list(expr.free_symbols)
-        schar = sorted([str(x) for x in symbols])
-        curvenames = [curvecorr[x] for x in schar]
-        sers = [self.curves[c].series for c in curvenames]
-        if len(sers) < 1:
-            # Scalar
-            return
-        df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
-        df = df.dropna(how='all').interpolate()
-        args = [df[c].values for c in curvenames]
-        l = sympy.lambdify(symbols, expr, 'numpy')
-        newvals = l(*args)
-        newname = self.validateNewCurveName(formula, True)
-        newseries = pd.Series(newvals, index=df.index, name=newname, dtype='double')
-        self.addSeriesAsCurve(newseries)
+
+        def cb(formula):
+            expr = sympy.sympify(formula)
+            symbols = list(expr.free_symbols)
+            schar = sorted([str(x) for x in symbols])
+            curvenames = [curvecorr[x] for x in schar]
+            sers = [self.curves[c].series for c in curvenames]
+            if len(sers) < 1:
+                # Scalar
+                return
+            df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
+            df = df.dropna(how='all').interpolate()
+            args = [df[c].values for c in curvenames]
+            l = sympy.lambdify(symbols, expr, 'numpy')
+            newvals = l(*args)
+            newname = self.validateNewCurveName(formula, True)
+            newseries = pd.Series(newvals, index=df.index, name=newname, dtype='double')
+            self.addSeriesAsCurve(newseries)
+
+        dlgCurveAlgebra.dlgdata.connect(cb)
+        dlgCurveAlgebra.exec_()
 
 
     # Menu Selection

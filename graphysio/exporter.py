@@ -1,6 +1,6 @@
-import os, csv
+import os
+import csv
 from itertools import zip_longest
-from functools import partial
 
 import pandas as pd
 

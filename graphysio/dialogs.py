@@ -285,11 +285,11 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
 
 
 class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, parent=None, prevdatetime=None):
         super().__init__(parent=parent)
         self.setupUi(self)
-
-        self.timestamp = 0
 
         self.btnOk.clicked.connect(self.ok)
         self.btnCancel.clicked.connect(self.reject)
@@ -308,15 +308,14 @@ class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
         date = self.edDate.date()
         time = self.edTime.time()
         dt = QtCore.QDateTime(date, time, QtCore.Qt.UTC)
-        self.timestamp = dt.toMSecsSinceEpoch() * 1e6
+        timestamp = dt.toMSecsSinceEpoch() * 1e6
+        self.dlgdata.emit(timestamp)
         self.accept()
-
-    @property
-    def result(self):
-        return self.timestamp
 
 
 class DlgCurveAlgebra(QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, parent=None, curvecorr={}):
         super().__init__(parent=parent)
         self.setupUi(curvecorr)
@@ -330,7 +329,7 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
         self.formula = QtWidgets.QLineEdit('a^2 + log(2*b)')
         vstack.addWidget(self.formula)
 
-        curveslbl = '\n'.join([f'{x}: {y}' for x,y in curvecorr.items()])
+        curveslbl = '\n'.join([f'{x}: {y}' for x, y in curvecorr.items()])
         self.curveletters = QtWidgets.QLabel(curveslbl)
         vstack.addWidget(self.curveletters)
 
@@ -342,9 +341,10 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
 
         self.setLayout(vstack)
 
-    @property
-    def result(self):
-        return self.formula.text()
+    def accept(self):
+        result = self.formula.text()
+        self.dlgdata.emit(result)
+        super().accept()
 
 
 def askUserValue(param):
