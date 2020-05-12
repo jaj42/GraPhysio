@@ -16,6 +16,8 @@ ureg = UnitRegistry()
 
 
 class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -41,12 +43,15 @@ class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
 
         self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
-    @property
-    def result(self):
-        return {curve: combo.currentText() for (curve, combo) in self.choices.items()}
+    def accept(self):
+        result = {curve: combo.currentText() for (curve, combo) in self.choices.items()}
+        self.dlgdata.emit(result)
+        super().accept()
 
 
 class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, parent=None, filterfeet=False):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -57,7 +62,7 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
         self.choices = {}
 
         plotframe = self.parent().tabWidget.currentWidget()
-        if plotframe is None:
+        if not plotframe:
             return
 
         def fillTable(items, itemtype, filters):
@@ -86,18 +91,20 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
 
         self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
-    @property
-    def result(self):
+    def accept(self):
         curvefilters = {}
         for itemname, value in self.choices.items():
             combo, itemtype = value
             curvefilters[itemname] = combo.currentText()
-
         createnew = (self.chkNewcurve.checkState() > QtCore.Qt.Unchecked)
-        return (createnew, curvefilters)
+        result = (createnew, curvefilters)
+        self.dlgdata.emit(result)
+        super().accept()
 
 
 class DlgSetupPULoop(ui.Ui_SetupPULoop, QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, sourcewidget, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -113,11 +120,12 @@ class DlgSetupPULoop(ui.Ui_SetupPULoop, QtWidgets.QDialog):
         self.comboU.addItems(curvenames)
         self.comboP.addItems(curvenames)
 
-    @property
-    def result(self):
+    def accept(self):
         uname = self.comboU.currentText()
         pname = self.comboP.currentText()
-        return (uname, pname)
+        result = (uname, pname)
+        self.dlgdata.emit(result)
+        super().accept()
 
 
 class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):

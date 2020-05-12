@@ -83,27 +83,32 @@ class TSWidget(PlotWidget):
 
     def launchCycleDetection(self):
         dlgCycles = dialogs.DlgCycleDetection(parent=self.parent)
-        if not dlgCycles.exec_():
-            return
-        choices = dlgCycles.result
-        for curvename, choice in choices.items():
-            curve = self.curves[curvename]
-            curve.addFeet(CycleId(choice))
+
+        def cb(choices):
+            for curvename, choice in choices.items():
+                curve = self.curves[curvename]
+                curve.addFeet(CycleId(choice))
+
+        dlgCycles.dlgdata.connect(cb)
+        dlgCycles.exec_()
 
     def launchFilter(self, filterfeet):
         dlgFilter = dialogs.DlgFilter(parent=self.parent, filterfeet=filterfeet)
-        if not dlgFilter.exec_():
-            return
-        createnew, curvechoices = dlgFilter.result
-        if filterfeet:
-            filterfunc = self.filterFeet
-        else:
-            filterfunc = self.filterCurve
-        for curvename, choice in curvechoices.items():
-            if choice == 'None':
-                continue
-            curve = self.curves[curvename]
-            filterfunc(curve, choice, asnew=createnew)
+
+        def cb(result):
+            createnew, curvechoices = result
+            if filterfeet:
+                filterfunc = self.filterFeet
+            else:
+                filterfunc = self.filterCurve
+            for curvename, choice in curvechoices.items():
+                if choice == 'None':
+                    continue
+                curve = self.curves[curvename]
+                filterfunc(curve, choice, asnew=createnew)
+
+        dlgFilter.dlgdata.connect(cb)
+        dlgFilter.exec_()
 
     def setDateTime(self):
         if len(self.curves) < 1:
@@ -213,14 +218,17 @@ class TSWidget(PlotWidget):
 
     def launchLoop(self):
         dlgSetupPU = dialogs.DlgSetupPULoop(self, parent=self.parent)
-        if not dlgSetupPU.exec_():
-            return
-        uname, pname = dlgSetupPU.result
-        u = self.curves[uname]
-        p = self.curves[pname]
-        loopwidget = LoopWidget(u, p, self.vbrange, parent=self.parent)
-        newname = f'{self.name}-{p.name()}-loops'
-        self.parent.addTab(loopwidget, newname)
+
+        def cb(result):
+            uname, pname = result
+            u = self.curves[uname]
+            p = self.curves[pname]
+            loopwidget = LoopWidget(u, p, self.vbrange, parent=self.parent)
+            newname = f'{self.name}-{p.name()}-loops'
+            self.parent.addTab(loopwidget, newname)
+
+        dlgSetupPU.dlgdata.connect(cb)
+        dlgSetupPU.exec_()
 
     @property
     def menu(self):

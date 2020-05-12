@@ -50,8 +50,11 @@ class DataRequest():
         return folder
 
 
-class DlgNewPlotParquet():
+class DlgNewPlotParquet(QtCore.QObject):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, parent=None, title="New Plot", directory=""):
+        super().__init__(parent=parent)
         self.datarequest = DataRequest()
         self.dircache = directory
 
@@ -65,10 +68,5 @@ class DlgNewPlotParquet():
 
         if filepath:
             self.datarequest.filepath = filepath
-            return True
-        else:
-            return False
-
-    @property
-    def result(self):
-        return self.datarequest
+            self.dlgdata.emit(self.datarequest)
+    

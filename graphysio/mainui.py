@@ -113,17 +113,18 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             title = "Append to Plot"
             self.hasdata.connect(self.appendToPlotWithData)
 
+        def cb(datarequest):
+            self.dircache = datarequest.folder
+            self.lblStatus.setText(f'Loading... {datarequest.name}...')
+            Reader = readdata.readers[datasource]
+            reader = Reader(datarequest, self.hasdata, self.haserror)
+            QtCore.QThreadPool.globalInstance().start(reader)
+
         DlgNewPlot = readdata.dlgNewPlots[datasource]
         dlgNewplot = DlgNewPlot(parent=self, title=title, directory=self.dircache)
-        if not dlgNewplot.exec_():
-            return
-        datarequest = dlgNewplot.result
-        self.dircache = datarequest.folder
-        self.lblStatus.setText(f'Loading... {datarequest.name}...')
+        dlgNewplot.dlgdata.connect(cb)
+        dlgNewplot.exec_()
 
-        Reader = readdata.readers[datasource]
-        reader = Reader(datarequest, self.hasdata, self.haserror)
-        QtCore.QThreadPool.globalInstance().start(reader)
 
     def appendToPlotWithData(self, plotdata, destidx=None):
         if destidx is None:

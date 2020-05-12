@@ -78,6 +78,8 @@ class CsvReader(QtCore.QRunnable):
 
 
 class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, parent=None, title="New Plot", directory=""):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -110,10 +112,6 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         self.btnRemoveX.clicked.connect(self.delFromX)
         self.btnRemoveY.clicked.connect(self.delFromY)
         self.lstVX.currentIndexChanged.connect(self.xChanged)
-
-    @property
-    def result(self):
-        return self.csvrequest
 
     # Methods / Callbacks
     def selectFile(self):
@@ -237,4 +235,6 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         self.csvrequest.droplines = self.spnLinedrop.value()
         self.csvrequest.encoding = self.txtEncoding.currentText()
         self.csvrequest.timezone = self.txtTimezone.currentText()
+
+        self.dlgdata.emit(self.csvrequest)
         self.accept()
