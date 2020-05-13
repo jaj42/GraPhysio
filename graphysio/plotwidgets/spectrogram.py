@@ -29,8 +29,8 @@ class SpectrogramWidget(QtWidgets.QWidget):
         hilayout.addWidget(self.hislider)
 
         layout.addWidget(self.spectro)
-        layout.addWidget(lolayout)
-        layout.addWidget(hilayout)
+        layout.addLayout(lolayout)
+        layout.addLayout(hilayout)
         self.setLayout(layout)
 
     @property

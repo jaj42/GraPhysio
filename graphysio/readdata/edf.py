@@ -25,12 +25,11 @@ class EdfReader(QtCore.QRunnable):
             self.sigdata.emit(data)
 
     def getdata(self) -> types.PlotData:
-        signals = []
-
         edf = pyedflib.EdfReader(self.filepath)
         beginns = edf.getStartdatetime().timestamp() * 1e9
         nsamplesPerChannel = edf.getNSamples()
 
+        signals = []
         for i in range(edf.signals_in_file):
             h = edf.getSignalHeader(i)
             fs = h['sample_rate']
