@@ -34,12 +34,6 @@ class TsExporter:
         curves = list(self.parent.curves.values())
         export_func = writedata.curve_writers[ext]
         export_func(curves, filepath)
-        # xmin, xmax = self.parent.vbrange
-        # series = list(self.parent.curves.values())
-        # data = pd.concat(series, axis=1).sort_index()
-        # data['datetime'] = pd.to_datetime(data.index, unit='ns')
-        # data = data.loc[xmin:xmax]
-        # data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
 
     def periods(self):
         xmin, xmax = self.parent.vbrange

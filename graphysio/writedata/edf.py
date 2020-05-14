@@ -21,7 +21,6 @@ def interp_series(s, fs, start, stop):
 def curves_to_edf(
     curves: List[CurveItem], filepath: str, index_label: str = 'timens'
 ) -> None:
-    ncols = len(curves)
     headers = []
     signals = []
 
@@ -46,7 +45,9 @@ def curves_to_edf(
         resampled = interp_series(s, c.samplerate, beginns, endns)
         signals.append(resampled)
 
-    edf = pyedflib.EdfWriter(str(filepath), ncols, file_type=pyedflib.FILETYPE_EDFPLUS)
+    edf = pyedflib.EdfWriter(
+        str(filepath), len(signals), file_type=pyedflib.FILETYPE_EDFPLUS
+    )
     edf.setStartdatetime(begindt)
     edf.setSignalHeaders(headers)
     edf.writeSamples(signals)
