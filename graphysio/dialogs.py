@@ -9,9 +9,10 @@ from pint.errors import DimensionalityError, UndefinedUnitError
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 
-from graphysio import types, ui
+from graphysio import ui
 from graphysio.algorithms import filters
 from graphysio.utils import sanitize_filepath
+from graphysio.structures import CycleId
 
 ureg = UnitRegistry()
 
@@ -34,7 +35,7 @@ class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
 
         for n, curvename in enumerate(plotframe.curves.keys()):
             combo = QtGui.QComboBox()
-            combo.addItems([ft.value for ft in types.CycleId])
+            combo.addItems([ft.value for ft in CycleId])
             curveitem = QtGui.QTableWidgetItem(curvename)
 
             self.table.insertRow(n)
@@ -403,7 +404,7 @@ def userConfirm(question: str, title: str = '') -> bool:
     return confirmed
 
 
-def askFilePath(
+def askSaveFilePath(
     caption: str,
     filename: str = '',
     folder: str = '',
@@ -425,9 +426,11 @@ def askFilePath(
         filepath = filepath[0]
     if not filepath:
         # Cancel pressed
-        return None
+        return (None, None)
     filepath = sanitize_filepath(filepath)
-    return pathlib.Path(filepath).resolve()
+    filepath = pathlib.Path(filepath).resolve()
+    ext = filepath.suffix[1:]
+    return (filepath, ext)
 
 
 def askDirPath(caption: str, folder: str = '') -> Optional[pathlib.Path]:

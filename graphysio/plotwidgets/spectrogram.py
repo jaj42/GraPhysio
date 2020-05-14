@@ -1,13 +1,11 @@
-from functools import partial
-
 import numpy as np
 import pandas as pd
 
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
+from pyqtgraph.Qt import QtCore, QtWidgets
 
 from graphysio import dialogs
-from graphysio.types import Parameter, PlotData
+from graphysio.structures import Parameter, PlotData
 
 
 class SpectrogramWidget(QtWidgets.QWidget):

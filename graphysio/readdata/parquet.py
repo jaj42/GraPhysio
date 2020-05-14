@@ -1,12 +1,11 @@
 import os
-from functools import partial
 
 import numpy as np
 import pandas as pd
 
-from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
+from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import types, ui
+from graphysio.structures import PlotData
 
 
 class ParquetReader(QtCore.QRunnable):
@@ -24,14 +23,14 @@ class ParquetReader(QtCore.QRunnable):
         else:
             self.sigdata.emit(data)
 
-    def getdata(self) -> types.PlotData:
+    def getdata(self) -> PlotData:
         data = pd.read_parquet(self.filepath)
 
         data = data.dropna(axis='columns', how='all')
         data = data.sort_index()
         data.index = data.index.astype(np.int64)
 
-        plotdata = types.PlotData(data=data, filepath=self.filepath)
+        plotdata = PlotData(data=data, filepath=self.filepath)
         return plotdata
 
 

@@ -3,7 +3,7 @@ from typing import List
 import pandas as pd
 
 from graphysio.dialogs import askUserValue
-from graphysio.types import Parameter
+from graphysio.structures import Parameter
 from graphysio.plotwidgets import PlotWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
 

@@ -7,7 +7,8 @@ import pandas as pd
 
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 
-from graphysio import types, ui
+from graphysio import ui
+from graphysio.structures import PlotData, CsvRequest
 
 
 class CsvReader(QtCore.QRunnable):
@@ -25,7 +26,7 @@ class CsvReader(QtCore.QRunnable):
         else:
             self.sigdata.emit(data)
 
-    def getdata(self) -> types.PlotData:
+    def getdata(self) -> PlotData:
         data = pd.read_csv(
             self.csvrequest.filepath,
             sep=self.csvrequest.seperator,
@@ -81,7 +82,7 @@ class CsvReader(QtCore.QRunnable):
         data = data.dropna(axis='columns', how='all')
         data = data.sort_index()
 
-        plotdata = types.PlotData(data=data, filepath=self.csvrequest.filepath)
+        plotdata = PlotData(data=data, filepath=self.csvrequest.filepath)
         return plotdata
 
 
@@ -94,7 +95,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         self.setWindowTitle(title)
 
         self.dircache = directory
-        self.csvrequest = types.CsvRequest()
+        self.csvrequest = CsvRequest()
 
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()

@@ -7,7 +7,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio import utils
-from graphysio.types import CycleId
+from graphysio.structures import CycleId
 from graphysio.utils import estimateSampleRate
 from graphysio.algorithms import waveform
 

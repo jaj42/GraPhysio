@@ -1,18 +1,13 @@
 from typing import Dict
 
-import itertools
-from functools import partial
-from collections import namedtuple
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
 from scipy import signal, interpolate
 
-from graphysio.utils import truncatevecs, estimateSampleRate
-
-Filter = namedtuple('Filter', ['name', 'parameters'])
-Parameter = namedtuple('Parameter', ['description', 'request'])
+from graphysio.utils import truncatevecs
+from graphysio.structures import Filter, Parameter
 
 
 class TF(object):

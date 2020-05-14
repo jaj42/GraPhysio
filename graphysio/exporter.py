@@ -4,8 +4,13 @@ from itertools import zip_longest
 
 import pandas as pd
 
-from graphysio.dialogs import DlgPeriodExport, askDirPath, askFilePath
+from graphysio.dialogs import DlgPeriodExport, askDirPath, askSaveFilePath
 from graphysio.utils import sanitize_filename
+from graphysio import writedata
+
+file_filters = ';;'.join(
+    [f'{ext.upper()} files (*.{ext})' for ext in writedata.curve_writers]
+)
 
 
 class TsExporter:
@@ -19,22 +24,24 @@ class TsExporter:
         except KeyError:
             self.outdir = os.path.expanduser('~')
 
-    def seriestocsv(self) -> None:
-        filepath = askFilePath('Export to', f'{self.name}.csv', self.outdir)
+    def curves(self) -> None:
+        filepath, ext = askSaveFilePath(
+            'Export to', f'{self.name}.csv', self.outdir, filter=file_filters
+        )
         if filepath is None:
             return
         self.outdir = os.path.dirname(filepath)
-        xmin, xmax = self.parent.vbrange
-        series = [
-            curve.series[~curve.series.index.duplicated()]
-            for curve in self.parent.curves.values()
-        ]
-        data = pd.concat(series, axis=1).sort_index()
-        data['datetime'] = pd.to_datetime(data.index, unit='ns')
-        data = data.loc[xmin:xmax]
-        data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
+        curves = list(self.parent.curves.values())
+        export_func = writedata.curve_writers[ext]
+        export_func(curves, filepath)
+        # xmin, xmax = self.parent.vbrange
+        # series = list(self.parent.curves.values())
+        # data = pd.concat(series, axis=1).sort_index()
+        # data['datetime'] = pd.to_datetime(data.index, unit='ns')
+        # data = data.loc[xmin:xmax]
+        # data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
 
-    def periodstocsv(self):
+    def periods(self):
         xmin, xmax = self.parent.vbrange
         dlg = DlgPeriodExport(
             begin=xmin, end=xmax, patient=self.name, directory=self.outdir
@@ -64,7 +71,7 @@ class TsExporter:
         dlg.dlgdata.connect(cb)
         dlg.exec_()
 
-    def cyclestocsv(self) -> None:
+    def cycles(self) -> None:
         outdir = askDirPath("Export to", self.outdir)
         if outdir is None:
             # Cancel pressed
@@ -101,8 +108,8 @@ class TsExporter:
                 filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens'
             )
 
-    def cyclepointstocsv(self) -> None:
-        filepath = askFilePath('Export to', f'{self.name}-feet.csv', self.outdir)
+    def cyclepoints(self) -> None:
+        filepath, _ = askSaveFilePath('Export to', f'{self.name}-feet.csv', self.outdir)
         if filepath is None:
             # Cancel pressed
             return
@@ -167,8 +174,8 @@ class POIExporter:
         except KeyError:
             self.outdir = os.path.expanduser('~')
 
-    def poitocsv(self):
-        filepath = askFilePath('Export to', f'{self.name}-poi.csv', self.outdir)
+    def poi(self):
+        filepath, _ = askSaveFilePath('Export to', f'{self.name}-poi.csv', self.outdir)
         if filepath is None:
             # Cancel pressed
             return

@@ -1,15 +1,14 @@
 import string
 from functools import partial
 
-import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 import sympy
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import exporter, utils, dialogs, transformations
-from graphysio.types import CycleId, Parameter, PlotData
+from graphysio import exporter, dialogs, transformations
+from graphysio.structures import CycleId, Parameter, PlotData
 from graphysio.algorithms import filters
 
 from graphysio.plotwidgets import (
@@ -18,7 +17,6 @@ from graphysio.plotwidgets import (
     POISelectorWidget,
     SpectrogramWidget,
 )
-from graphysio.plotwidgets.curves import CurveItemWithPOI
 
 
 class TSWidget(PlotWidget):
@@ -276,10 +274,10 @@ class TSWidget(PlotWidget):
             'Curve Algebra': self.launchCurveAlgebra,
         }
         mexport = {
-            'Series to CSV': self.exporter.seriestocsv,
-            'Time info to CSV': self.exporter.periodstocsv,
-            'Cycle info to CSV': self.exporter.cyclepointstocsv,
-            'Cycles to CSV directory': self.exporter.cyclestocsv,
+            'Curves': self.exporter.curves,
+            'Time info': self.exporter.periods,
+            'Cycle info': self.exporter.cyclepoints,
+            'Cycles to directory': self.exporter.cycles,
         }
         m = {'Curves': mcurves, 'Plot': mplot, 'Seletion': mselect, 'Export': mexport}
         return m

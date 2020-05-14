@@ -1,7 +1,10 @@
 import os
 from enum import Enum
+from collections import namedtuple
 
-from graphysio.algorithms.filters import Filter, Parameter
+
+Filter = namedtuple('Filter', ['name', 'parameters'])
+Parameter = namedtuple('Parameter', ['description', 'request'])
 
 
 class FootType(Enum):

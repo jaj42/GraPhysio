@@ -6,7 +6,7 @@ import pandas as pd
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import types
+from graphysio.structures import PlotData
 
 
 class EdfReader(QtCore.QRunnable):
@@ -24,7 +24,7 @@ class EdfReader(QtCore.QRunnable):
         else:
             self.sigdata.emit(data)
 
-    def getdata(self) -> types.PlotData:
+    def getdata(self) -> PlotData:
         edf = pyedflib.EdfReader(self.filepath)
         beginns = edf.getStartdatetime().timestamp() * 1e9
         nsamplesPerChannel = edf.getNSamples()
@@ -41,7 +41,7 @@ class EdfReader(QtCore.QRunnable):
         edf.close()
 
         df = pd.concat(signals, axis=1)
-        plotdata = types.PlotData(data=df, filepath=self.filepath)
+        plotdata = PlotData(data=df, filepath=self.filepath)
 
         return plotdata
 
