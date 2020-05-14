@@ -8,12 +8,11 @@ from scipy import interpolate
 from graphysio.plotwidgets.curves import CurveItem
 
 
-def interp_series(s, fs, start, stop):
+def interp_series(s, start, stop):
     f = interpolate.interp1d(
         s.index, s.values, assume_sorted=True, fill_value=0, copy=False
     )
-    step = 1e9 / fs  # 1e9 to convert Hz to ns
-    newidx = np.arange(start, stop, step)
+    newidx = np.linspace(start, stop, num=len(s))
     resampled = f(newidx)
     return resampled
 
@@ -42,7 +41,7 @@ def curves_to_edf(
             'dimension': '',
         }
         headers.append(header)
-        resampled = interp_series(s, c.samplerate, beginns, endns)
+        resampled = interp_series(s, beginns, endns)
         signals.append(resampled)
 
     edf = pyedflib.EdfWriter(
