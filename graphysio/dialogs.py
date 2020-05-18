@@ -383,7 +383,7 @@ def askUserValue(param):
         value = dlg.result
     elif type(param.request) is list:
         value, isok = QtGui.QInputDialog.getItem(
-            None, 'Enter value', param.description, param.request, editable=False
+            None, 'Choose value', param.description, param.request, editable=False
         )
     else:
         raise TypeError("Unknown request type")

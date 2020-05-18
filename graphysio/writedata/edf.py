@@ -10,7 +10,7 @@ from graphysio.plotwidgets.curves import CurveItem
 
 def interp_series(s, start, stop):
     f = interpolate.interp1d(
-        s.index, s.values, assume_sorted=True, fill_value=0, copy=False
+        s.index, s.values, assume_sorted=True, copy=False, fill_value='extrapolate'
     )
     newidx = np.linspace(start, stop, num=len(s))
     resampled = f(newidx)
