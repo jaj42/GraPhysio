@@ -42,6 +42,10 @@ class CurveItem(pg.PlotDataItem):
         self.series = newseries
         self.render()
 
+    def rename(self, newname: str):
+        self.curve.name = newname
+        self.opts['name'] = newname
+
 
 class POIItem(pg.ScatterPlotItem):
     sym = {
@@ -55,12 +59,11 @@ class POIItem(pg.ScatterPlotItem):
     # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
     def __init__(self, parent, name, pen=None):
-        super().__init__(pen=pen)
+        super().__init__(pen=pen, name=name)
         self.parent = parent
         self.indices = {}
         self.selected = []
         self.resym = {value: key for key, value in self.sym.items()}
-        self.__name = name
         self.render()
 
     def addPointsByLocation(self, key, locations):
@@ -132,9 +135,8 @@ class POIItem(pg.ScatterPlotItem):
         self.selected = []
         self.render()
 
-    def name(self):
-        # Method needed for compat with CurveItem
-        return self.__name
+    def rename(self, newname: str):
+        self.opts['name'] = newname
 
 
 class CurveItemWithPOI(CurveItem):

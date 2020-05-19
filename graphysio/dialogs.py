@@ -179,6 +179,8 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
         super().__init__(parent=parent)
         self.setupUi(self)
 
+        self.curveproperties = {}
+
         self.okButton.clicked.connect(self.accept)
         self.cancelButton.clicked.connect(self.reject)
         self.btnProperties.clicked.connect(self.openProperties)
@@ -199,7 +201,12 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
         except IndexError:
             return
         curve = self.curvehash[curvename]
+
+        def cb(resultdict):
+            self.curveproperties[curve] = resultdict
+
         dlg = DlgCurveProperties(curve)
+        dlg.dlgdata.connect(cb)
         dlg.exec_()
 
     def addCurve(self, name, checked):
@@ -216,15 +223,15 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
         items = self.lstCurves.findItems("", QtCore.Qt.MatchContains)
         ischecked = lambda item: not (item.checkState() == QtCore.Qt.Unchecked)
         checked = list(filter(ischecked, items))
-        unchecked = [item for item in items if item not in checked]
-        visible = [self.curvehash[item.text()] for item in checked]
-        invisible = [self.curvehash[item.text()] for item in unchecked]
-        result = (visible, invisible)
+        visible = set([self.curvehash[item.text()] for item in checked])
+        result = (visible, self.curveproperties)
         self.dlgdata.emit(result)
         super().accept()
 
 
 class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
     def __init__(self, curve, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -263,20 +270,20 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
         self.lblSamplerate.setText(str(curve.samplerate))
 
     def ok(self):
-        connect = str(self.cmbConnect.currentText().lower())
-        if connect == 'none':
-            connect = [0]
         symbol = self.cmbSymbol.currentText().lower()
-        if symbol == 'none':
-            symbol = None
+        symbol = None if symbol == 'none' else symbol
 
-        # self.curve.setData(connect=connect, symbol=symbol)
-        self.curve.setData(symbol=symbol)
+        connect = str(self.cmbConnect.currentText().lower())
+        connect = [0] if connect == 'none' else connect
 
-        width = self.spnWidth.value()
-        pen = pg.mkPen(color=self.color, width=width)
-        self.curve.setPen(pen)
-
+        result = {
+            'name': self.txtName.text(),
+            'connect': connect,
+            'symbol': symbol,
+            'width': self.spnWidth.value(),
+            'color': self.color,
+        }
+        self.dlgdata.emit(result)
         self.accept()
 
     def chooseColor(self):

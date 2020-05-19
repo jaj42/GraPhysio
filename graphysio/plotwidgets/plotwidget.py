@@ -28,7 +28,7 @@ class PlotWidget(pg.PlotWidget):
         self.parent = parent
         self.name = name
         self.colors = Colors()
-        self.hiddenitems = []
+        self.hiddencurves = set()
         self.properties = {}
 
         axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
@@ -82,17 +82,26 @@ class PlotWidget(pg.PlotWidget):
         return curve
 
     def addCurve(self, curve, pen=None):
+        if curve.name() in self.curves:
+            return
         if pen is not None:
             curve.setPen(pen)
         self.addItem(curve)
-        if isinstance(curve, pg.PlotDataItem):
-            self.legend.addItem(curve, curve.name())
+        self.rebuildLegend()
         curve.visible.emit()
 
     def removeCurve(self, curve):
+        if curve.name() not in self.curves:
+            return
         self.removeItem(curve)
-        self.legend.removeItem(curve.name())
+        self.rebuildLegend()
         curve.invisible.emit()
+
+    def rebuildLegend(self):
+        self.legend.clear()
+        for name, curve in self.curves.items():
+            if isinstance(curve, pg.PlotDataItem):
+                self.legend.addItem(curve, curve.name())
 
     def validateNewCurveName(
         self, proposedname: str, alwaysShow: bool = False
@@ -108,6 +117,12 @@ class PlotWidget(pg.PlotWidget):
         if not okPressed:
             return None
         return newname
+
+    def applyCurveProperties(self, curve, properties: dict) -> None:
+        curve.setData(symbol=properties['symbol'])
+        # curve.setData(connect=properties['connect'], symbol=properties['symbol'])
+        curve.setPen(properties['color'], width=properties['width'])
+        curve.rename(properties['name'])
 
     @property
     def vbrange(self):
