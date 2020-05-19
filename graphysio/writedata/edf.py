@@ -5,14 +5,19 @@ import pyedflib
 import numpy as np
 from scipy import interpolate
 
+from graphysio.dialogs import askUserValue
+from graphysio.structures import Parameter
 from graphysio.plotwidgets.curves import CurveItem
 
 
-def interp_series(s, start, stop):
+def interp_series(s, samplerate, start, stop):
     f = interpolate.interp1d(
         s.index, s.values, assume_sorted=True, copy=False, fill_value='extrapolate'
     )
-    newidx = np.linspace(start, stop, num=len(s))
+    # Recalculate the number of points needed over the duration to account for periods of missing data.
+    duration_s = (stop - start) * 1e-9
+    npoints = duration_s * samplerate
+    newidx = np.linspace(start, stop, num=npoints)
     resampled = f(newidx)
     return resampled
 
@@ -27,21 +32,28 @@ def curves_to_edf(
     endns = max([c.series.index[-1] for c in curves])
     begindt = datetime.fromtimestamp(beginns * 1e-9)
 
+    # Use global min / max of values since some viewers need this (edfbrowser)
+    physmax = max([c.series.max() for c in curves])
+    physmin = min([c.series.min() for c in curves])
+
+    # Ask the user for the physical dimension shared by all curves
+    dim = askUserValue(Parameter('Enter physical dimensions', str))
+
     for c in curves:
         s = c.series
         header = {
             'label': c.name(),
             'sample_rate': c.samplerate,
-            'physical_max': s.max(),
-            'physical_min': s.min(),
+            'physical_max': physmax,
+            'physical_min': physmin,
             'digital_max': 32767,
             'digital_min': -32768,
             'transducer': '',
             'prefilter': '',
-            'dimension': '',
+            'dimension': dim,
         }
         headers.append(header)
-        resampled = interp_series(s, beginns, endns)
+        resampled = interp_series(s, c.samplerate, beginns, endns)
         signals.append(resampled)
 
     edf = pyedflib.EdfWriter(
