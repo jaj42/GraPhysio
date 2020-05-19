@@ -5,7 +5,8 @@ import pyqtgraph as pg
 
 from PyQt5 import QtWidgets, QtGui
 
-from graphysio import exporter, ui
+from graphysio import ui
+from graphysio.writedata import exporter
 from graphysio.plotwidgets import PlotWidget
 from graphysio.algorithms.filters import savgol
 from graphysio.algorithms.waveform import findPOIGreedy

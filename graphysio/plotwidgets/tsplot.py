@@ -7,7 +7,8 @@ import sympy
 
 from pyqtgraph.Qt import QtGui, QtCore
 
-from graphysio import exporter, dialogs, transformations
+from graphysio import dialogs, transformations
+from graphysio.writedata import exporter
 from graphysio.structures import CycleId, Parameter, PlotData
 from graphysio.algorithms import filters
 

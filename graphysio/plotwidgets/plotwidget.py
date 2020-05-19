@@ -1,9 +1,6 @@
 from typing import Optional
 
-import numpy as np
-import pandas as pd
 import pyqtgraph as pg
-
 from pyqtgraph.Qt import QtGui, QtCore
 
 from graphysio.legend import LegendItem

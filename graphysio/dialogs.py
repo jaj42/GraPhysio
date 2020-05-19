@@ -7,7 +7,6 @@ from pint import UnitRegistry
 from pint.errors import DimensionalityError, UndefinedUnitError
 
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
-import pyqtgraph as pg
 
 from graphysio import ui
 from graphysio.algorithms import filters

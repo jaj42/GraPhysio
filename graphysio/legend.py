@@ -1,7 +1,5 @@
 import pyqtgraph as pg
 
-__all__ = ['LegendItem']
-
 
 class LegendItem(pg.LegendItem):
     def __init__(self, size=None, offset=(40, 5)):
