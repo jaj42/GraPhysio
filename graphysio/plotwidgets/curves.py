@@ -43,7 +43,7 @@ class CurveItem(pg.PlotDataItem):
         self.render()
 
     def rename(self, newname: str):
-        self.curve.name = newname
+        self.series.name = newname
         self.opts['name'] = newname
 
 
