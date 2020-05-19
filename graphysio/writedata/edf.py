@@ -37,7 +37,7 @@ def curves_to_edf(
     physmin = min([c.series.min() for c in curves])
 
     # Ask the user for the physical dimension shared by all curves
-    dim = askUserValue(Parameter('Enter physical dimensions', str))
+    dim = askUserValue(Parameter('Enter physical dimension', str))
 
     for c in curves:
         s = c.series

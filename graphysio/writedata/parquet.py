@@ -11,4 +11,4 @@ def curves_to_parquet(
     sers = [c.series for c in curves]
     data = pd.concat(sers, axis=1).sort_index()
     data.index = data.index.astype('M8[ns]')
-    data.to_parquet(filepath, compression='gzip')
+    data.to_parquet(filepath, compression='gzip', allow_truncated_timestamps=True)
