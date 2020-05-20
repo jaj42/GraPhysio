@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'setuppuloop.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -17,9 +18,7 @@ class Ui_SetupPULoop(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.formLayout_2 = QtWidgets.QFormLayout()
         self.formLayout_2.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
-        self.formLayout_2.setFieldGrowthPolicy(
-            QtWidgets.QFormLayout.AllNonFixedFieldsGrow
-        )
+        self.formLayout_2.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.formLayout_2.setObjectName("formLayout_2")
         self.label = QtWidgets.QLabel(SetupPULoop)
         self.label.setObjectName("label")

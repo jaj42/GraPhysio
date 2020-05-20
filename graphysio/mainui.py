@@ -13,8 +13,6 @@ from graphysio.plotwidgets import TSWidget
 
 
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
-    hasdata = QtCore.pyqtSignal(object)
-    haserror = QtCore.pyqtSignal(object)
     setcoords = QtCore.pyqtSignal(float, float)
 
     def __init__(self, parent=None):
@@ -26,18 +24,14 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.tabWidget.currentChanged.connect(self.tabChanged)
 
         getCLIShell = partial(utils.getshell, ui=self)
-        launchNewPlot = partial(self.launchReadData, newwidget=True)
-        launchAppendPlot = partial(self.launchReadData, newwidget=False)
 
-        mnewplot = self.menuFile.addMenu('New Plot')
-        for lbl in readdata.readers:
-            f = partial(launchNewPlot, datasource=lbl)
-            mnewplot.addAction(f'From {lbl.capitalize()}', self.errguard(f))
+        # mnewplot = self.menuFile.addMenu('New Plot')
+        # mnewplot.addAction('From File', launchNewPlot)
+        self.menuFile.addAction('New Plot', self.launchNewPlot)
 
-        mappplot = self.menuFile.addMenu('Append to Plot')
-        for lbl in readdata.readers:
-            f = partial(launchAppendPlot, datasource=lbl)
-            mappplot.addAction(f'From {lbl.capitalize()}', self.errguard(f))
+        # mappplot = self.menuFile.addMenu('Append to Plot')
+        # mappplot.addAction('From File', launchAppendPlot)
+        self.menuFile.addAction('Append to Plot', self.launchAppendPlot)
 
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
@@ -45,7 +39,6 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Quit', self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
-        self.haserror.connect(utils.displayError)
         self.setcoords.connect(self.setCoords)
 
     def setCoords(self, x, y):
@@ -62,7 +55,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
                 f()
             except Exception as e:
                 traceback.print_exc(file=sys.stdout)
-                self.haserror.emit(e)
+                utils.displayError(e)
 
         return wrapped
 
@@ -99,32 +92,23 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             for title, item in submenu.items():
                 menu.addAction(title, item)
 
-    def launchReadData(self, datasource, newwidget=True, cb=None):
-        try:
-            self.hasdata.disconnect()
-        except:
-            pass
-        if cb is not None:
-            title = "Load Data"
-            self.hasdata.connect(cb)
-        elif newwidget:
-            title = "New Plot"
-            self.hasdata.connect(self.createNewPlotWithData)
-        else:
-            title = "Append to Plot"
-            self.hasdata.connect(self.appendToPlotWithData)
+    def readData(self, cb, title='Load Data'):
+        reader = readdata.ReadFile(title)
+        data = reader.getdata()
+        if data:
+            cb(data)
 
-        def cb(datarequest):
-            self.dircache = datarequest.folder
-            self.lblStatus.setText(f'Loading... {datarequest.name}...')
-            Reader = readdata.readers[datasource]
-            reader = Reader(datarequest, self.hasdata, self.haserror)
-            QtCore.QThreadPool.globalInstance().start(reader)
+    def launchNewPlot(self):
+        self.readData(self.createNewPlotWithData, 'New Plot')
 
-        DlgNewPlot = readdata.dlgNewPlots[datasource]
-        dlgNewplot = DlgNewPlot(parent=self, title=title, directory=self.dircache)
-        dlgNewplot.dlgdata.connect(cb)
-        dlgNewplot.exec_()
+    def launchAppendPlot(self):
+        self.readData(self.appendToPlotWithData, 'Append to Plot')
+
+    def createNewPlotWithData(self, plotdata):
+        plotwidget = TSWidget(plotdata=plotdata, parent=self)
+        plotwidget.properties['dircache'] = self.dircache
+        self.addTab(plotwidget, plotdata.name)
+        self.lblStatus.setText("Loading... done")
 
     def appendToPlotWithData(self, plotdata, destidx=None):
         if destidx is None:
@@ -132,7 +116,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         else:
             plotwidget = self.tabWidget.widget(destidx)
         if plotwidget is None:
-            self.haserror.emit('No plot selected.')
+            utils.displayError('No plot selected.')
             return
         dorealign = dialogs.userConfirm(
             'Timeshift new curves to make the beginnings coincide?',
@@ -148,10 +132,4 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
         plotwidget.appendData(plotdata, dorealign)
         plotwidget.properties['dircache'] = self.dircache
-        self.lblStatus.setText("Loading... done")
-
-    def createNewPlotWithData(self, plotdata):
-        plotwidget = TSWidget(plotdata=plotdata, parent=self)
-        plotwidget.properties['dircache'] = self.dircache
-        self.addTab(plotwidget, plotdata.name)
         self.lblStatus.setText("Loading... done")

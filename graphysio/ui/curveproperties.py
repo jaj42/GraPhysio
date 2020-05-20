@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'curveproperties.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -33,9 +34,7 @@ class Ui_CurveProperties(object):
         self.formLayout.setWidget(7, QtWidgets.QFormLayout.LabelRole, self.label_4)
         self.lblSamplerate = QtWidgets.QLabel(self.grpName)
         self.lblSamplerate.setObjectName("lblSamplerate")
-        self.formLayout.setWidget(
-            7, QtWidgets.QFormLayout.FieldRole, self.lblSamplerate
-        )
+        self.formLayout.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.lblSamplerate)
         self.cmbSymbol = QtWidgets.QComboBox(self.grpName)
         self.cmbSymbol.setObjectName("cmbSymbol")
         self.cmbSymbol.addItem("")
@@ -71,9 +70,7 @@ class Ui_CurveProperties(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.okButton = QtWidgets.QPushButton(CurveProperties)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.okButton.sizePolicy().hasHeightForWidth())

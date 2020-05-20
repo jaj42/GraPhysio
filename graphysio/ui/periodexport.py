@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'periodexport.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -31,22 +32,16 @@ class Ui_PeriodExport(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.groupBox_2)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.lblPeriodStart = QtWidgets.QLabel(self.groupBox_2)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.lblPeriodStart.sizePolicy().hasHeightForWidth()
-        )
+        sizePolicy.setHeightForWidth(self.lblPeriodStart.sizePolicy().hasHeightForWidth())
         self.lblPeriodStart.setSizePolicy(sizePolicy)
         self.lblPeriodStart.setAlignment(QtCore.Qt.AlignCenter)
         self.lblPeriodStart.setObjectName("lblPeriodStart")
         self.horizontalLayout_2.addWidget(self.lblPeriodStart)
         self.label_3 = QtWidgets.QLabel(self.groupBox_2)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
@@ -54,14 +49,10 @@ class Ui_PeriodExport(object):
         self.label_3.setObjectName("label_3")
         self.horizontalLayout_2.addWidget(self.label_3)
         self.lblPeriodStop = QtWidgets.QLabel(self.groupBox_2)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.lblPeriodStop.sizePolicy().hasHeightForWidth()
-        )
+        sizePolicy.setHeightForWidth(self.lblPeriodStop.sizePolicy().hasHeightForWidth())
         self.lblPeriodStop.setSizePolicy(sizePolicy)
         self.lblPeriodStop.setAlignment(QtCore.Qt.AlignCenter)
         self.lblPeriodStop.setObjectName("lblPeriodStop")
@@ -73,9 +64,7 @@ class Ui_PeriodExport(object):
         self.label.setObjectName("label")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
         self.txtPatient = QtWidgets.QLineEdit(PeriodExport)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.txtPatient.sizePolicy().hasHeightForWidth())
@@ -117,9 +106,7 @@ class Ui_PeriodExport(object):
 
     def retranslateUi(self, PeriodExport):
         _translate = QtCore.QCoreApplication.translate
-        PeriodExport.setWindowTitle(
-            _translate("PeriodExport", "Export period information")
-        )
+        PeriodExport.setWindowTitle(_translate("PeriodExport", "Export period information"))
         self.groupBox.setTitle(_translate("PeriodExport", "Destination file"))
         self.btnBrowse.setText(_translate("PeriodExport", "Browse"))
         self.groupBox_2.setTitle(_translate("PeriodExport", "Period"))

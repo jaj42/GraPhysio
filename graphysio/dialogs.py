@@ -2,6 +2,7 @@ from typing import Optional
 from datetime import datetime
 import os
 import pathlib
+from functools import partial
 
 from pint import UnitRegistry
 from pint.errors import DimensionalityError, UndefinedUnitError
@@ -410,7 +411,8 @@ def userConfirm(question: str, title: str = '') -> bool:
     return confirmed
 
 
-def askSaveFilePath(
+def askFilePath(
+    func,
     caption: str,
     filename: str = '',
     folder: str = '',
@@ -424,12 +426,8 @@ def askSaveFilePath(
     if filename:
         default = pathlib.Path(default, filename)
 
-    filepath = QtGui.QFileDialog.getSaveFileName(
-        caption=caption, filter=filter, directory=str(default)
-    )
-    if type(filepath) is not str:
-        # PyQt5 API change
-        filepath = filepath[0]
+    fileinfo = func(caption=caption, filter=filter, directory=str(default))
+    filepath = fileinfo[0]
     if not filepath:
         # Cancel pressed
         return (None, None)
@@ -437,6 +435,10 @@ def askSaveFilePath(
     filepath = pathlib.Path(filepath).resolve()
     ext = filepath.suffix[1:]
     return (filepath, ext)
+
+
+askOpenFilePath = partial(askFilePath, QtGui.QFileDialog.getOpenFileName)
+askSaveFilePath = partial(askFilePath, QtGui.QFileDialog.getSaveFileName)
 
 
 def askDirPath(caption: str, folder: str = '') -> Optional[pathlib.Path]:

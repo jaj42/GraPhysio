@@ -1,4 +1,3 @@
-import os
 import csv
 from functools import partial
 
@@ -8,48 +7,82 @@ import pandas as pd
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 
 from graphysio import ui
-from graphysio.structures import PlotData, CsvRequest
+from graphysio.structures import PlotData
 
 
-class CsvReader(QtCore.QRunnable):
-    def __init__(self, csvrequest, sigdata, sigerror):
-        super().__init__()
-        self.csvrequest = csvrequest
-        self.sigdata = sigdata
-        self.sigerror = sigerror
+class CsvRequest:
+    def __init__(
+        self,
+        filepath="",
+        seperator=",",
+        decimal=".",
+        dtfield=None,
+        yfields=[],
+        datetime_format="%Y-%m-%d %H:%M:%S,%f",
+        droplines=0,
+        generatex=False,
+        timezone='UTC',
+        encoding='latin1',
+        samplerate=None,
+    ):
+        self.filepath = filepath
+        self.seperator = seperator
+        self.decimal = decimal
+        self.dtfield = dtfield
+        self.yfields = yfields
+        self.datetime_format = datetime_format
+        self.droplines = droplines
+        self.generatex = generatex
+        self.encoding = encoding
+        self.timezone = timezone
+        self.samplerate = samplerate
 
-    def run(self) -> None:
-        try:
-            data = self.getdata()
-        except Exception as e:
-            self.sigerror.emit(e)
-        else:
-            self.sigdata.emit(data)
+    @property
+    def fields(self):
+        dtfields = [] if self.dtfield is None else [self.dtfield]
+        return dtfields + self.yfields
 
-    def getdata(self) -> PlotData:
+    @property
+    def name(self):
+        name, _ = os.path.splitext(os.path.basename(self.filepath))
+        return name
+
+    @property
+    def folder(self):
+        folder = os.path.dirname(self.filepath)
+        return folder
+
+
+class CsvReader:
+    def __call__(self, filepath) -> PlotData:
+        dlg = DlgNewPlotCsv(filepath)
+        dlg.exec_()
+        # TODO: handle Cancel clicked
+        csvrequest = dlg.csvrequest
+        return self.processCsvRequest(csvrequest)
+
+    def processCsvRequest(self, request: CsvRequest) -> PlotData:
         data = pd.read_csv(
-            self.csvrequest.filepath,
-            sep=self.csvrequest.seperator,
-            usecols=self.csvrequest.fields,
-            decimal=self.csvrequest.decimal,
-            skiprows=self.csvrequest.droplines,
-            encoding=self.csvrequest.encoding,
+            request.filepath,
+            sep=request.seperator,
+            usecols=request.fields,
+            decimal=request.decimal,
+            skiprows=request.droplines,
+            encoding=request.encoding,
             index_col=False,
             engine='c',
         )
 
         pdtonum = partial(pd.to_numeric, errors='coerce')
-        dtformat = self.csvrequest.datetime_format
-        if self.csvrequest.generatex:
-            data.index = (1e9 * data.index / self.csvrequest.samplerate).astype(
-                np.int64
-            )
+        dtformat = request.datetime_format
+        if request.generatex:
+            data.index = (1e9 * data.index / request.samplerate).astype(np.int64)
             # Make all data numeric and remove empty rows
             data = data.apply(pdtonum)
             data = data.dropna(axis='rows', how='all')
         else:
-            timestamp = data[self.csvrequest.dtfield]
-            data = data.drop(columns=self.csvrequest.dtfield)
+            timestamp = data[request.dtfield]
+            data = data.drop(columns=request.dtfield)
             # Force all columns to numeric
             data = data.apply(pdtonum)
 
@@ -72,9 +105,7 @@ class CsvReader(QtCore.QRunnable):
 
             # Convert timestamp to UTC and use as index
             timestamp = (
-                pd.Index(timestamp)
-                .tz_localize(self.csvrequest.timezone)
-                .tz_convert('UTC')
+                pd.Index(timestamp).tz_localize(request.timezone).tz_convert('UTC')
             )
             timestamp = timestamp.astype(np.int64)
             data = data.set_index([timestamp])
@@ -82,19 +113,19 @@ class CsvReader(QtCore.QRunnable):
         data = data.dropna(axis='columns', how='all')
         data = data.sort_index()
 
-        plotdata = PlotData(data=data, filepath=self.csvrequest.filepath)
+        plotdata = PlotData(data=data, filepath=request.filepath)
         return plotdata
 
 
 class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, parent=None, title="New Plot", directory=""):
+    def __init__(self, filepath, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
-        self.setWindowTitle(title)
+        self.setWindowTitle(f'Open {filepath.name}')
 
-        self.dircache = directory
+        self.filepath = filepath
         self.csvrequest = CsvRequest()
 
         # Attach models to ListViews
@@ -112,7 +143,6 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         self.lstVAll.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
         # Connect callbacks
-        self.btnBrowse.clicked.connect(self.selectFile)
         self.btnLoad.clicked.connect(self.loadCsvFields)
         self.btnOk.clicked.connect(self.loadPlot)
         self.btnCancel.clicked.connect(self.reject)
@@ -122,25 +152,14 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         self.btnRemoveY.clicked.connect(self.delFromY)
         self.lstVX.currentIndexChanged.connect(self.xChanged)
 
-    # Methods / Callbacks
-    def selectFile(self):
-        filepath = QtGui.QFileDialog.getOpenFileName(
-            parent=self, caption="Open CSV file", directory=self.dircache
-        )
-        # PyQt5 API change
-        if type(filepath) is not str:
-            filepath = filepath[0]
-
-        if not filepath:
-            return
-        self.dircache = os.path.dirname(filepath)
-        self.txtFile.setText(filepath)
         # Guesstimate CSV field and decimal seperators
         delims = self.estimateDelimiters(filepath)
         self.txtSep.setEditText(delims[0])
         self.txtDecimal.setEditText(delims[1])
         self.txtDateTime.setEditText(f'%Y-%m-%d %H:%M:%S{delims[1]}%f')
 
+
+    # Methods / Callbacks
     def estimateDelimiters(self, filepath):
         encoding = self.txtEncoding.currentText()
         with open(filepath, 'r', encoding=encoding) as csvfile:
@@ -162,13 +181,12 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         sep = self.txtSep.currentText()
         if sep == '<tab>':
             sep = '\t'
-        filepath = self.txtFile.text()
         # Use the csv module to retrieve csv fields
         for lst in [self.lstAll, self.lstX, self.lstY]:
             lst.clear()
         self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
         encoding = self.txtEncoding.currentText()
-        with open(filepath, 'r', encoding=encoding) as csvfile:
+        with open(self.filepath, 'r', encoding=encoding) as csvfile:
             # Artificially drop n first lines as requested
             for _ in range(self.spnLinedrop.value()):
                 next(csvfile)
@@ -238,7 +256,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
 
         self.csvrequest.samplerate = self.spnFs.value()
         self.csvrequest.yfields = yRows
-        self.csvrequest.filepath = self.txtFile.text()
+        self.csvrequest.filepath = self.filepath
         self.csvrequest.decimal = self.txtDecimal.currentText()
         self.csvrequest.datetime_format = self.txtDateTime.currentText()
         self.csvrequest.droplines = self.spnLinedrop.value()

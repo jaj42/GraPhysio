@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'poiwidget.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -17,9 +18,7 @@ class Ui_POISelectorWidget(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        spacerItem = QtWidgets.QSpacerItem(
-            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
-        )
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
         self.groupBox = QtWidgets.QGroupBox(POISelectorWidget)
         self.groupBox.setCheckable(False)
@@ -42,9 +41,7 @@ class Ui_POISelectorWidget(object):
         self.buttonGroup.addButton(self.radioFixSecondDerivative)
         self.verticalLayout.addWidget(self.radioFixSecondDerivative)
         self.verticalLayout_2.addWidget(self.groupBox)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
-        )
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem1)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
 
@@ -57,6 +54,4 @@ class Ui_POISelectorWidget(object):
         self.groupBox.setTitle(_translate("POISelectorWidget", "Fix Position"))
         self.radioFixDisabled.setText(_translate("POISelectorWidget", "Disabled"))
         self.radioFixMinimum.setText(_translate("POISelectorWidget", "Local Minimum"))
-        self.radioFixSecondDerivative.setText(
-            _translate("POISelectorWidget", "2nd derivative peak")
-        )
+        self.radioFixSecondDerivative.setText(_translate("POISelectorWidget", "2nd derivative peak"))
