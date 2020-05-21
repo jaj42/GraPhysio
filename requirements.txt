@@ -10,3 +10,4 @@ sympy>=1.4
 typing>=3.7.4
 pyarrow>=0.17.0
 pyedflib>=0.1.17
+attrs>=18.2.0          

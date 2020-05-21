@@ -1,6 +1,8 @@
 import csv
 from functools import partial
 
+from attr import attrs, attrib
+
 import numpy as np
 import pandas as pd
 
@@ -10,56 +12,33 @@ from graphysio import ui
 from graphysio.structures import PlotData
 
 
+@attrs
 class CsvRequest:
-    def __init__(
-        self,
-        filepath="",
-        seperator=",",
-        decimal=".",
-        dtfield=None,
-        yfields=[],
-        datetime_format="%Y-%m-%d %H:%M:%S,%f",
-        droplines=0,
-        generatex=False,
-        timezone='UTC',
-        encoding='latin1',
-        samplerate=None,
-    ):
-        self.filepath = filepath
-        self.seperator = seperator
-        self.decimal = decimal
-        self.dtfield = dtfield
-        self.yfields = yfields
-        self.datetime_format = datetime_format
-        self.droplines = droplines
-        self.generatex = generatex
-        self.encoding = encoding
-        self.timezone = timezone
-        self.samplerate = samplerate
+    filepath = attrib()
+    seperator = attrib()
+    decimal = attrib()
+    dtfield = attrib()
+    yfields = attrib()
+    datetime_format = attrib()
+    droplines = attrib()
+    generatex = attrib()
+    timezone = attrib()
+    encoding = attrib()
+    samplerate = attrib()
 
     @property
     def fields(self):
         dtfields = [] if self.dtfield is None else [self.dtfield]
         return dtfields + self.yfields
 
-    @property
-    def name(self):
-        name, _ = os.path.splitext(os.path.basename(self.filepath))
-        return name
-
-    @property
-    def folder(self):
-        folder = os.path.dirname(self.filepath)
-        return folder
-
 
 class CsvReader:
     def __call__(self, filepath) -> PlotData:
         dlg = DlgNewPlotCsv(filepath)
         dlg.exec_()
-        # TODO: handle Cancel clicked
         csvrequest = dlg.csvrequest
-        return self.processCsvRequest(csvrequest)
+        if csvrequest:
+            return self.processCsvRequest(csvrequest)
 
     def processCsvRequest(self, request: CsvRequest) -> PlotData:
         data = pd.read_csv(
@@ -126,7 +105,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         self.setWindowTitle(f'Open {filepath.name}')
 
         self.filepath = filepath
-        self.csvrequest = CsvRequest()
+        self.csvrequest = None
 
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()
@@ -157,7 +136,6 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         self.txtSep.setEditText(delims[0])
         self.txtDecimal.setEditText(delims[1])
         self.txtDateTime.setEditText(f'%Y-%m-%d %H:%M:%S{delims[1]}%f')
-
 
     # Methods / Callbacks
     def estimateDelimiters(self, filepath):
@@ -243,25 +221,28 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
 
         seperator = self.txtSep.currentText()
-        if seperator == '<tab>':
-            self.csvrequest.seperator = '\t'
-        else:
-            self.csvrequest.seperator = seperator
+        seperator = '\t' if seperator == '<tab>' else seperator
 
-        self.csvrequest.generatex = self.chkGenX.checkState() > QtCore.Qt.Unchecked
-        if self.csvrequest.generatex or len(xRows) < 1:
-            self.csvrequest.dtfield = None
-        else:
-            self.csvrequest.dtfield = xRows[0]
+        generatex = self.chkGenX.checkState() > QtCore.Qt.Unchecked
+        try:
+            dtfield = xRows[0]
+        except IndexError:
+            dtfield = None
 
-        self.csvrequest.samplerate = self.spnFs.value()
-        self.csvrequest.yfields = yRows
-        self.csvrequest.filepath = self.filepath
-        self.csvrequest.decimal = self.txtDecimal.currentText()
-        self.csvrequest.datetime_format = self.txtDateTime.currentText()
-        self.csvrequest.droplines = self.spnLinedrop.value()
-        self.csvrequest.encoding = self.txtEncoding.currentText()
-        self.csvrequest.timezone = self.txtTimezone.currentText()
+        req = CsvRequest(
+            filepath=self.filepath,
+            seperator=seperator,
+            decimal=self.txtDecimal.currentText(),
+            dtfield=dtfield,
+            yfields=yRows,
+            datetime_format=self.txtDateTime.currentText(),
+            droplines=self.spnLinedrop.value(),
+            generatex=generatex,
+            timezone=self.txtTimezone.currentText(),
+            encoding=self.txtEncoding.currentText(),
+            samplerate=self.spnFs.value(),
+        )
 
-        self.dlgdata.emit(self.csvrequest)
+        self.csvrequest = req
+        self.dlgdata.emit(req)
         self.accept()
