@@ -2,6 +2,9 @@ import os
 import itertools
 from functools import partial
 
+from queue import Queue, Empty
+from concurrent.futures import ThreadPoolExecutor
+
 # Error printing
 import sys
 import traceback
@@ -10,6 +13,7 @@ from PyQt5 import QtCore, QtWidgets
 
 from graphysio import dialogs, utils, ui, readdata
 from graphysio.plotwidgets import TSWidget
+from graphysio.structures import PlotData
 
 
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
@@ -19,6 +23,9 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         super().__init__(parent=parent)
         self.setupUi(self)
         self.dircache = os.path.expanduser('~')
+
+        self.dataq = Queue()
+        self.executor = ThreadPoolExecutor()
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
         self.tabWidget.currentChanged.connect(self.tabChanged)
@@ -41,6 +48,11 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
         self.setcoords.connect(self.setCoords)
 
+        self.data_timer = QtCore.QTimer()
+        self.data_timer.timeout.connect(self.read_plot_data)
+        self.data_timer.setInterval(1000)  # Milliseconds
+        self.data_timer.start()
+
     def setCoords(self, x, y):
         dt = x / 1e6  # convert from ns to ms
         date = QtCore.QDateTime.fromMSecsSinceEpoch(dt)
@@ -48,15 +60,24 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         timestr = date.toString("dd/MM/yyyy hh:mm:ss.zzz")
         self.lblCoords.setText(f'Time: {timestr}, Value: {y}')
 
+    def read_plot_data(self):
+        try:
+            plotdata = self.dataq.get(block=False)
+        except Empty:
+            return
+        self.createNewPlotWithData(plotdata)
+
+    def print_exception(self, e):
+        traceback.print_exc(file=sys.stdout)
+        utils.displayError(e)
+
     def errguard(self, f):
         # Lift exceptions to UI reported errors
         def wrapped():
             try:
                 f()
             except Exception as e:
-                traceback.print_exc(file=sys.stdout)
-                utils.displayError(e)
-
+                self.print_exception(e)
         return wrapped
 
     def addTab(self, widget: QtWidgets.QWidget, tabname: str) -> None:
@@ -92,17 +113,26 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             for title, item in submenu.items():
                 menu.addAction(title, item)
 
-    def readData(self, cb, title='Load Data'):
+    def readData(self, func, title='Load Data'):
+        future = self.executor.submit(readdata.read_file)
+        future.add_done_callback(self.createNewPlotWithData)
         reader = readdata.ReadFile(title)
         data = reader.getdata()
         if data:
-            cb(data)
+            func(data)
 
     def launchNewPlot(self):
-        self.readData(self.createNewPlotWithData, 'New Plot')
+        reader = readdata.FileReader()
+        reader.askFile(self.dircache)
+        future = self.executor.submit(reader.get_plotdata)
+        def cb(future):
+            plotdata = future.result()
+            self.dataq.put(plotdata)
+        future.add_done_callback(cb)
 
     def launchAppendPlot(self):
-        self.readData(self.appendToPlotWithData, 'Append to Plot')
+        pass # TODO
+        #self.readData(self.appendToPlotWithData)
 
     def createNewPlotWithData(self, plotdata):
         plotwidget = TSWidget(plotdata=plotdata, parent=self)
