@@ -13,7 +13,6 @@ from PyQt5 import QtCore, QtWidgets
 
 from graphysio import dialogs, utils, ui, readdata
 from graphysio.plotwidgets import TSWidget
-from graphysio.structures import PlotData
 
 
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
@@ -26,6 +25,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
         self.dataq = Queue()
         self.executor = ThreadPoolExecutor()
+        self.datahandler = self.createNewPlotWithData
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
         self.tabWidget.currentChanged.connect(self.tabChanged)
@@ -48,6 +48,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
         self.setcoords.connect(self.setCoords)
 
+        # Launch timer to handle new plot data
         self.data_timer = QtCore.QTimer()
         self.data_timer.timeout.connect(self.read_plot_data)
         self.data_timer.setInterval(1000)  # Milliseconds
@@ -65,7 +66,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             plotdata = self.dataq.get(block=False)
         except Empty:
             return
-        self.createNewPlotWithData(plotdata)
+        self.datahandler(plotdata)
 
     def print_exception(self, e):
         traceback.print_exc(file=sys.stdout)
@@ -128,11 +129,18 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         def cb(future):
             plotdata = future.result()
             self.dataq.put(plotdata)
+        self.datahandler = self.createNewPlotWithData
         future.add_done_callback(cb)
 
     def launchAppendPlot(self):
-        pass # TODO
-        #self.readData(self.appendToPlotWithData)
+        reader = readdata.FileReader()
+        reader.askFile(self.dircache)
+        future = self.executor.submit(reader.get_plotdata)
+        def cb(future):
+            plotdata = future.result()
+            self.dataq.put(plotdata)
+        self.datahandler = self.appendToPlotWithData
+        future.add_done_callback(cb)
 
     def createNewPlotWithData(self, plotdata):
         plotwidget = TSWidget(plotdata=plotdata, parent=self)
