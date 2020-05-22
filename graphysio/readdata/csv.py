@@ -94,8 +94,6 @@ def processCsvRequest(request: CsvRequest) -> PlotData:
 
 
 class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
-
     def __init__(self, filepath, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -241,5 +239,4 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         )
 
         self.csvrequest = req
-        self.dlgdata.emit(req)
         self.accept()

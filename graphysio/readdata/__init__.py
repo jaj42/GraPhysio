@@ -1,10 +1,10 @@
-from .csv import CsvReader
-from .parquet import ParquetReader
-from .edf import EdfReader
+from .csv import read_csv
+from .parquet import read_parquet
+from .edf import read_edf
 
 from graphysio.dialogs import askOpenFilePath
 
-readers = {'csv': CsvReader, 'parquet': ParquetReader, 'edf': EdfReader}
+readers = {'csv': read_csv, 'parquet': read_parquet, 'edf': read_edf}
 
 
 class ReadFile:
@@ -25,6 +25,6 @@ class ReadFile:
         )
         if not filepath:
             return
-        reader = readers[ext]()
+        reader = readers[ext]
         data = reader(filepath)
         return data
