@@ -12,6 +12,14 @@ from graphysio import ui
 from graphysio.structures import PlotData
 
 
+def read_csv(filepath) -> PlotData:
+    dlg = DlgNewPlotCsv(filepath)
+    dlg.exec_()
+    csvrequest = dlg.csvrequest
+    if csvrequest:
+        return processCsvRequest(csvrequest)
+
+
 @attrs
 class CsvRequest:
     filepath = attrib()
@@ -32,68 +40,57 @@ class CsvRequest:
         return dtfields + self.yfields
 
 
-class CsvReader:
-    def __call__(self, filepath) -> PlotData:
-        dlg = DlgNewPlotCsv(filepath)
-        dlg.exec_()
-        csvrequest = dlg.csvrequest
-        if csvrequest:
-            return self.processCsvRequest(csvrequest)
+def processCsvRequest(request: CsvRequest) -> PlotData:
+    data = pd.read_csv(
+        request.filepath,
+        sep=request.seperator,
+        usecols=request.fields,
+        decimal=request.decimal,
+        skiprows=request.droplines,
+        encoding=request.encoding,
+        index_col=False,
+        engine='c',
+    )
+    pdtonum = partial(pd.to_numeric, errors='coerce')
+    dtformat = request.datetime_format
+    if request.generatex:
+        data.index = (1e9 * data.index / request.samplerate).astype(np.int64)
+        # Make all data numeric and remove empty rows
+        data = data.apply(pdtonum)
+        data = data.dropna(axis='rows', how='all')
+    else:
+        timestamp = data[request.dtfield]
+        data = data.drop(columns=request.dtfield)
+        # Force all columns to numeric
+        data = data.apply(pdtonum)
 
-    def processCsvRequest(self, request: CsvRequest) -> PlotData:
-        data = pd.read_csv(
-            request.filepath,
-            sep=request.seperator,
-            usecols=request.fields,
-            decimal=request.decimal,
-            skiprows=request.droplines,
-            encoding=request.encoding,
-            index_col=False,
-            engine='c',
-        )
-
-        pdtonum = partial(pd.to_numeric, errors='coerce')
-        dtformat = request.datetime_format
-        if request.generatex:
-            data.index = (1e9 * data.index / request.samplerate).astype(np.int64)
-            # Make all data numeric and remove empty rows
-            data = data.apply(pdtonum)
-            data = data.dropna(axis='rows', how='all')
+        if dtformat == '<seconds>':
+            timestamp = pdtonum(timestamp)
+            timestamp = pd.to_datetime(timestamp * 1e9, unit='ns')
+        elif dtformat == '<milliseconds>':
+            timestamp = pdtonum(timestamp)
+            timestamp = pd.to_datetime(timestamp * 1e6, unit='ns')
+        elif dtformat == '<microseconds>':
+            timestamp = pdtonum(timestamp)
+            timestamp = pd.to_datetime(timestamp * 1e3, unit='ns')
+        elif dtformat == '<nanoseconds>':
+            timestamp = pdtonum(timestamp)
+            timestamp = pd.to_datetime(timestamp, unit='ns')
+        elif dtformat == '<infer>':
+            timestamp = pd.to_datetime(timestamp, infer_datetime_format=True)
         else:
-            timestamp = data[request.dtfield]
-            data = data.drop(columns=request.dtfield)
-            # Force all columns to numeric
-            data = data.apply(pdtonum)
+            timestamp = pd.to_datetime(timestamp, format=dtformat)
 
-            if dtformat == '<seconds>':
-                timestamp = pdtonum(timestamp)
-                timestamp = pd.to_datetime(timestamp * 1e9, unit='ns')
-            elif dtformat == '<milliseconds>':
-                timestamp = pdtonum(timestamp)
-                timestamp = pd.to_datetime(timestamp * 1e6, unit='ns')
-            elif dtformat == '<microseconds>':
-                timestamp = pdtonum(timestamp)
-                timestamp = pd.to_datetime(timestamp * 1e3, unit='ns')
-            elif dtformat == '<nanoseconds>':
-                timestamp = pdtonum(timestamp)
-                timestamp = pd.to_datetime(timestamp, unit='ns')
-            elif dtformat == '<infer>':
-                timestamp = pd.to_datetime(timestamp, infer_datetime_format=True)
-            else:
-                timestamp = pd.to_datetime(timestamp, format=dtformat)
+        # Convert timestamp to UTC and use as index
+        timestamp = pd.Index(timestamp).tz_localize(request.timezone).tz_convert('UTC')
+        timestamp = timestamp.astype(np.int64)
+        data = data.set_index([timestamp])
 
-            # Convert timestamp to UTC and use as index
-            timestamp = (
-                pd.Index(timestamp).tz_localize(request.timezone).tz_convert('UTC')
-            )
-            timestamp = timestamp.astype(np.int64)
-            data = data.set_index([timestamp])
+    data = data.dropna(axis='columns', how='all')
+    data = data.sort_index()
 
-        data = data.dropna(axis='columns', how='all')
-        data = data.sort_index()
-
-        plotdata = PlotData(data=data, filepath=request.filepath)
-        return plotdata
+    plotdata = PlotData(data=data, filepath=request.filepath)
+    return plotdata
 
 
 class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
