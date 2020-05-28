@@ -114,14 +114,6 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             for title, item in submenu.items():
                 menu.addAction(title, item)
 
-    def readData(self, func, title='Load Data'):
-        future = self.executor.submit(readdata.read_file)
-        future.add_done_callback(self.createNewPlotWithData)
-        reader = readdata.ReadFile(title)
-        data = reader.getdata()
-        if data:
-            func(data)
-
     def launchNewPlot(self):
         reader = readdata.FileReader()
         reader.askFile(self.dircache)

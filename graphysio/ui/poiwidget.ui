@@ -62,6 +62,16 @@
          </widget>
         </item>
         <item>
+         <widget class="QRadioButton" name="radioFixMaximum">
+          <property name="text">
+           <string>Local Maximum</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
          <widget class="QRadioButton" name="radioFixSecondDerivative">
           <property name="text">
            <string>2nd derivative peak</string>

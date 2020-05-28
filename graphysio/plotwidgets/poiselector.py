@@ -15,6 +15,7 @@ from graphysio.algorithms.waveform import findPOIGreedy
 class FixIndex(Enum):
     disabled = 'Disabled'
     minimum = 'Local Minimum'
+    maximum = 'Local Maximum'
     sndderiv = '2nd derivative peak'
 
 
@@ -38,12 +39,12 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
     @property
     def menu(self):
         m = {
-            'Plot': {
-                '&Import POIs': partial(
-                    self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI
-                )
-            },
-            'Export': {'&POI to CSV': self.poiselectorwidget.exporter.poitocsv},
+            #'Plot': {
+            #    '&Import POIs': partial(
+            #        self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI
+            #    )
+            #},
+            'Export': {'&POI to CSV': self.poiselectorwidget.exporter.poi},
         }
         return m
 
@@ -106,6 +107,12 @@ class POISelectorPlot(PlotWidget):
             xmin, xmax = self.vbrange
             s = self.curve.series.loc[xmin:xmax]
             posprop = findPOIGreedy(s, pos, 'min')
+            fixedposloc = s.index.get_loc(posprop, method='nearest')
+            correctedpos = s.index[fixedposloc]
+        elif self.fixvalue is FixIndex.maximum:
+            xmin, xmax = self.vbrange
+            s = self.curve.series.loc[xmin:xmax]
+            posprop = findPOIGreedy(s, pos, 'max')
             fixedposloc = s.index.get_loc(posprop, method='nearest')
             correctedpos = s.index[fixedposloc]
         elif self.fixvalue is FixIndex.sndderiv:
