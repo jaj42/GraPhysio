@@ -27,8 +27,8 @@ def findPressureFeet(curve):
         thres = thres.fillna(method='backfill')
         risings = (integral > thres).astype(int)
         risingvar = risings.diff()
-        (risingStarts,) = (risingvar > 0).nonzero()
-        (risingStops,) = (risingvar < 0).nonzero()
+        (risingStarts,) = (risingvar > 0).to_numpy().nonzero()
+        (risingStops,) = (risingvar < 0).to_numpy().nonzero()
         return (risingStarts, risingStops)
 
     found = False
@@ -65,8 +65,8 @@ def findPressureFeet(curve):
 def findFlowCycles(curve):
     series = curve.series
     bincycles = (series > series.min()).astype(int)
-    (idxstarts,) = (bincycles.diff().shift(-1) > 0).nonzero()
-    (idxstops,) = (bincycles.diff() < 0).nonzero()
+    (idxstarts,) = (bincycles.diff().shift(-1) > 0).to_numpy().nonzero()
+    (idxstops,) = (bincycles.diff() < 0).to_numpy().nonzero()
     cycleStarts = series.iloc[idxstarts]
     cycleStops = series.iloc[idxstops]
 

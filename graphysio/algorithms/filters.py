@@ -228,7 +228,7 @@ def interp(series, samplerate, parameters):
 
 def dopplercut(series, samplerate, parameters):
     (minvel,) = parameters
-    (notlow,) = (series < minvel).nonzero()
+    (notlow,) = (series < minvel).to_numpy().nonzero()
     newname = f'{series.name}-{minvel}+'
     newseries = series.rename(newname)
     newseries.iloc[notlow] = 0
