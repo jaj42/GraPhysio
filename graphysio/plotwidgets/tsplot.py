@@ -117,10 +117,7 @@ class TSWidget(PlotWidget):
 
         def cb(result):
             createnew, curvechoices = result
-            if filterfeet:
-                filterfunc = self.filterFeet
-            else:
-                filterfunc = self.filterCurve
+            filterfunc = self.filterFeet if filterfeet else self.filterCurve
             for curvename, choice in curvechoices.items():
                 if choice == 'None':
                     continue
@@ -285,5 +282,9 @@ class TSWidget(PlotWidget):
             'Cycle info': self.exporter.cyclepoints,
             'Cycles to directory': self.exporter.cycles,
         }
-        m = {'Curves': mcurves, 'Plot': mplot, 'Seletion': mselect, 'Export': mexport}
-        return m
+        return {
+            'Curves': mcurves,
+            'Plot': mplot,
+            'Seletion': mselect,
+            'Export': mexport,
+        }

@@ -38,5 +38,4 @@ class PlotData:
 
     @property
     def folder(self):
-        folder = os.path.dirname(self.filepath)
-        return folder
+        return os.path.dirname(self.filepath)

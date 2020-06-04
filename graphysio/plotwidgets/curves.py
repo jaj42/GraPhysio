@@ -67,7 +67,7 @@ class POIItem(pg.ScatterPlotItem):
         self.render()
 
     def addPointsByLocation(self, key, locations):
-        if not key in self.indices:
+        if key not in self.indices:
             self.indices[key] = pd.Index([])
         oldidx = self.indices[key]
         newidx = oldidx.append(pd.Index(locations))
@@ -75,7 +75,7 @@ class POIItem(pg.ScatterPlotItem):
         self.render()
 
     def removePointsByLocation(self, key, locations):
-        if not key in self.indices:
+        if key not in self.indices:
             return
         oldidx = self.indices[key]
         dellocs = []
@@ -161,7 +161,7 @@ class CurveItemWithPOI(CurveItem):
         self.invisible.connect(self.__becameInvisible)
 
     def __becameVisible(self):
-        if not self.feetitem in self.parent.listDataItems():
+        if self.feetitem not in self.parent.listDataItems():
             self.parent.addItem(self.feetitem)
         self.render()
         self.feetitem.render()
@@ -180,7 +180,7 @@ class CurveItemWithPOI(CurveItem):
             foot = waveform.findPressureFeet(self)
             self.feetitem.indices['start'] = foot
         elif cycleid is CycleId.pressure:
-            if not 'start' in self.feetitem.indices:
+            if 'start' not in self.feetitem.indices:
                 self.addFeet(CycleId.foot)
             dia, sbp, dic = waveform.findPressureFull(self)
             self.feetitem.indices['diastole'] = dia

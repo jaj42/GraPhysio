@@ -101,8 +101,7 @@ def findPressureFullBak(curve):
         cycle = (dia, sbp, dic)
         cycles.append(cycle)
 
-    indices = [pd.Index(idx, dtype=np.int64) for idx in zip(*cycles)]
-    return indices
+    return [pd.Index(idx, dtype=np.int64) for idx in zip(*cycles)]
 
 
 def findPressureCycles(curve):
@@ -117,8 +116,7 @@ def findPressureCycles(curve):
         sbp = findPOI(series, [start, stop], 'max', windowsize=0.05)
         cycle = (dia, sbp)
         cycles.append(cycle)
-    indices = [pd.Index(idx, dtype=np.int64) for idx in zip(*cycles)]
-    return indices
+    return [pd.Index(idx, dtype=np.int64) for idx in zip(*cycles)]
 
 
 def findPressureFull(curve):
@@ -152,10 +150,7 @@ def genWindows(soi, interval, windowspan):
     windowspan *= 1e9  # s to ns
     if begin is None or end is None:
         return
-    if ltr:
-        direction = 1
-    else:
-        direction = -1
+    direction = 1 if ltr else -1
     for n in itertools.count():
         start = begin + direction * n * windowspan
         stop = start + direction * windowspan
@@ -236,8 +231,7 @@ def findHorizontal(soi, loc):
     step = 8000000  # 8 ms (from ns)
     end = loc + 10 * step
     zoi = soi.loc[loc:end]
-    horidx = zoi.abs().idxmin()
-    return horidx
+    return zoi.abs().idxmin()
 
 
 def distance(l1, l2, p):

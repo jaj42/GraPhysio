@@ -25,6 +25,4 @@ class EdfReader(BaseReader):
         edf.close()
 
         df = pd.concat(signals, axis=1)
-        plotdata = PlotData(data=df, filepath=filepath)
-
-        return plotdata
+        return PlotData(data=df, filepath=filepath)

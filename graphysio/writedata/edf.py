@@ -18,8 +18,7 @@ def interp_series(s, samplerate, start, stop):
     duration_s = (stop - start) * 1e-9
     npoints = duration_s * samplerate
     newidx = np.linspace(start, stop, num=npoints)
-    resampled = f(newidx)
-    return resampled
+    return f(newidx)
 
 
 def curves_to_edf(
@@ -28,13 +27,13 @@ def curves_to_edf(
     headers = []
     signals = []
 
-    beginns = min([c.series.index[0] for c in curves])
-    endns = max([c.series.index[-1] for c in curves])
+    beginns = min(c.series.index[0] for c in curves)
+    endns = max(c.series.index[-1] for c in curves)
     begindt = datetime.fromtimestamp(beginns * 1e-9)
 
     # Use global min / max of values since some viewers need this (edfbrowser)
-    physmax = max([c.series.max() for c in curves])
-    physmin = min([c.series.min() for c in curves])
+    physmax = max(c.series.max() for c in curves)
+    physmin = min(c.series.min() for c in curves)
 
     # Ask the user for the physical dimension shared by all curves
     dim = askUserValue(Parameter('Enter physical dimension', str))

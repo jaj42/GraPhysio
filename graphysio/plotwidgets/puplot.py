@@ -44,7 +44,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
 
         self.initloopdata(u, p)
 
-        if len(self.loops) > 0:
+        if self.loops:
             self.lblTot.setText(str(len(self.loops)))
             self.renderloop(0)
 
@@ -108,8 +108,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
 
     @property
     def menu(self):
-        m = {'Export': {'&Loop Data to CSV directory': self.exporter.exportloops}}
-        return m
+        return {'Export': {'&Loop Data to CSV directory': self.exporter.exportloops}}
 
 
 class PULoop(object):
@@ -153,10 +152,7 @@ class PULoop(object):
 def calcangle(looporigin, pointb, pointa=None):
     orig = complex(looporigin.x, looporigin.y)
     cb = complex(pointb.x, pointb.y) - orig
-    if pointa is None:
-        ca = complex(1, 0)
-    else:
-        ca = complex(pointa.x, pointa.y) - orig
+    ca = complex(1, 0) if pointa is None else complex(pointa.x, pointa.y) - orig
     angca = np.angle(ca, deg=True)
     angcb = np.angle(cb, deg=True)
     return abs(angca - angcb)

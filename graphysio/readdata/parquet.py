@@ -14,5 +14,4 @@ class ParquetReader(BaseReader):
         data = data.sort_index()
         data.index = data.index.astype(np.int64)
 
-        plotdata = PlotData(data=data, filepath=filepath)
-        return plotdata
+        return PlotData(data=data, filepath=filepath)
