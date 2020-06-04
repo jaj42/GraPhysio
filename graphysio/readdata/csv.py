@@ -140,12 +140,8 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
     def estimateDelimiters(self, filepath):
         encoding = self.txtEncoding.currentText()
         with open(filepath, 'r', encoding=encoding) as csvfile:
-            line1 = next(csvfile)
-            line2 = next(csvfile)
-            semipos = line1.find(';')
-            seperator = ',' if semipos == -1 else ';'
-            periodpos = line2.find('.')
-            decimal = ',' if periodpos == -1 else '.'
+            seperator = ';' if ';' in next(csvfile) else ','
+            decimal = '.' if '.' in next(csvfile) else ','
         return (seperator, decimal)
 
     def loadCsvFields(self):

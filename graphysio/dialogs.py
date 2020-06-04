@@ -417,7 +417,7 @@ def askFilePath(
     folder: str = '',
     filter: str = "CSV files (*.csv *.dat)",
 ) -> Optional[pathlib.Path]:
-    default = pathlib.Path.home() if not folder else pathlib.Path(folder)
+    default = pathlib.Path(folder) if folder else pathlib.Path.home()
     if filename:
         default = pathlib.Path(default, filename)
 

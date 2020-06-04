@@ -152,7 +152,7 @@ class PULoop(object):
 def calcangle(looporigin, pointb, pointa=None):
     orig = complex(looporigin.x, looporigin.y)
     cb = complex(pointb.x, pointb.y) - orig
-    ca = complex(1, 0) if pointa is None else complex(pointa.x, pointa.y) - orig
+    ca = complex(pointa.x, pointa.y) - orig if pointa else complex(1, 0)
     angca = np.angle(ca, deg=True)
     angcb = np.angle(cb, deg=True)
     return abs(angca - angcb)
