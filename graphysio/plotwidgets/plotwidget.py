@@ -70,10 +70,7 @@ class PlotWidget(pg.PlotWidget):
             # New curve
             if pen is None:
                 pen = self.getPen()
-            if withfeet:
-                Curve = curves.CurveItemWithPOI
-            else:
-                Curve = curves.CurveItem
+            Curve = curves.CurveItemWithPOI if withfeet else curves.CurveItem
             curve = Curve(series=series, parent=self, pen=pen)
             self.addCurve(curve)
         return curve

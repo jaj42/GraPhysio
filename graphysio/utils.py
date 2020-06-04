@@ -33,9 +33,8 @@ uiBasePath = os.path.join(curPath, 'ui')
 
 def loadUiFile(uiFile):
     uiPath = os.path.join(uiBasePath, uiFile)
-    uiClasses = loadUiType(uiPath)
     # form class and Qt base class.
-    return uiClasses
+    return loadUiType(uiPath)
 
 
 def estimateSampleRate(series):
@@ -85,8 +84,7 @@ def clip(vec, vrange):
 def truncatevecs(vecs):
     # Ensure all vectors have the same length by truncating the end
     maxidx = min(map(len, vecs))
-    newvecs = [vec[0:maxidx] for vec in vecs]
-    return newvecs
+    return [vec[0:maxidx] for vec in vecs]
 
 
 def getshell(ui=None):

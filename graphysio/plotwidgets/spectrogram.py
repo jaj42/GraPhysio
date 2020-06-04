@@ -34,8 +34,7 @@ class SpectrogramWidget(QtWidgets.QWidget):
     @property
     def menu(self):
         mplot = {'Extract SEF': self.spectro.launchSEFExtract}
-        m = {'Plot': mplot}
-        return m
+        return {'Plot': mplot}
 
 
 class SpectroTimeAxisItem(pg.AxisItem):
@@ -136,8 +135,7 @@ class SpectrogramPlotWidget(pg.PlotWidget):
             self.origidx, shape=(nwindows, winsize)
         )
         result = np.apply_along_axis(np.mean, 1, windows)
-        index = result.astype(int)
-        return index
+        return result.astype(int)
 
     def launchSEFExtract(self):
         q = Parameter('SEF percentage', int)

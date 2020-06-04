@@ -38,15 +38,14 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
 
     @property
     def menu(self):
-        m = {
-            #'Plot': {
-            #    '&Import POIs': partial(
-            #        self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI
-            #    )
-            #},
-            'Export': {'&POI to CSV': self.poiselectorwidget.exporter.poi},
-        }
-        return m
+        return {
+                #'Plot': {
+                #    '&Import POIs': partial(
+                #        self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI
+                #    )
+                #},
+                'Export': {'&POI to CSV': self.poiselectorwidget.exporter.poi},
+            }
 
 
 class POISelectorPlot(PlotWidget):
@@ -103,29 +102,23 @@ class POISelectorPlot(PlotWidget):
     def fixpos(self, pos):
         # Need to go through get_loc, otherwise strange things happen
         correctedpos = pos
+        xmin, xmax = self.vbrange
         if self.fixvalue is FixIndex.minimum:
-            xmin, xmax = self.vbrange
             s = self.curve.series.loc[xmin:xmax]
             posprop = findPOIGreedy(s, pos, 'min')
             fixedposloc = s.index.get_loc(posprop, method='nearest')
-            correctedpos = s.index[fixedposloc]
         elif self.fixvalue is FixIndex.maximum:
-            xmin, xmax = self.vbrange
             s = self.curve.series.loc[xmin:xmax]
             posprop = findPOIGreedy(s, pos, 'max')
             fixedposloc = s.index.get_loc(posprop, method='nearest')
-            correctedpos = s.index[fixedposloc]
         elif self.fixvalue is FixIndex.sndderiv:
-            xmin, xmax = self.vbrange
             s = self.sndderiv.loc[xmin:xmax]
             posprop = findPOIGreedy(s, pos, 'max')
             fixedposloc = s.index.get_loc(posprop, method='nearest')
-            correctedpos = s.index[fixedposloc]
         else:
-            xmin, xmax = self.vbrange
             s = self.curve.series.loc[xmin:xmax]
             fixedposloc = s.index.get_loc(pos, method='nearest')
-            correctedpos = s.index[fixedposloc]
+        correctedpos = s.index[fixedposloc]
         return correctedpos
 
     @property

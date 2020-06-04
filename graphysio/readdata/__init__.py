@@ -31,7 +31,6 @@ class FileReader:
     # Meant to be executed in seperate thread
     def get_plotdata(self) -> 'PlotData':
         if self.reader:
-            data = self.reader()
-            return data
+            return self.reader()
         else:
             return None

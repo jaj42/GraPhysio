@@ -76,8 +76,7 @@ class TsExporter:
         # curve and put those cycles into a dataframe for export.
         def getCurveCycles(curve):
             cycleIdx = curve.getCycleIndices()
-            cycles = (curve.series.loc[b : b + d] for b, d in zip(*cycleIdx))
-            return cycles
+            return (curve.series.loc[b : b + d] for b, d in zip(*cycleIdx))
 
         curves = self.parent.curves.values()
         allByCurve = (getCurveCycles(curve) for curve in curves)

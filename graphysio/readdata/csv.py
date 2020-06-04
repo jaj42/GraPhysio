@@ -74,8 +74,7 @@ class CsvReader(BaseReader):
         data = data.dropna(axis='columns', how='all')
         data = data.sort_index()
 
-        plotdata = PlotData(data=data, filepath=request.filepath)
-        return plotdata
+        return PlotData(data=data, filepath=request.filepath)
 
 
 @attrs
@@ -144,15 +143,9 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             line1 = next(csvfile)
             line2 = next(csvfile)
             semipos = line1.find(';')
-            if semipos == -1:
-                seperator = ','
-            else:
-                seperator = ';'
+            seperator = ',' if semipos == -1 else ';'
             periodpos = line2.find('.')
-            if periodpos == -1:
-                decimal = ','
-            else:
-                decimal = '.'
+            decimal = ',' if periodpos == -1 else '.'
         return (seperator, decimal)
 
     def loadCsvFields(self):

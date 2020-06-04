@@ -221,9 +221,9 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
 
     def accept(self):
         items = self.lstCurves.findItems("", QtCore.Qt.MatchContains)
-        ischecked = lambda item: not (item.checkState() == QtCore.Qt.Unchecked)
+        ischecked = lambda item: item.checkState() != QtCore.Qt.Unchecked
         checked = list(filter(ischecked, items))
-        visible = set([self.curvehash[item.text()] for item in checked])
+        visible = {self.curvehash[item.text()] for item in checked}
         result = (visible, self.curveproperties)
         self.dlgdata.emit(result)
         super().accept()
@@ -407,8 +407,7 @@ def userConfirm(question: str, title: str = '') -> bool:
     reply = QtGui.QMessageBox.question(
         None, title, question, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No
     )
-    confirmed = reply == QtGui.QMessageBox.Yes
-    return confirmed
+    return reply == QtGui.QMessageBox.Yes
 
 
 def askFilePath(
@@ -418,11 +417,7 @@ def askFilePath(
     folder: str = '',
     filter: str = "CSV files (*.csv *.dat)",
 ) -> Optional[pathlib.Path]:
-    if not folder:
-        default = pathlib.Path.home()
-    else:
-        default = pathlib.Path(folder)
-
+    default = pathlib.Path.home() if not folder else pathlib.Path(folder)
     if filename:
         default = pathlib.Path(default, filename)
 
