@@ -18,7 +18,7 @@ class FileReader:
         supported = ' '.join(f'*.{ext}' for ext in file_readers)
         self.file_filters = f'All supported ({supported});;{filters}'
 
-    def askFile(self, folder='') -> None:
+    def askFile(self, folder='') -> 'pathlib.PurePath':
         filepath, ext = askOpenFilePath(
             'Open File', folder=folder, filter=self.file_filters
         )
@@ -27,6 +27,8 @@ class FileReader:
         self.reader = file_readers[ext]()
         self.reader.set_data({'filepath': filepath})
         self.reader.askUserInput()
+        # Return the parent folder for caching
+        return filepath.parent
 
     # Meant to be executed in seperate thread
     def get_plotdata(self) -> 'PlotData':

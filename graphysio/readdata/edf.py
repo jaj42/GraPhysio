@@ -9,11 +9,8 @@ from graphysio.dialogs import DlgListChoice
 
 class EdfReader(BaseReader):
     def askUserInput(self):
-        filepath = self.userdata['filepath']
         filepath = str(self.userdata['filepath'])
         edf = pyedflib.EdfReader(filepath)
-        beginns = edf.getStartdatetime().timestamp() * 1e9
-        nsamplesPerChannel = edf.getNSamples()
 
         signals = {}
         for i in range(edf.signals_in_file):

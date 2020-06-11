@@ -32,13 +32,10 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
         getCLIShell = partial(utils.getshell, ui=self)
 
-        # mnewplot = self.menuFile.addMenu('New Plot')
-        # mnewplot.addAction('From File', launchNewPlot)
-        self.menuFile.addAction('New Plot', self.launchNewPlot)
-
-        # mappplot = self.menuFile.addMenu('Append to Plot')
-        # mappplot.addAction('From File', launchAppendPlot)
-        self.menuFile.addAction('Append to Plot', self.launchAppendPlot)
+        launchNewPlot = partial(self.launchOpenFile, self.createNewPlotWithData)
+        launchAppendPlot = partial(self.launchOpenFile, self.appendToPlotWithData)
+        self.menuFile.addAction('New Plot', launchNewPlot)
+        self.menuFile.addAction('Append to Plot', launchAppendPlot)
 
         self.menuFile.addSeparator()
         self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
@@ -114,26 +111,15 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             for title, item in submenu.items():
                 menu.addAction(title, item)
 
-    def launchNewPlot(self):
+    def launchOpenFile(self, datahandler):
         reader = readdata.FileReader()
-        reader.askFile(self.dircache)
+        self.dircache = reader.askFile(self.dircache)
         future = self.executor.submit(reader.get_plotdata)
         def cb(future):
             plotdata = future.result()
             if plotdata:
                 self.dataq.put(plotdata)
-        self.datahandler = self.createNewPlotWithData
-        future.add_done_callback(cb)
-
-    def launchAppendPlot(self):
-        reader = readdata.FileReader()
-        reader.askFile(self.dircache)
-        future = self.executor.submit(reader.get_plotdata)
-        def cb(future):
-            plotdata = future.result()
-            if plotdata:
-                self.dataq.put(plotdata)
-        self.datahandler = self.appendToPlotWithData
+        self.datahandler = datahandler
         future.add_done_callback(cb)
 
     def createNewPlotWithData(self, plotdata):
