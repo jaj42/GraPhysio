@@ -30,8 +30,8 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         self.setupUi(self)
         self.parent = parent
 
-        self.poiselectorwidget = POISelectorPlot(series, parent=self)
-        self.horizontalLayout.addWidget(self.poiselectorwidget)
+        self.poiselectorplot = POISelectorPlot(series, parent=self)
+        self.horizontalLayout.addWidget(self.poiselectorplot)
 
         buttonClicked = partial(self.buttonClicked, self)
         self.buttonGroup.buttonClicked.connect(buttonClicked)
@@ -39,12 +39,12 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
     @property
     def menu(self):
         return {
-            #'Plot': {
-            #    '&Import POIs': partial(
-            #        self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI
-            #    )
-            # },
-            'Export': {'&POI to CSV': self.poiselectorwidget.exporter.poi},
+            'Plot': {
+                '&Import POIs': partial(
+                    self.parent.launchOpenFile, datahandler=self.poiselectorplot.loadPOI
+                )
+            },
+            'Export': {'&POI to CSV': self.poiselectorplot.exporter.poi},
         }
 
 
