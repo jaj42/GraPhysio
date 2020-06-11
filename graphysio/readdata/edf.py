@@ -4,9 +4,31 @@ import pandas as pd
 
 from graphysio.structures import PlotData
 from graphysio.readdata.baseclass import BaseReader
+from graphysio.dialogs import DlgListChoice
 
 
 class EdfReader(BaseReader):
+    def askUserInput(self):
+        filepath = self.userdata['filepath']
+        filepath = str(self.userdata['filepath'])
+        edf = pyedflib.EdfReader(filepath)
+        beginns = edf.getStartdatetime().timestamp() * 1e9
+        nsamplesPerChannel = edf.getNSamples()
+
+        signals = {}
+        for i in range(edf.signals_in_file):
+            h = edf.getSignalHeader(i)
+            signals[h['label']] = i
+        edf.close()
+
+        def cb(colnames):
+            self.userdata['columns'] = [signals[lbl] for lbl in colnames]
+
+        colnames = list(signals.keys())
+        dlgchoice = DlgListChoice(colnames, 'Open EDF', 'Choose curves to load')
+        dlgchoice.dlgdata.connect(cb)
+        dlgchoice.exec_()
+
     def __call__(self) -> PlotData:
         filepath = str(self.userdata['filepath'])
         edf = pyedflib.EdfReader(filepath)
@@ -14,7 +36,7 @@ class EdfReader(BaseReader):
         nsamplesPerChannel = edf.getNSamples()
 
         signals = []
-        for i in range(edf.signals_in_file):
+        for i in self.userdata['columns']:
             h = edf.getSignalHeader(i)
             fs = h['sample_rate']
             n = nsamplesPerChannel[i]
@@ -23,6 +45,9 @@ class EdfReader(BaseReader):
             s = pd.Series(edf.readSignal(i), index=idx, name=h['label'])
             signals.append(s)
         edf.close()
+
+        if not signals:
+            return None
 
         df = pd.concat(signals, axis=1)
         return PlotData(data=df, filepath=filepath)

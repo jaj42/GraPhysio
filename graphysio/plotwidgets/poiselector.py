@@ -39,13 +39,13 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
     @property
     def menu(self):
         return {
-                #'Plot': {
-                #    '&Import POIs': partial(
-                #        self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI
-                #    )
-                #},
-                'Export': {'&POI to CSV': self.poiselectorwidget.exporter.poi},
-            }
+            #'Plot': {
+            #    '&Import POIs': partial(
+            #        self.parent.launchReadData, cb=self.poiselectorwidget.loadPOI
+            #    )
+            # },
+            'Export': {'&POI to CSV': self.poiselectorwidget.exporter.poi},
+        }
 
 
 class POISelectorPlot(PlotWidget):

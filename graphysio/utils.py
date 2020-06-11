@@ -89,6 +89,7 @@ def truncatevecs(vecs):
 
 def getshell(ui=None):
     import IPython
+
     IPython.embed(ui=ui)
 
 

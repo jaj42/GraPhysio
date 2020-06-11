@@ -120,7 +120,8 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         future = self.executor.submit(reader.get_plotdata)
         def cb(future):
             plotdata = future.result()
-            self.dataq.put(plotdata)
+            if plotdata:
+                self.dataq.put(plotdata)
         self.datahandler = self.createNewPlotWithData
         future.add_done_callback(cb)
 
@@ -130,7 +131,8 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         future = self.executor.submit(reader.get_plotdata)
         def cb(future):
             plotdata = future.result()
-            self.dataq.put(plotdata)
+            if plotdata:
+                self.dataq.put(plotdata)
         self.datahandler = self.appendToPlotWithData
         future.add_done_callback(cb)
 
