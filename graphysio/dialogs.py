@@ -359,6 +359,50 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
         super().accept()
 
 
+class DlgListChoice(QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
+    def __init__(self, items, title='', message='', parent=None):
+        super().__init__(parent=parent)
+        form = QtWidgets.QFormLayout(self)
+        form.addRow(QtWidgets.QLabel(message))
+        self.listView = QtWidgets.QListView(self)
+        form.addRow(self.listView)
+        model = QtGui.QStandardItemModel(self.listView)
+        self.setWindowTitle(title)
+        for item in items:
+            standardItem = QtGui.QStandardItem(item)
+            standardItem.setCheckable(True)
+            standardItem.setCheckState(QtCore.Qt.Checked)
+            standardItem.setEditable(False)
+            model.appendRow(standardItem)
+        self.listView.setModel(model)
+
+        buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel,
+            QtCore.Qt.Horizontal,
+            self,
+        )
+        form.addRow(buttonBox)
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+
+    def itemsSelected(self):
+        selected = []
+        model = self.listView.model()
+        i = 0
+        while model.item(i):
+            if model.item(i).checkState():
+                selected.append(model.item(i).text())
+            i += 1
+        return selected
+
+    def accept(self):
+        result = self.itemsSelected()
+        self.dlgdata.emit(result)
+        super().accept()
+
+
 def askUserValue(param):
     if param.request == 'time':
         value, isok = QtGui.QInputDialog.getText(None, 'Enter time', param.description)
