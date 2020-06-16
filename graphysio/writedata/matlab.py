@@ -13,4 +13,4 @@ def curves_to_matlab(
     sers = [c.series for c in curves]
     data = pd.concat(sers, axis=1).sort_index()
     data['timens'] = data.index.astype(np.int64)
-    scipy.io.savemat(filepath, {filepath.stem: data.to_dict("list")})
+    scipy.io.savemat(filepath, {'data': data.to_dict("list")})
