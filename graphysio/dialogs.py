@@ -295,12 +295,11 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
 
 
 class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
-
     def __init__(self, parent=None, prevdatetime=None):
         super().__init__(parent=parent)
         self.setupUi(self)
 
+        self.dlgdata = None
         self.btnOk.clicked.connect(self.ok)
         self.btnCancel.clicked.connect(self.reject)
 
@@ -319,7 +318,7 @@ class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
         time = self.edTime.time()
         dt = QtCore.QDateTime(date, time, QtCore.Qt.UTC)
         timestamp = dt.toMSecsSinceEpoch() * 1e6
-        self.dlgdata.emit(timestamp)
+        self.dlgdata = timestamp
         self.accept()
 
 
@@ -431,7 +430,7 @@ def askUserValue(param):
     elif param.request is datetime:
         dlg = DlgSetDateTime()
         isok = dlg.exec_()
-        value = dlg.result
+        value = dlg.dlgdata
     elif type(param.request) is list:
         value, isok = QtGui.QInputDialog.getItem(
             None, 'Choose value', param.description, param.request, editable=False

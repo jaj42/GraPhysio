@@ -136,15 +136,14 @@ class TSWidget(PlotWidget):
         fstcurve = sortedcurves[0]
         curtimestamp = fstcurve.series.index[0]
         dlg = dialogs.DlgSetDateTime(prevdatetime=curtimestamp)
-
-        def cb(newtimestamp):
-            offset = newtimestamp - curtimestamp
-            for curve in self.curves.values():
-                curve.series.index += offset
-                curve.render()
-
-        dlg.dlgdata.connect(cb)
         dlg.exec_()
+        newtimestamp = dlg.dlgdata
+        if not newtimestamp:
+            return
+        offset = newtimestamp - curtimestamp
+        for curve in self.curves.values():
+            curve.series.index += offset
+            curve.render()
 
     def launchTransformation(self):
         param = Parameter(
