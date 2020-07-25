@@ -1,15 +1,12 @@
 from enum import Enum
 from functools import partial
 
-import pandas as pd
-
 import pyqtgraph as pg
 
 from PyQt5 import QtWidgets, QtGui
 
 from graphysio import ui
 from graphysio.writedata import exporter
-from graphysio.structures import PlotData
 from graphysio.plotwidgets import PlotWidget
 from graphysio.algorithms.filters import savgol
 from graphysio.algorithms.waveform import findPOIGreedy
@@ -39,34 +36,15 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         buttonClicked = partial(self.buttonClicked, self)
         self.buttonGroup.buttonClicked.connect(buttonClicked)
 
-    def loadPOI(self, plotdata):
-        columnname, ok = QtGui.QInputDialog.getItem(
-            self, 'Select POI series', 'Load POI', plotdata.data.columns, editable=False
-        )
-        if not ok:
-            return
-        poiseries = plotdata.data[columnname].index
-        self.poiselectorplot.curve.feetitem.addPointsByLocation(self.poiselectorplot.pointkey, poiseries)
-
-    def launchNewPlotFromPOI(self):
-        srcseries = self.poiselectorplot.curve.series
-        poiidx = self.poiselectorplot.curve.feetitem.indices[self.parent.pointkey]
-        pois = srcseries[poiidx.dropna()]
-        sname = f'{srcseries.name}-poi'
-        df = pd.DataFrame({sname: pois})
-        plotdata = PlotData(data=df, name=sname)
-        self.parent.createNewPlotWithData(plotdata)
-
     @property
     def menu(self):
         return {
             'Plot': {
-                'Import POIs': partial(
-                    self.parent.launchOpenFile, datahandler=self.loadPOI
-                ),
-                'POI to new Plot': self.launchNewPlotFromPOI
+                '&Import POIs': partial(
+                    self.parent.launchOpenFile, datahandler=self.poiselectorplot.loadPOI
+                )
             },
-            'Export': {'POI to CSV': self.poiselectorplot.exporter.poi},
+            'Export': {'&POI to CSV': self.poiselectorplot.exporter.poi},
         }
 
 
@@ -111,6 +89,15 @@ class POISelectorPlot(PlotWidget):
         )
         clicked = partial(self.clicked, self)
         self.scene().sigMouseClicked.connect(clicked)
+
+    def loadPOI(self, plotdata):
+        columnname, ok = QtGui.QInputDialog.getItem(
+            self, 'Select POI series', 'Load POI', plotdata.data.columns, editable=False
+        )
+        if not ok:
+            return
+        poiseries = plotdata.data[columnname].dropna().index
+        self.curve.feetitem.addPointsByLocation(self.pointkey, poiseries)
 
     def fixpos(self, pos):
         # Need to go through get_loc, otherwise strange things happen
