@@ -10,5 +10,4 @@ if __name__ == '__main__':
     winmain = MainUi()
     winmain.show()
 
-    status = app.exec_()
-    sys.exit(status)
+    sys.exit(app.exec_())

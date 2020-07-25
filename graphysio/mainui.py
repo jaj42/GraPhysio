@@ -123,8 +123,8 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         future.add_done_callback(cb)
 
     def createNewPlotWithData(self, plotdata):
-        plotwidget = TSWidget(plotdata=plotdata, parent=self)
-        plotwidget.properties['dircache'] = self.dircache
+        properties = {'dircache': self.dircache}
+        plotwidget = TSWidget(plotdata, parent=self, properties=properties)
         self.addTab(plotwidget, plotdata.name)
         self.lblStatus.setText("Loading... done")
 

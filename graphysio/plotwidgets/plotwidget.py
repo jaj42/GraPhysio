@@ -21,12 +21,12 @@ class TimeAxisItem(pg.AxisItem):
 
 
 class PlotWidget(pg.PlotWidget):
-    def __init__(self, name, parent=None):
+    def __init__(self, name, parent=None, properties={}):
         self.parent = parent
         self.name = name
         self.colors = Colors()
         self.hiddencurves = set()
-        self.properties = {}
+        self.properties = properties
 
         axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         super().__init__(parent=parent, axisItems=axisItems, background='w')

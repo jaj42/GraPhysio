@@ -28,8 +28,8 @@ class TSWidget(PlotWidget):
             mousePoint = self.getViewBox().mapSceneToView(pos)
             self.parent.setcoords.emit(mousePoint.x(), mousePoint.y())
 
-    def __init__(self, plotdata, parent=None):
-        super().__init__(plotdata.name, parent=parent)
+    def __init__(self, plotdata, parent=None, properties={}):
+        super().__init__(plotdata.name, parent=parent, properties=properties)
         self.exporter = exporter.TsExporter(self, plotdata.name)
         self.appendData(plotdata)
         mouseMoved = partial(self.mouseMoved, self)
