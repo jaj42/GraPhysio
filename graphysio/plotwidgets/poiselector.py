@@ -1,12 +1,15 @@
 from enum import Enum
 from functools import partial
 
+import pandas as pd
+
 import pyqtgraph as pg
 
 from PyQt5 import QtWidgets, QtGui
 
 from graphysio import ui
 from graphysio.writedata import exporter
+from graphysio.structures import PlotData
 from graphysio.plotwidgets import PlotWidget
 from graphysio.algorithms.filters import savgol
 from graphysio.algorithms.waveform import findPOIGreedy
@@ -36,15 +39,25 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         buttonClicked = partial(self.buttonClicked, self)
         self.buttonGroup.buttonClicked.connect(buttonClicked)
 
+    def launchNewPlotFromPOIs(self):
+        srcseries = self.poiselectorplot.curve.series
+        poiidx = self.poiselectorplot.curve.feetitem.indices[self.poiselectorplot.pointkey]
+        pois = srcseries[poiidx.dropna()].rename('poi')
+        sname = f'{srcseries.name}-poi'
+        df = pd.DataFrame({sname: pois})
+        plotdata = PlotData(data=df, name=sname)
+        self.parent.createNewPlotWithData(plotdata)
+
     @property
     def menu(self):
         return {
             'Plot': {
-                '&Import POIs': partial(
+                'Import POIs': partial(
                     self.parent.launchOpenFile, datahandler=self.poiselectorplot.loadPOI
-                )
+                ),
+                'POIs to New Plot': self.launchNewPlotFromPOIs,
             },
-            'Export': {'&POI to CSV': self.poiselectorplot.exporter.poi},
+            'Export': {'POI to CSV': self.poiselectorplot.exporter.poi},
         }
 
 
