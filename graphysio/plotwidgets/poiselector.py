@@ -39,6 +39,15 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         buttonClicked = partial(self.buttonClicked, self)
         self.buttonGroup.buttonClicked.connect(buttonClicked)
 
+    def loadPOI(self, plotdata):
+        columnname, ok = QtGui.QInputDialog.getItem(
+            self, 'Select POI series', 'Load POI', plotdata.data.columns, editable=False
+        )
+        if not ok:
+            return
+        poiseries = plotdata.data[columnname].dropna().index
+        self.poiselectorplot.curve.feetitem.addPointsByLocation(self.poiselectorplot.pointkey, poiseries)
+
     def launchNewPlotFromPOIs(self):
         srcseries = self.poiselectorplot.curve.series
         poiidx = self.poiselectorplot.curve.feetitem.indices[self.poiselectorplot.pointkey]
@@ -53,7 +62,7 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         return {
             'Plot': {
                 'Import POIs': partial(
-                    self.parent.launchOpenFile, datahandler=self.poiselectorplot.loadPOI
+                    self.parent.launchOpenFile, datahandler=self.loadPOI
                 ),
                 'POIs to New Plot': self.launchNewPlotFromPOIs,
             },
@@ -102,15 +111,6 @@ class POISelectorPlot(PlotWidget):
         )
         clicked = partial(self.clicked, self)
         self.scene().sigMouseClicked.connect(clicked)
-
-    def loadPOI(self, plotdata):
-        columnname, ok = QtGui.QInputDialog.getItem(
-            self, 'Select POI series', 'Load POI', plotdata.data.columns, editable=False
-        )
-        if not ok:
-            return
-        poiseries = plotdata.data[columnname].dropna().index
-        self.curve.feetitem.addPointsByLocation(self.pointkey, poiseries)
 
     def fixpos(self, pos):
         # Need to go through get_loc, otherwise strange things happen
