@@ -184,18 +184,29 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
+         <layout class="QVBoxLayout" name="verticalLayout_11">
           <item>
-           <widget class="QPushButton" name="btnToX">
-            <property name="text">
-             <string>Move to X</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QPushButton" name="btnToX">
+              <property name="text">
+               <string>Move to X</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnToY">
+              <property name="text">
+               <string>Move to Y</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="btnToY">
+           <widget class="QPushButton" name="btnToCluster">
             <property name="text">
-             <string>Move to Y</string>
+             <string>Use as Cluster Id</string>
             </property>
            </widget>
           </item>

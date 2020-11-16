@@ -1,16 +1,14 @@
 import csv
 from functools import partial
-
-from attr import attrs, attrib
+from typing import List
 
 import numpy as np
 import pandas as pd
-
-from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
-
+from attr import attrib, attrs
 from graphysio import ui
-from graphysio.structures import PlotData
 from graphysio.readdata.baseclass import BaseReader
+from graphysio.structures import PlotData
+from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 
 class CsvReader(BaseReader):
@@ -22,7 +20,7 @@ class CsvReader(BaseReader):
         if csvrequest:
             self.userdata['csvrequest'] = dlg.csvrequest
 
-    def __call__(self) -> PlotData:
+    def __call__(self) -> List[PlotData]:
         request = self.userdata['csvrequest']
         data = pd.read_csv(
             request.filepath,
@@ -74,7 +72,21 @@ class CsvReader(BaseReader):
         data = data.dropna(axis='columns', how='all')
         data = data.sort_index()
 
-        return PlotData(data=data, filepath=request.filepath)
+        fp = request.filepath
+        if request.clusterid:
+            g = data.groupby(request.clusterid)
+            plotdata = (
+                PlotData(
+                    data=df.drop(columns=request.clusterid),
+                    filepath=fp,
+                    name=f'{fp.stem}-{i}',
+                )
+                for i, df in g
+            )
+        else:
+            plotdata = [PlotData(data=data, filepath=fp)]
+
+        return plotdata
 
 
 @attrs
@@ -87,6 +99,7 @@ class CsvRequest:
     datetime_format = attrib()
     droplines = attrib()
     generatex = attrib()
+    clusterid = attrib()
     timezone = attrib()
     encoding = attrib()
     samplerate = attrib()
@@ -94,7 +107,8 @@ class CsvRequest:
     @property
     def fields(self):
         dtfields = [] if self.dtfield is None else [self.dtfield]
-        return dtfields + self.yfields
+        clusterfields = [] if self.clusterid is None else [self.clusterid]
+        return dtfields + clusterfields + self.yfields
 
 
 class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
@@ -109,10 +123,12 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         # Attach models to ListViews
         self.lstX = QtGui.QStandardItemModel()
         self.lstY = QtGui.QStandardItemModel()
+        self.lstCluster = QtGui.QStandardItemModel()
         self.lstAll = QtGui.QStandardItemModel()
 
         self.lstVX.setModel(self.lstX)
         self.lstVY.setModel(self.lstY)
+        self.lstVCluster.setModel(self.lstCluster)
         self.lstVAll.setModel(self.lstAll)
 
         # Setup Field Table
@@ -126,8 +142,10 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         self.btnCancel.clicked.connect(self.reject)
         self.btnToX.clicked.connect(self.moveToX)
         self.btnToY.clicked.connect(self.moveToY)
+        self.btnToCluster.clicked.connect(self.moveToCluster)
         self.btnRemoveX.clicked.connect(self.delFromX)
         self.btnRemoveY.clicked.connect(self.delFromY)
+        self.btnRemoveCluster.clicked.connect(self.delFromCluster)
         self.lstVX.currentIndexChanged.connect(self.xChanged)
 
         # Guesstimate CSV field and decimal seperators
@@ -173,6 +191,15 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         else:
             self.chkGenX.setCheckState(QtCore.Qt.Checked)
 
+    def moveToCluster(self):
+        if self.lstCluster.rowCount() > 0:
+            # Only allow one element for Cluster Id.
+            return
+        selection = self.lstVAll.selectedIndexes()
+        rowindex = selection[0].row()
+        row = self.lstAll.takeRow(rowindex)
+        self.lstCluster.appendRow(row)
+
     def moveToX(self):
         if self.lstX.rowCount() > 0:
             # Only allow one element for X.
@@ -190,11 +217,16 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             rowindex = selection[0].row()
             self.lstY.appendRow(self.lstAll.takeRow(rowindex))
 
-    def delFromX(self):
-        try:
-            row = self.lstX.takeRow(0)
-        except IndexError:
+    def delFromCluster(self):
+        if not self.lstCluster.rowCount():
             return
+        row = self.lstCluster.takeRow(0)
+        self.lstAll.appendRow(row)
+
+    def delFromX(self):
+        if not self.lstX.rowCount():
+            return
+        row = self.lstX.takeRow(0)
         self.lstAll.appendRow(row)
 
     def delFromY(self):
@@ -208,6 +240,9 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
     def loadPlot(self):
         yRows = [i.text() for i in self.lstY.findItems("", QtCore.Qt.MatchContains)]
         xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
+        cRows = [
+            i.text() for i in self.lstCluster.findItems("", QtCore.Qt.MatchContains)
+        ]
 
         seperator = self.txtSep.currentText()
         seperator = '\t' if seperator == '<tab>' else seperator
@@ -218,6 +253,11 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         except IndexError:
             dtfield = None
 
+        try:
+            cid = cRows[0]
+        except IndexError:
+            cid = None
+
         req = CsvRequest(
             filepath=self.filepath,
             seperator=seperator,
@@ -227,6 +267,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             datetime_format=self.txtDateTime.currentText(),
             droplines=self.spnLinedrop.value(),
             generatex=generatex,
+            clusterid=cid,
             timezone=self.txtTimezone.currentText(),
             encoding=self.txtEncoding.currentText(),
             samplerate=self.spnFs.value(),

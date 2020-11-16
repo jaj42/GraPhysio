@@ -46,11 +46,15 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         if not ok:
             return
         poiseries = plotdata.data[columnname].dropna().index
-        self.poiselectorplot.curve.feetitem.addPointsByLocation(self.poiselectorplot.pointkey, poiseries)
+        self.poiselectorplot.curve.feetitem.addPointsByLocation(
+            self.poiselectorplot.pointkey, poiseries
+        )
 
     def launchNewPlotFromPOIs(self):
         srcseries = self.poiselectorplot.curve.series
-        poiidx = self.poiselectorplot.curve.feetitem.indices[self.poiselectorplot.pointkey]
+        poiidx = self.poiselectorplot.curve.feetitem.indices[
+            self.poiselectorplot.pointkey
+        ]
         pois = srcseries[poiidx.dropna()].rename('poi')
         sname = f'{srcseries.name}-poi'
         df = pd.DataFrame({sname: pois})
