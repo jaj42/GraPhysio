@@ -60,10 +60,16 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def read_plot_data(self):
         try:
-            plotdata = self.dataq.get(block=False)
+            data = self.dataq.get(block=False)
         except Empty:
             return
-        self.datahandler(plotdata)
+        # Plotdata can be an object or a list of objects
+        try:
+            iter(data)
+        except TypeError:
+            data = [data]
+        for plotdata in data:
+            self.datahandler(plotdata)
 
     def print_exception(self, e):
         traceback.print_exc(file=sys.stdout)
