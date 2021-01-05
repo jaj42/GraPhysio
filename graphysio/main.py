@@ -1,5 +1,7 @@
 import sys
+
 from pyqtgraph.Qt import QtGui
+
 from graphysio.mainui import MainUi
 
 

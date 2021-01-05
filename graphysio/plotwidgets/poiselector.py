@@ -2,17 +2,15 @@ from enum import Enum
 from functools import partial
 
 import pandas as pd
-
 import pyqtgraph as pg
-
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtGui, QtWidgets
 
 from graphysio import ui
-from graphysio.writedata import exporter
-from graphysio.structures import PlotData
-from graphysio.plotwidgets import PlotWidget
 from graphysio.algorithms.filters import savgol
 from graphysio.algorithms.waveform import findPOIGreedy
+from graphysio.plotwidgets import PlotWidget
+from graphysio.structures import PlotData
+from graphysio.writedata import exporter
 
 
 class FixIndex(Enum):

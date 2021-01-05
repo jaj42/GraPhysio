@@ -1,12 +1,12 @@
-import os
 import csv
+import os
 from itertools import zip_longest
 
 import pandas as pd
 
+from graphysio import writedata
 from graphysio.dialogs import DlgPeriodExport, askDirPath, askSaveFilePath
 from graphysio.utils import sanitize_filename
-from graphysio import writedata
 
 file_filters = ';;'.join(
     [f'{ext.upper()} files (*.{ext})' for ext in writedata.curve_writers]

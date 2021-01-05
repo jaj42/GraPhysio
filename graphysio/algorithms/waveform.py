@@ -3,8 +3,8 @@ import itertools
 import numpy as np
 import pandas as pd
 
-from graphysio.utils import truncatevecs
 from graphysio.algorithms.filters import savgol
+from graphysio.utils import truncatevecs
 
 
 def findPressureFeet(curve):

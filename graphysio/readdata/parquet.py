@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pa
 
-from graphysio.structures import PlotData
-from graphysio.readdata.baseclass import BaseReader
 from graphysio.dialogs import DlgListChoice
+from graphysio.readdata.baseclass import BaseReader
+from graphysio.structures import PlotData
 
 
 class ParquetReader(BaseReader):

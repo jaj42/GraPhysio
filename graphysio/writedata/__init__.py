@@ -1,7 +1,7 @@
 from .csv import curves_to_csv
-from .parquet import curves_to_parquet
 from .edf import curves_to_edf
 from .matlab import curves_to_matlab
+from .parquet import curves_to_parquet
 
 curve_writers = {
     'csv': curves_to_csv,

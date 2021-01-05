@@ -1,11 +1,11 @@
 from typing import Optional
 
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtCore, QtGui
 
 from graphysio.legend import LegendItem
-from graphysio.utils import Colors
 from graphysio.plotwidgets import curves
+from graphysio.utils import Colors
 
 
 class TimeAxisItem(pg.AxisItem):

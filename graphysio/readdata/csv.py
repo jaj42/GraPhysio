@@ -5,10 +5,11 @@ from typing import List
 import numpy as np
 import pandas as pd
 from attr import attrib, attrs
+from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
+
 from graphysio import ui
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
-from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 
 class CsvReader(BaseReader):

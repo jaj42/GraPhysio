@@ -3,13 +3,12 @@ from functools import partial
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-
-from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtCore, QtGui
 
 from graphysio import utils
+from graphysio.algorithms import waveform
 from graphysio.structures import CycleId
 from graphysio.utils import estimateSampleRate
-from graphysio.algorithms import waveform
 
 
 class CurveItem(pg.PlotDataItem):

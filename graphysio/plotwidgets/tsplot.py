@@ -4,20 +4,18 @@ from functools import partial
 import pandas as pd
 import pyqtgraph as pg
 import sympy
-
-from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtCore, QtGui
 
 from graphysio import dialogs, transformations
-from graphysio.writedata import exporter
-from graphysio.structures import CycleId, Parameter, PlotData
 from graphysio.algorithms import filters
-
 from graphysio.plotwidgets import (
-    PlotWidget,
     LoopWidget,
+    PlotWidget,
     POISelectorWidget,
     SpectrogramWidget,
 )
+from graphysio.structures import CycleId, Parameter, PlotData
+from graphysio.writedata import exporter
 
 
 class TSWidget(PlotWidget):

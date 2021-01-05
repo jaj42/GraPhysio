@@ -1,8 +1,8 @@
-from .csv import CsvReader
-from .parquet import ParquetReader
-from .edf import EdfReader
-
 from graphysio.dialogs import askOpenFilePath
+
+from .csv import CsvReader
+from .edf import EdfReader
+from .parquet import ParquetReader
 
 file_readers = {'csv': CsvReader, 'parquet': ParquetReader, 'edf': EdfReader}
 

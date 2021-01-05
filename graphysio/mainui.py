@@ -1,17 +1,16 @@
-import os
 import itertools
-from functools import partial
-
-from queue import Queue, Empty
-from concurrent.futures import ThreadPoolExecutor
+import os
 
 # Error printing
 import sys
 import traceback
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
+from queue import Empty, Queue
 
 from PyQt5 import QtCore, QtWidgets
 
-from graphysio import dialogs, utils, ui, readdata
+from graphysio import dialogs, readdata, ui, utils
 from graphysio.plotwidgets import TSWidget
 
 

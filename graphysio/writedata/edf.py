@@ -1,13 +1,13 @@
-from typing import List
 from datetime import datetime
+from typing import List
 
-import pyedflib
 import numpy as np
+import pyedflib
 from scipy import interpolate
 
 from graphysio.dialogs import askUserValue
-from graphysio.structures import Parameter
 from graphysio.plotwidgets.curves import CurveItem
+from graphysio.structures import Parameter
 
 
 def interp_series(s, samplerate, start, stop):

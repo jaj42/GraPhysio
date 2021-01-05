@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import sys
+
 from pyqtgraph.Qt import QtGui
+
 from graphysio.mainui import MainUi
 
 if __name__ == '__main__':

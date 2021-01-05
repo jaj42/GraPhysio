@@ -1,7 +1,6 @@
 import os
-from enum import Enum
 from collections import namedtuple
-
+from enum import Enum
 
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])

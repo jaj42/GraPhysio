@@ -1,13 +1,12 @@
-from typing import Dict
-
 from datetime import datetime
+from typing import Dict
 
 import numpy as np
 import pandas as pd
-from scipy import signal, interpolate
+from scipy import interpolate, signal
 
-from graphysio.utils import truncatevecs
 from graphysio.structures import Filter, Parameter
+from graphysio.utils import truncatevecs
 
 
 class TF(object):

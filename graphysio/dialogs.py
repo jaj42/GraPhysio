@@ -1,18 +1,17 @@
-from typing import Optional
-from datetime import datetime
 import os
 import pathlib
+from datetime import datetime
 from functools import partial
+from typing import Optional
 
 from pint import UnitRegistry
 from pint.errors import DimensionalityError, UndefinedUnitError
-
-from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
+from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 from graphysio import ui
 from graphysio.algorithms import filters
-from graphysio.utils import sanitize_filepath
 from graphysio.structures import CycleId
+from graphysio.utils import sanitize_filepath
 
 ureg = UnitRegistry()
 
