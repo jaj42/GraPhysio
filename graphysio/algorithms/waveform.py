@@ -79,31 +79,6 @@ def findFlowCycles(curve):
     return (cycleStarts.index, cycleStops.index)
 
 
-def findPressureFullBak(curve):
-    series = curve.series
-    samplerate = curve.samplerate
-
-    fstderivraw = series.diff().iloc[1:]
-    sndderivraw = fstderivraw.diff().iloc[1:]
-    # Smoothen the derivatives
-    fstderiv, _ = savgol(fstderivraw, samplerate, (0.16, 2))
-    sndderiv, _ = savgol(sndderivraw, samplerate, (0.16, 2))
-
-    cycles = []
-    starts, durations = curve.getCycleIndices()
-    for start, duration in zip(starts, durations):
-        stop = start + duration
-        diastop = start - duration
-        dia = findPOI(series, [start, diastop], 'min', windowsize=0.05, forcesign=False)
-        sbp = findPOI(series, [start, stop], 'max', windowsize=0.05)
-        peridic = findPOI(sndderiv, [sbp, stop], 'max', windowsize=0.15)
-        dic = findHorizontal(fstderiv, peridic)
-        cycle = (dia, sbp, dic)
-        cycles.append(cycle)
-
-    return [pd.Index(idx, dtype=np.int64) for idx in zip(*cycles)]
-
-
 def findPressureCycles(curve):
     series = curve.series
 
@@ -223,15 +198,6 @@ def findPOIGreedy(soi, start, kind):
             break
         curloc = nextloc
     return soi.index[curloc]
-
-
-def findHorizontal(soi, loc):
-    if loc is None:
-        return None
-    step = 8000000  # 8 ms (from ns)
-    end = loc + 10 * step
-    zoi = soi.loc[loc:end]
-    return zoi.abs().idxmin()
 
 
 def distance(l1, l2, p):

@@ -1,7 +1,5 @@
 import itertools
 import os
-
-# Error printing
 import sys
 import traceback
 from concurrent.futures import ThreadPoolExecutor
