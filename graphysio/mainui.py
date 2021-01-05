@@ -82,6 +82,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
                 f()
             except Exception as e:
                 self.print_exception(e)
+
         return wrapped
 
     def addTab(self, widget: QtWidgets.QWidget, tabname: str) -> None:
@@ -121,10 +122,12 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         reader = readdata.FileReader()
         self.dircache = reader.askFile(self.dircache)
         future = self.executor.submit(reader.get_plotdata)
+
         def cb(future):
             plotdata = future.result()
             if plotdata:
                 self.dataq.put(plotdata)
+
         self.datahandler = datahandler
         future.add_done_callback(cb)
 

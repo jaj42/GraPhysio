@@ -3,6 +3,7 @@ line-length = 88
 skip-string-normalization = true
 target-version = ['py36', 'py37', 'py38']
 include = '\.pyi?$'
+force-exclude = 'graphysio/ui'
 exclude = '''
 /(
     \.eggs
@@ -19,7 +20,5 @@ exclude = '''
   | blib2to3
   | tests/data
   | profiling
-  # Added by me
-  | graphysio/ui
 )/
 '''
