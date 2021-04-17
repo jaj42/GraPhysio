@@ -23,7 +23,7 @@ class FileReader:
             'Open File', folder=folder, filter=self.file_filters
         )
         if not filepath:
-            return
+            return folder
         self.reader = file_readers[ext]()
         self.reader.set_data({'filepath': filepath})
         self.reader.askUserInput()

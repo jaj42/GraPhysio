@@ -113,7 +113,8 @@ class PlotWidget(pg.PlotWidget):
         return newname
 
     def applyCurveProperties(self, curve, properties: dict) -> None:
-        curve.setData(symbol=properties['symbol'])
+        # Setting Symbol and Connect does not work. TODO dig into pyqtgraph
+        # curve.setData(symbol=properties['symbol'])
         # curve.setData(connect=properties['connect'], symbol=properties['symbol'])
         curve.setPen(properties['color'], width=properties['width'])
         curve.rename(properties['name'])

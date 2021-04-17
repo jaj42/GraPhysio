@@ -85,9 +85,10 @@ class TSWidget(PlotWidget):
             newly_visible, curveproperties = result
             newly_hidden = allcurves - newly_visible
 
+            for c in curveproperties:
+                self.applyCurveProperties(c, curveproperties[c])
+
             for c in newly_visible:
-                if c in curveproperties:
-                    self.applyCurveProperties(c, curveproperties[c])
                 self.addCurve(c)
 
             for c in newly_hidden:
@@ -162,7 +163,9 @@ class TSWidget(PlotWidget):
         if not curvename:
             return
         curve = self.curves[curvename]
-        poiselector = POISelectorWidget(curve.series, parent=self.parent)
+        poiselector = POISelectorWidget(
+            curve.series, parent=self.parent, properties=self.properties
+        )
         self.parent.addTab(poiselector, curve.name())
 
     def launchSpectrogram(self):

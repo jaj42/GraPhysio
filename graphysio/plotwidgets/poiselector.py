@@ -26,12 +26,14 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         fixval = FixIndex(qbutton.text())
         self.poiselectorwidget.fixvalue = fixval
 
-    def __init__(self, series, parent):
+    def __init__(self, series, parent, properties={}):
         super().__init__(parent=parent)
         self.setupUi(self)
         self.parent = parent
 
-        self.poiselectorplot = POISelectorPlot(series, parent=self)
+        self.poiselectorplot = POISelectorPlot(
+            series, parent=self, properties=properties
+        )
         self.horizontalLayout.addWidget(self.poiselectorplot)
 
         buttonClicked = partial(self.buttonClicked, self)
@@ -92,10 +94,11 @@ class POISelectorPlot(PlotWidget):
         elif button == 2:
             self.curve.feetitem.removePointsByLocation(self.pointkey, [pos])
 
-    def __init__(self, series, parent=None):
+    def __init__(self, series, parent, properties={}):
         super().__init__(name=series.name, parent=parent)
         self.vb.setMouseMode(self.vb.PanMode)
         self.setMenuEnabled(False)
+        self.properties = properties
 
         self.__sndderiv = None
         self.fixvalue = FixIndex.disabled
