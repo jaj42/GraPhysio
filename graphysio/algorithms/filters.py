@@ -1,4 +1,5 @@
 from datetime import datetime
+from math import ceil
 from typing import Dict
 
 import numpy as np
@@ -140,13 +141,18 @@ def setdatetime(series, samplerate, parameters):
 
 def sma(series, samplerate, parameters):
     (window_s,) = parameters
+    serarr = series.to_numpy()
+    serlen = len(serarr)
     winsize = int(window_s * samplerate)
-    nwindows = int(series.size / winsize)
-    stacked = np.vstack([series.index.values, series.values])
-    windows = np.lib.stride_tricks.as_strided(stacked, shape=(2, nwindows, winsize))
-    result = np.apply_along_axis(np.mean, 2, windows)
+    nwindows = ceil(serlen / winsize)
+    valstarts = np.arange(0, serlen - winsize, step=winsize)
+    resiter = (
+        np.mean(serarr[beg:end]) for beg, end in zip(valstarts, valstarts + winsize)
+    )
+    result = np.fromiter(resiter, dtype=np.float64)
+    locidx = winsize * np.arange(0, nwindows - 1) + winsize // 2
     newname = f'{series.name}-sma{window_s}s'
-    newseries = pd.Series(result[1], index=result[0], name=newname)
+    newseries = pd.Series(result, index=series.index[locidx], name=newname)
     newsamplerate = samplerate / winsize
     return (newseries, newsamplerate)
 
