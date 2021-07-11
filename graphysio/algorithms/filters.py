@@ -5,6 +5,9 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 from scipy import interpolate, signal
+from sympy import lambdify
+from sympy.abc import x
+from sympy.parsing.sympy_parser import parse_expr
 
 from graphysio.structures import Filter, Parameter
 from graphysio.utils import truncatevecs
@@ -49,12 +52,11 @@ Filters = {
     'Doppler cut': Filter(
         name='dopplercut', parameters=[Parameter('Minimum value', int)]
     ),
-    'Fill NaNs': Filter(name='fillnan', parameters=[]),
     'Differentiate': Filter(name='diff', parameters=[Parameter('Order', int)]),
     'Integrate': Filter(
         name='integrate', parameters=[Parameter('Window duration', 'time')]
     ),
-    'Lag': Filter(name='lag', parameters=[Parameter('Amount (s)', float)]),
+    'Lag': Filter(name='lag', parameters=[Parameter('Time delta', 'time')]),
     'Normalize': Filter(name='norm1', parameters=[]),
     'Set start date/time': Filter(
         name='setdatetime', parameters=[Parameter('DateTime', datetime)]
@@ -62,14 +64,6 @@ Filters = {
     'Tolerant Normalize': Filter(name='norm2', parameters=[]),
     'Enter expression (variable = x)': Filter(
         name='expression', parameters=[Parameter('Expression', str)]
-    ),
-    'Pressure scale': Filter(
-        name='pscale',
-        parameters=[
-            Parameter('Systole', int),
-            Parameter('Diastole', int),
-            Parameter('Mean', int),
-        ],
     ),
     'Strided Moving average': Filter(
         name='sma', parameters=[Parameter('Window duration', 'time')]
@@ -113,11 +107,6 @@ def norm2(series, samplerate, parameters):
     series /= np.std(series)
     newname = f'{series.name}-norm'
     return (series.rename(newname), samplerate)
-
-
-from sympy import lambdify
-from sympy.abc import x
-from sympy.parsing.sympy_parser import parse_expr
 
 
 def expression(series, samplerate, parameters):
@@ -257,21 +246,6 @@ def diff(series, samplerate, parameters):
     return (newseries, samplerate)
 
 
-def fillnan(series, samplerate, parameters):
-    newseries = series.interpolate(method='index', limit_direction='both')
-    newseries = newseries.rename(f'{series.name}-nona')
-    return (newseries, samplerate)
-
-
-def pscale(series, samplerate, parameters):
-    sbp, dbp, mbp = parameters
-    detrend = series - series.mean()
-    scaled = detrend * (sbp - dbp) / (series.max() - series.min())
-    newseries = scaled + mbp
-    newseries = newseries.rename(f'{series.name}-pscale')
-    return (newseries, samplerate)
-
-
 filtfuncs = {
     'savgol': savgol,
     'affine': affine,
@@ -284,12 +258,10 @@ filtfuncs = {
     'dopplercut': dopplercut,
     'integrate': integrate,
     'diff': diff,
-    'pscale': pscale,
     'norm1': norm1,
     'norm2': norm2,
     'expression': expression,
     'setdatetime': setdatetime,
-    'fillnan': fillnan,
 }
 
 
