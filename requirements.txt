@@ -1,5 +1,5 @@
 numpy>=1.16.4
-pandas>=0.24.2
+pandas>=1.0
 pathvalidate>=0.29.0
 Pint>=0.9
 PyQt5>=5.12.3

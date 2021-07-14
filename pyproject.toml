@@ -1,27 +1,11 @@
-[tool.isort]
-profile = "black"
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
 
-[tool.black]
-line-length = 88
-skip-string-normalization = true
-target-version = ['py36', 'py37', 'py38']
-include = '\.pyi?$'
-force-exclude = 'graphysio/ui'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  # The following are specific to Black, you probably don't want those.
-  | blib2to3
-  | tests/data
-  | profiling
-)/
-'''
+[tool.flit.metadata]
+module = "graphysio"
+author = "Jona JOACHIM"
+author-email = "jona@joachim.cc"
+home-page = "https://github.com/jaj42/GraPhysio"
+classifiers = [ "License :: OSI Approved :: ISC License (ISCL)",]
+description-file = "README.md"
