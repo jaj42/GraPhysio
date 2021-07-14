@@ -21,7 +21,9 @@ from graphysio.writedata import exporter
 class TSWidget(PlotWidget):
     @staticmethod
     def mouseMoved(self, evt):
-        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+        pos = evt[
+            0
+        ]  ## using signal proxy turns original arguments into a tuple
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.getViewBox().mapSceneToView(pos)
             self.parent.setcoords.emit(mousePoint.x(), mousePoint.y())
@@ -75,7 +77,9 @@ class TSWidget(PlotWidget):
     # Menu Curves
     def showCurveList(self):
         dlgCurveSelection = dialogs.DlgCurveSelection(
-            parent=self.parent, visible=self.curves.values(), hidden=self.hiddencurves
+            parent=self.parent,
+            visible=self.curves.values(),
+            hidden=self.hiddencurves,
         )
 
         def cb(result):
@@ -146,7 +150,8 @@ class TSWidget(PlotWidget):
 
     def launchTransformation(self):
         param = Parameter(
-            "Choose Transformation", list(transformations.Transformations.keys())
+            "Choose Transformation",
+            list(transformations.Transformations.keys()),
         )
         qresult = dialogs.askUserValue(param)
         if qresult is None:
@@ -183,13 +188,15 @@ class TSWidget(PlotWidget):
         self.parent.addTab(spectro, curve.name())
 
     def launchCurveAlgebra(self):
-        curvecorr = {n: c for n, c in zip(string.ascii_lowercase, self.curves.keys())}
+        curvecorr = {
+            n: c for n, c in zip(string.ascii_lowercase, self.curves.keys())
+        }
         dlgCurveAlgebra = dialogs.DlgCurveAlgebra(self, curvecorr)
 
         def cb(formula):
             expr = sympy.sympify(formula)
             symbols = list(expr.free_symbols)
-            schar = sorted([str(x) for x in symbols])
+            schar = map(str, symbols)
             curvenames = [curvecorr[x] for x in schar]
             sers = [self.curves[c].series for c in curvenames]
             if len(sers) < 1:
@@ -201,7 +208,9 @@ class TSWidget(PlotWidget):
             l = sympy.lambdify(symbols, expr, 'numpy')
             newvals = l(*args)
             newname = self.validateNewCurveName(formula, True)
-            newseries = pd.Series(newvals, index=df.index, name=newname, dtype='double')
+            newseries = pd.Series(
+                newvals, index=df.index, name=newname, dtype='float64'
+            )
             self.addSeriesAsCurve(newseries)
 
         dlgCurveAlgebra.dlgdata.connect(cb)
