@@ -1,11 +1,9 @@
 import string
 from functools import partial
 
+import numexpr as ne
 import pandas as pd
 import pyqtgraph as pg
-import sympy
-from pyqtgraph.Qt import QtCore, QtGui
-
 from graphysio import dialogs, transformations
 from graphysio.algorithms import filters
 from graphysio.plotwidgets import (
@@ -16,6 +14,7 @@ from graphysio.plotwidgets import (
 )
 from graphysio.structures import CycleId, Parameter, PlotData
 from graphysio.writedata import exporter
+from pyqtgraph.Qt import QtCore, QtGui
 
 
 class TSWidget(PlotWidget):
@@ -194,22 +193,20 @@ class TSWidget(PlotWidget):
         dlgCurveAlgebra = dialogs.DlgCurveAlgebra(self, curvecorr)
 
         def cb(formula):
-            expr = sympy.sympify(formula)
-            symbols = list(expr.free_symbols)
-            schar = map(str, symbols)
-            curvenames = [curvecorr[x] for x in schar]
+            symbols = list(ne.NumExpr(formula).input_names)
+            curvenames = [curvecorr[x] for x in symbols]
             sers = [self.curves[c].series for c in curvenames]
-            if len(sers) < 1:
-                # Scalar
+            if not len(sers):
                 return
-            df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
-            df = df.dropna(how='all').interpolate()
-            args = [df[c].values for c in curvenames]
-            l = sympy.lambdify(symbols, expr, 'numpy')
-            newvals = l(*args)
+
+            argsdf = pd.concat(sers, axis=1, keys=symbols)
+            argsdf = argsdf.interpolate()
+            args = argsdf.to_dict(orient='series')
+
+            newvals = ne.evaluate(formula, local_dict=args)
             newname = self.validateNewCurveName(formula, True)
             newseries = pd.Series(
-                newvals, index=df.index, name=newname, dtype='float64'
+                newvals, index=argsdf.index, name=newname, dtype='float64'
             )
             self.addSeriesAsCurve(newseries)
 
