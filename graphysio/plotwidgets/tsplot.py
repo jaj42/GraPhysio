@@ -20,9 +20,7 @@ from pyqtgraph.Qt import QtCore, QtGui
 class TSWidget(PlotWidget):
     @staticmethod
     def mouseMoved(self, evt):
-        pos = evt[
-            0
-        ]  ## using signal proxy turns original arguments into a tuple
+        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.getViewBox().mapSceneToView(pos)
             self.parent.setcoords.emit(mousePoint.x(), mousePoint.y())
@@ -40,6 +38,8 @@ class TSWidget(PlotWidget):
         newseries, newsamplerate = filters.filter(
             oldcurve, filtername, dialogs.askUserValue
         )
+        if not newseries:
+            return
         if asnew:
             newname = self.validateNewCurveName(newseries.name)
             if newname != newseries.name:
@@ -64,6 +64,8 @@ class TSWidget(PlotWidget):
         starts, stops = filters.filterFeet(
             oldstarts, oldstops, filtername, dialogs.askUserValue
         )
+        if not (starts and stops):
+            return
         feetdict['start'] = starts
         feetdict['stop'] = stops
         curve.feetitem.render()
@@ -187,9 +189,7 @@ class TSWidget(PlotWidget):
         self.parent.addTab(spectro, curve.name())
 
     def launchCurveAlgebra(self):
-        curvecorr = {
-            n: c for n, c in zip(string.ascii_lowercase, self.curves.keys())
-        }
+        curvecorr = {n: c for n, c in zip(string.ascii_lowercase, self.curves.keys())}
         dlgCurveAlgebra = dialogs.DlgCurveAlgebra(self, curvecorr)
 
         def cb(formula):

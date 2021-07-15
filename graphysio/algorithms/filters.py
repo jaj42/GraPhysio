@@ -2,15 +2,12 @@ from datetime import datetime
 from math import ceil
 from typing import Dict
 
+import numexpr as ne
 import numpy as np
 import pandas as pd
-from scipy import interpolate, signal
-from sympy import lambdify
-from sympy.abc import x
-from sympy.parsing.sympy_parser import parse_expr
-
 from graphysio.structures import Filter, Parameter
 from graphysio.utils import truncatevecs
+from scipy import interpolate, signal
 
 
 class TF(object):
@@ -111,9 +108,10 @@ def norm2(series, samplerate, parameters):
 
 def expression(series, samplerate, parameters):
     (express,) = parameters
-    expr = parse_expr(express)
-    f = lambdify(x, expr, 'numpy')
-    filtered = f(series.values)
+    try:
+        filtered = ne.evaluate(express, local_dict={'x': series.to_numpy()})
+    except Exception:
+        filtered = None
     newname = f'{series.name}-filtered'
     newseries = pd.Series(filtered, index=series.index, name=newname)
     return (newseries, samplerate)
