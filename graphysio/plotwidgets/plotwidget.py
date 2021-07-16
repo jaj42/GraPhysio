@@ -54,8 +54,6 @@ class PlotWidget(pg.PlotWidget):
         return next(self.colors)
 
     def addSeriesAsCurve(self, series, pen=None, dorealign=False, withfeet=True):
-        if len(series) < 2:
-            return
         if dorealign and self.curves:
             # Timeshift new curves to make the beginnings coincide
             begins = [curve.series.index[0] for curve in self.curves.values()]

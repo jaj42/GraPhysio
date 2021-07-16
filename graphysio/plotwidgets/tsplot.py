@@ -43,17 +43,13 @@ class TSWidget(PlotWidget):
             if newname != newseries.name:
                 newseries = newseries.rename(newname)
             newcurve = self.addSeriesAsCurve(series=newseries)
-            newcurve.samplerate = newsamplerate
+            if newsamplerate:
+                newcurve.set_samplerate(newsamplerate)
         else:
             newseries = newseries.rename(oldcurve.series.name)
-            newseries = newseries.dropna()
-            if len(newseries) < 2:
-                return
-            newseries = newseries.groupby(newseries.index).mean()
-            oldcurve.clear()
-            oldcurve.series = newseries
-            oldcurve.samplerate = newsamplerate
-            oldcurve.render()
+            oldcurve.replace_data(newseries)
+            if newsamplerate:
+                oldcurve.set_samplerate(newsamplerate)
 
     def filterFeet(self, curve, filtername, asnew=False):
         feetdict = curve.feetitem.indices

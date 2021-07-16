@@ -1,14 +1,14 @@
 from functools import partial
+from typing import Optional
 
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
-
 from graphysio import utils
 from graphysio.algorithms import waveform
 from graphysio.structures import CycleId
 from graphysio.utils import estimateSampleRate
+from pyqtgraph.Qt import QtCore, QtGui
 
 
 class CurveItem(pg.PlotDataItem):
@@ -17,33 +17,44 @@ class CurveItem(pg.PlotDataItem):
 
     def __init__(self, series, parent, pen=None):
         self.parent = parent
-        # Drop NA. All following code can assume no NaNs.
-        series = series.dropna()
-        # Make timestamp unique and use mean of values on duplicates
-        series = series.groupby(level=0).mean()
-
-        self.series = series
+        self.series = self.sanitize_data(series)
         self.samplerate = estimateSampleRate(self.series)
-
         if pen is None:
             pen = QtGui.QColor(QtCore.Qt.black)
-
         super().__init__(name=series.name, pen=pen, antialias=True)
         self.render()
 
-    def render(self):
-        self.setData(x=self.series.index.values, y=self.series.values)
-
-    def extend(self, newseries):
-        merged1 = self.series.append(newseries)
-        merged2 = merged1.sort_index()
-        newseries = merged2.groupby(merged2.index).mean()
-        self.series = newseries
+    def replace_data(self, newdata):
+        self.clear()
+        newdata = self.sanitize_data(newdata)
+        self.series = newdata.rename(self.opts['name'])
+        self.samplerate = estimateSampleRate(self.series)
         self.render()
 
+    def extend(self, newseries):
+        merged = self.series.append(newseries)
+        self.series = self.sanitize_data(merged)
+        self.render()
+
+    def render(self):
+        self.setData(x=self.series.index.to_numpy(), y=self.series.to_numpy())
+
+    def set_samplerate(self, newsamplerate):
+        self.samplerate = newsamplerate
+
     def rename(self, newname: str):
-        self.series.name = newname
         self.opts['name'] = newname
+        self.series = self.series.rename(newname)
+
+    def sanitize_data(self, series: pd.Series) -> Optional[pd.Series]:
+        series = series.dropna()
+        series = series.sort_index()
+        # Less than 2 points are not visible
+        if len(series) < 2:
+            raise ValueError('Not enough data')
+        # Make timestamp unique and use mean of values on duplicates
+        series = series.groupby(level=0).mean()
+        return series
 
 
 class POIItem(pg.ScatterPlotItem):
