@@ -65,13 +65,6 @@ Filters = {
     'Strided Moving average': Filter(
         name='sma', parameters=[Parameter('Window duration', 'time')]
     ),
-    'Affine scale': Filter(
-        name='affine',
-        parameters=[
-            Parameter('Scale factor', float),
-            Parameter('Translation factor', float),
-        ],
-    ),
 }
 
 FeetFilters = {
@@ -164,14 +157,6 @@ def lag(series, samplerate, parameters):
     return (newseries, samplerate)
 
 
-def affine(series, samplerate, parameters):
-    a, b = parameters
-    filtered = a * series + b
-    newname = f'{series.name}-affine-{a}-{b}'
-    newseries = pd.Series(filtered, index=series.index, name=newname)
-    return (newseries, samplerate)
-
-
 def tf(series, samplerate, parameters):
     (filtname,) = parameters
     tf = TFs[filtname]
@@ -246,7 +231,6 @@ def diff(series, samplerate, parameters):
 
 filtfuncs = {
     'savgol': savgol,
-    'affine': affine,
     'lag': lag,
     'tf': tf,
     'sma': sma,
