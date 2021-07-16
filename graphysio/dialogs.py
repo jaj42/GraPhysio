@@ -42,15 +42,10 @@ class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
             self.table.setCellWidget(n, 1, combo)
             self.choices[curvename] = combo
 
-        self.table.horizontalHeader().setResizeMode(
-            QtGui.QHeaderView.ResizeToContents
-        )
+        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
     def accept(self):
-        result = {
-            curve: combo.currentText()
-            for (curve, combo) in self.choices.items()
-        }
+        result = {curve: combo.currentText() for (curve, combo) in self.choices.items()}
         self.dlgdata.emit(result)
         super().accept()
 
@@ -95,9 +90,7 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
         else:
             fillTable(curves, 'curve', filters.Filters)
 
-        self.table.horizontalHeader().setResizeMode(
-            QtGui.QHeaderView.ResizeToContents
-        )
+        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
     def accept(self):
         curvefilters = {}
@@ -410,9 +403,7 @@ class DlgListChoice(QtWidgets.QDialog):
 
 def askUserValue(param):
     if param.request == 'time':
-        value, isok = QtGui.QInputDialog.getText(
-            None, 'Enter time', param.description
-        )
+        value, isok = QtGui.QInputDialog.getText(None, 'Enter time', param.description)
         try:
             value = ureg.Quantity(value)
             if value.dimensionless:
@@ -422,13 +413,9 @@ def askUserValue(param):
         except (DimensionalityError, UndefinedUnitError, ValueError):
             return None
     elif param.request is str:
-        value, isok = QtGui.QInputDialog.getText(
-            None, 'Enter value', param.description
-        )
+        value, isok = QtGui.QInputDialog.getText(None, 'Enter value', param.description)
     elif param.request is int:
-        value, isok = QtGui.QInputDialog.getInt(
-            None, 'Enter value', param.description
-        )
+        value, isok = QtGui.QInputDialog.getInt(None, 'Enter value', param.description)
     elif param.request is float:
         value, isok = QtGui.QInputDialog.getDouble(
             None, 'Enter value', param.description, decimals=3
