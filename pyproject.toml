@@ -31,3 +31,6 @@ graphysio = "graphysio.main:main"
 
 [tool.black]
 line-length = 88
+target-version = ['py36', 'py37', 'py38']
+extend-exclude = 'ui'
+skip-string-normalization = true
