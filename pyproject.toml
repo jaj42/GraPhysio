@@ -28,3 +28,6 @@ requires=[
 
 [tool.flit.scripts]
 graphysio = "graphysio.main:main"
+
+[tool.black]
+line-length = 88

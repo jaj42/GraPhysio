@@ -38,8 +38,6 @@ class TSWidget(PlotWidget):
         newseries, newsamplerate = filters.filter(
             oldcurve, filtername, dialogs.askUserValue
         )
-        if not newseries:
-            return
         if asnew:
             newname = self.validateNewCurveName(newseries.name)
             if newname != newseries.name:
@@ -49,7 +47,7 @@ class TSWidget(PlotWidget):
         else:
             newseries = newseries.rename(oldcurve.series.name)
             newseries = newseries.dropna()
-            if len(newseries) < 1:
+            if len(newseries) < 2:
                 return
             newseries = newseries.groupby(newseries.index).mean()
             oldcurve.clear()
@@ -64,8 +62,6 @@ class TSWidget(PlotWidget):
         starts, stops = filters.filterFeet(
             oldstarts, oldstops, filtername, dialogs.askUserValue
         )
-        if not (starts and stops):
-            return
         feetdict['start'] = starts
         feetdict['stop'] = stops
         curve.feetitem.render()

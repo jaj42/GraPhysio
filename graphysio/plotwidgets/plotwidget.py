@@ -1,11 +1,10 @@
 from typing import Optional
 
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
-
 from graphysio.legend import LegendItem
 from graphysio.plotwidgets import curves
 from graphysio.utils import Colors
+from pyqtgraph.Qt import QtCore, QtGui
 
 
 class TimeAxisItem(pg.AxisItem):
@@ -55,7 +54,7 @@ class PlotWidget(pg.PlotWidget):
         return next(self.colors)
 
     def addSeriesAsCurve(self, series, pen=None, dorealign=False, withfeet=True):
-        if len(series) < 1:
+        if len(series) < 2:
             return
         if dorealign and self.curves:
             # Timeshift new curves to make the beginnings coincide
