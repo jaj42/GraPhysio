@@ -5,11 +5,10 @@ from typing import List
 import numpy as np
 import pandas as pd
 from attr import attrib, attrs
-from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
-
 from graphysio import ui
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
+from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 
 class CsvReader(BaseReader):
@@ -67,7 +66,7 @@ class CsvReader(BaseReader):
             timestamp = (
                 pd.Index(timestamp).tz_localize(request.timezone).tz_convert('UTC')
             )
-            timestamp = timestamp.astype(np.int64)
+            timestamp = timestamp.view(np.int64)
             data = data.set_index([timestamp])
 
         data = data.dropna(axis='columns', how='all')

@@ -3,14 +3,13 @@ from functools import partial
 
 import pandas as pd
 import pyqtgraph as pg
-from PyQt5 import QtGui, QtWidgets
-
 from graphysio import ui
 from graphysio.algorithms.filters import savgol
 from graphysio.algorithms.waveform import findPOIGreedy
 from graphysio.plotwidgets import PlotWidget
 from graphysio.structures import PlotData
 from graphysio.writedata import exporter
+from PyQt5 import QtGui, QtWidgets
 
 
 class FixIndex(Enum):
@@ -83,6 +82,7 @@ class POISelectorPlot(PlotWidget):
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.getViewBox().mapSceneToView(pos)
             self.vLine.setPos(mousePoint.x())
+        # super().mouseMoved(self, evt)
 
     @staticmethod
     def clicked(self, evt):
@@ -110,10 +110,6 @@ class POISelectorPlot(PlotWidget):
         self.vLine = pg.InfiniteLine(angle=90, movable=False, pen=pen)
         self.addItem(self.vLine, ignoreBounds=True)
 
-        mouseMoved = partial(self.mouseMoved, self)
-        self.sigproxy = pg.SignalProxy(
-            self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved
-        )
         clicked = partial(self.clicked, self)
         self.scene().sigMouseClicked.connect(clicked)
 

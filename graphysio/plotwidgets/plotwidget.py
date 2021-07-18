@@ -1,3 +1,5 @@
+from datetime import timedelta
+from functools import partial
 from typing import Optional
 
 import pyqtgraph as pg
@@ -8,18 +10,41 @@ from pyqtgraph.Qt import QtCore, QtGui
 
 
 class TimeAxisItem(pg.AxisItem):
+    @staticmethod
+    def conv_absolute(value):
+        value /= 1e6  # convert from ns to ms
+        date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
+        date = date.toTimeSpec(QtCore.Qt.UTC)
+        return date.toString("dd/MM/yyyy\nhh:mm:ss.zzz")
+
+    @staticmethod
+    def conv_relative(value):
+        value /= 1e6
+        td = timedelta(milliseconds=value)
+        return str(td)
+
+    @staticmethod
+    def is_relative_time(val):
+        return val < 5e14  # Nov 1985
+
     def tickStrings(self, values, scale, spacing):
-        ret = []
-        for i, value in enumerate(values):
-            value = value / 1e6  # convert from ns to ms
-            date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
-            date = date.toTimeSpec(QtCore.Qt.UTC)
-            datestr = date.toString("dd/MM/yyyy\nhh:mm:ss.zzz")
-            ret.append(datestr)
-        return ret
+        if not values:
+            return []
+        if self.is_relative_time(values[0]):
+            conv = self.conv_relative
+        else:
+            conv = self.conv_absolute
+        return [conv(v) for v in values]
 
 
 class PlotWidget(pg.PlotWidget):
+    @staticmethod
+    def mouseMoved(self, evt):
+        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+        if self.sceneBoundingRect().contains(pos):
+            mousePoint = self.getViewBox().mapSceneToView(pos)
+            self.parent.setcoords.emit(mousePoint.x(), mousePoint.y())
+
     def __init__(self, name, parent=None, properties={}):
         self.parent = parent
         self.name = name
@@ -37,6 +62,11 @@ class PlotWidget(pg.PlotWidget):
         self.vb.setMouseMode(self.vb.RectMode)
 
         self.setCursor(QtCore.Qt.CrossCursor)
+
+        mouseMoved = partial(self.mouseMoved, self)
+        self.sigproxy = pg.SignalProxy(
+            self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved
+        )
 
     def appendData(self, newplotdata, dorealign=False):
         for seriesname in newplotdata.data:
