@@ -11,11 +11,15 @@ from pyqtgraph.Qt import QtCore, QtGui
 
 class TimeAxisItem(pg.AxisItem):
     @staticmethod
-    def conv_absolute(value):
+    def conv_absolute(value, mainwindow=False):
         value /= 1e6  # convert from ns to ms
         date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
         date = date.toTimeSpec(QtCore.Qt.UTC)
-        return date.toString("dd/MM/yyyy\nhh:mm:ss.zzz")
+        if mainwindow:
+            timestr = date.toString("dd/MM/yyyy hh:mm:ss.zzz")
+        else:
+            timestr = date.toString("dd/MM/yyyy\nhh:mm:ss.zzz")
+        return timestr
 
     @staticmethod
     def conv_relative(value):

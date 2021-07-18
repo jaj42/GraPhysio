@@ -9,7 +9,7 @@ from queue import Empty, Queue
 from PyQt5 import QtCore, QtWidgets
 
 from graphysio import dialogs, readdata, ui, utils
-from graphysio.plotwidgets import TSWidget
+from graphysio.plotwidgets import TimeAxisItem, TSWidget
 
 
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
@@ -49,10 +49,10 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.data_timer.start()
 
     def setCoords(self, x, y):
-        dt = x / 1e6  # convert from ns to ms
-        date = QtCore.QDateTime.fromMSecsSinceEpoch(dt)
-        date = date.toTimeSpec(QtCore.Qt.UTC)
-        timestr = date.toString("dd/MM/yyyy hh:mm:ss.zzz")
+        if TimeAxisItem.is_relative_time(x):
+            timestr = TimeAxisItem.conv_relative(x)
+        else:
+            timestr = TimeAxisItem.conv_absolute(x, mainwindow=True)
         self.lblCoords.setText(f'Time: {timestr}, Value: {y}')
 
     def read_plot_data(self):
