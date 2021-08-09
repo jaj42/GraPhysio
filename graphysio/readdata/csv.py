@@ -12,6 +12,8 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 
 class CsvReader(BaseReader):
+    is_available = True
+
     def askUserInput(self):
         filepath = self.userdata['filepath']
         dlg = DlgNewPlotCsv(filepath)

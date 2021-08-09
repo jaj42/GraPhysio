@@ -2,12 +2,17 @@ from datetime import datetime
 from typing import List
 
 import numpy as np
-import pyedflib
-from scipy import interpolate
-
 from graphysio.dialogs import askUserValue
 from graphysio.plotwidgets.curves import CurveItem
 from graphysio.structures import Parameter
+from scipy import interpolate
+
+try:
+    import pyedflib
+except ImportError:
+    is_available = False
+else:
+    is_available = True
 
 
 def interp_series(s, samplerate, start, stop):
@@ -62,3 +67,6 @@ def curves_to_edf(
     edf.setSignalHeaders(headers)
     edf.writeSamples(signals)
     edf.close()
+
+
+curves_to_edf.is_available = is_available

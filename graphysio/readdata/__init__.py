@@ -1,3 +1,5 @@
+import pathlib
+
 from graphysio.dialogs import askOpenFilePath
 
 from .csv import CsvReader
@@ -5,6 +7,7 @@ from .edf import EdfReader
 from .parquet import ParquetReader
 
 file_readers = {'csv': CsvReader, 'parquet': ParquetReader, 'edf': EdfReader}
+file_readers = {k: mod for k, mod in file_readers.items() if mod.is_available}
 
 
 class FileReader:

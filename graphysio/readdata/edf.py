@@ -1,13 +1,20 @@
 import numpy as np
 import pandas as pd
-import pyedflib
-
 from graphysio.dialogs import DlgListChoice
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
 
+try:
+    import pyedflib
+except ImportError:
+    is_available = False
+else:
+    is_available = True
+
 
 class EdfReader(BaseReader):
+    is_available = is_available
+
     def askUserInput(self):
         filepath = str(self.userdata['filepath'])
         edf = pyedflib.EdfReader(filepath)

@@ -1,12 +1,20 @@
 import numpy as np
 import pandas as pd
-import pyarrow.parquet as pa
 from graphysio.dialogs import DlgListChoice
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
 
+try:
+    import pyarrow.parquet as pa
+except ImportError:
+    is_available = False
+else:
+    is_available = True
+
 
 class ParquetReader(BaseReader):
+    is_available = is_available
+
     def askUserInput(self):
         filepath = self.userdata['filepath']
         s = pa.read_schema(filepath)

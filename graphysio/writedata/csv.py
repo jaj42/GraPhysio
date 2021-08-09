@@ -1,7 +1,6 @@
 from typing import List
 
 import pandas as pd
-
 from graphysio.plotwidgets.curves import CurveItem
 
 
@@ -12,3 +11,6 @@ def curves_to_csv(
     data = pd.concat(sers, axis=1).sort_index()
     data['datetime'] = pd.to_datetime(data.index, unit='ns')
     data.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label=index_label)
+
+
+curves_to_csv.is_available = True
