@@ -1,6 +1,6 @@
 """Graphical time series visualizer and analyzer."""
 
-__version__ = '2021.08.08'
+__version__ = '2021.08.16'
 
 __all__ = [
     'algorithms',
