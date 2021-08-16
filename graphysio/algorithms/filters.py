@@ -1,5 +1,5 @@
 from datetime import datetime
-from math import ceil
+from math import floor
 from typing import Dict
 
 import numexpr as ne
@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from graphysio.structures import Filter, Parameter
 from graphysio.utils import truncatevecs
+from pint import UnitRegistry
 from scipy import interpolate, signal
 
 
@@ -49,7 +50,10 @@ Filters = {
     'Doppler cut': Filter(
         name='dopplercut', parameters=[Parameter('Minimum value', int)]
     ),
-    'Differentiate': Filter(name='diff', parameters=[Parameter('Order', int)]),
+    'Differentiate': Filter(
+        name='diff',
+        parameters=[Parameter('Order', int), Parameter('Denominator time unit', str)],
+    ),
     'Integrate': Filter(
         name='integrate', parameters=[Parameter('Window duration', 'time')]
     ),
@@ -89,14 +93,14 @@ def norm1(series, samplerate, parameters):
     series -= np.mean(series)
     series /= np.max(series) - np.min(series)
     newname = f'{series.name}-norm'
-    return (series.rename(newname), samplerate)
+    return (series.rename(newname), None)
 
 
 def norm2(series, samplerate, parameters):
     series -= np.mean(series)
     series /= np.std(series)
     newname = f'{series.name}-norm'
-    return (series.rename(newname), samplerate)
+    return (series.rename(newname), None)
 
 
 def expression(series, samplerate, parameters):
@@ -107,7 +111,7 @@ def expression(series, samplerate, parameters):
         filtered = None
     newname = f'{series.name}-filtered'
     newseries = pd.Series(filtered, index=series.index, name=newname)
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 def setdatetime(series, samplerate, parameters):
@@ -116,7 +120,7 @@ def setdatetime(series, samplerate, parameters):
     diff = timestamp - newseries.index[0]
     newseries.index += diff
     newseries = newseries.rename(f'{series.name}-{timestamp}')
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 def sma(series, samplerate, parameters):
@@ -124,13 +128,13 @@ def sma(series, samplerate, parameters):
     serarr = series.to_numpy()
     serlen = len(serarr)
     winsize = int(window_s * samplerate)
-    nwindows = ceil(serlen / winsize)
+    nwindows = floor(serlen / winsize)
     valstarts = np.arange(0, serlen - winsize, step=winsize)
     resiter = (
         np.mean(serarr[beg:end]) for beg, end in zip(valstarts, valstarts + winsize)
     )
-    result = np.fromiter(resiter, dtype=np.float64)
-    locidx = winsize * np.arange(0, nwindows - 1) + winsize // 2
+    result = np.fromiter(resiter, dtype=np.float64, count=nwindows)
+    locidx = winsize * np.arange(0, nwindows) + winsize // 2
     newname = f'{series.name}-sma{window_s}s'
     newseries = pd.Series(result, index=series.index[locidx], name=newname)
     newsamplerate = samplerate / winsize
@@ -146,7 +150,7 @@ def savgol(series, samplerate, parameters):
     filtered = signal.savgol_filter(series.values, int(window), order)
     newname = f'{series.name}-filtered'
     newseries = pd.Series(filtered, index=series.index, name=newname)
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 def lag(series, samplerate, parameters):
@@ -154,7 +158,7 @@ def lag(series, samplerate, parameters):
     nindex = series.index.values - timedelta * 1e9
     newname = f'{series.name}-{timedelta}s'
     newseries = pd.Series(series.values, index=nindex, name=newname)
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 def tf(series, samplerate, parameters):
@@ -164,7 +168,7 @@ def tf(series, samplerate, parameters):
     filtered = signal.lfilter(b, a, series)
     newname = f'{series.name}-{tf.name}'
     newseries = pd.Series(filtered, index=series.index, name=newname)
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 def lowpass(series, samplerate, parameters):
@@ -174,7 +178,7 @@ def lowpass(series, samplerate, parameters):
     filtered = signal.lfilter(b, a, series)
     newname = f'{series.name}-lp{Fc}'
     newseries = pd.Series(filtered, index=series.index, name=newname)
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 def ventilation(series, samplerate, parameters):
@@ -186,7 +190,7 @@ def ventilation(series, samplerate, parameters):
     filtered = signal.filtfilt(b, a, series.values)
     newname = f'{series.name}-novent'
     newseries = pd.Series(filtered, index=series.index, name=newname)
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 def interp(series, samplerate, parameters):
@@ -209,7 +213,7 @@ def dopplercut(series, samplerate, parameters):
     newname = f'{series.name}-{minvel}+'
     newseries = series.rename(newname)
     newseries.iloc[notlow] = 0
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 def integrate(series, samplerate, parameters):
@@ -218,15 +222,22 @@ def integrate(series, samplerate, parameters):
     integrated = series.rolling(window, center=True).sum()
     newname = f'{series.name}-integrate{duration}s'
     newseries = integrated.rename(newname)
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 def diff(series, samplerate, parameters):
-    (order,) = parameters
-    diffed = np.diff(series.values, order)
-    newname = f'{series.name}-diff{order}'
+    (order, timeunit) = parameters
+    timeunit = timeunit.strip()
+    dy = np.diff(series.values, order)
+    dt = np.diff(series.index.values, order)
+    ureg = UnitRegistry()
+    ptu = ureg.parse_expression(timeunit)
+    conv = ptu.to(ureg.nanosecond).magnitude
+    dt = dt.astype(float) / conv
+    diffed = dy / dt
+    newname = f'{series.name}-diff{order}(/{timeunit})'
     newseries = pd.Series(diffed, index=series.index[order:], name=newname)
-    return (newseries, samplerate)
+    return (newseries, None)
 
 
 filtfuncs = {
