@@ -104,6 +104,8 @@ class POISelectorPlot(PlotWidget):
         self.fixvalue = FixIndex.disabled
 
         self.curve = self.addSeriesAsCurve(series)
+        if self.curve is None:
+            raise ValueError('Not enough data')
         self.exporter = exporter.POIExporter(self, self.name)
 
         pen = pg.mkPen('k', width=2)

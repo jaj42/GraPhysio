@@ -32,7 +32,7 @@ class TSWidget(PlotWidget):
             if newname != newseries.name:
                 newseries = newseries.rename(newname)
             newcurve = self.addSeriesAsCurve(series=newseries)
-            if newsamplerate:
+            if newsamplerate and newcurve:
                 newcurve.set_samplerate(newsamplerate)
         else:
             newseries = newseries.rename(oldcurve.series.name)

@@ -18,6 +18,8 @@ class CurveItem(pg.PlotDataItem):
     def __init__(self, series, parent, pen=None):
         self.parent = parent
         self.series = self.sanitize_data(series)
+        if self.series is None:
+            raise ValueError('Not enough data')
         self.samplerate = estimateSampleRate(self.series)
         if pen is None:
             pen = QtGui.QColor(QtCore.Qt.black)
@@ -25,15 +27,22 @@ class CurveItem(pg.PlotDataItem):
         self.render()
 
     def replace_data(self, newdata):
-        self.clear()
         newdata = self.sanitize_data(newdata)
+        if newdata is None:
+            # XXX report error
+            return
+        self.clear()
         self.series = newdata.rename(self.opts['name'])
         self.samplerate = estimateSampleRate(self.series)
         self.render()
 
     def extend(self, newseries):
         merged = self.series.append(newseries)
-        self.series = self.sanitize_data(merged)
+        newdata = self.sanitize_data(merged)
+        if newdata is None:
+            # XXX report error
+            return
+        self.series = newdata
         self.render()
 
     def render(self):
@@ -51,7 +60,7 @@ class CurveItem(pg.PlotDataItem):
         series = series.sort_index()
         # Less than 2 points are not visible
         if len(series) < 2:
-            raise ValueError('Not enough data')
+            return None
         # Make timestamp unique and use mean of values on duplicates
         series = series.groupby(level=0).mean()
         return series

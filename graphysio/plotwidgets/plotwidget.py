@@ -4,7 +4,7 @@ from typing import Optional
 
 import pyqtgraph as pg
 from graphysio.legend import LegendItem
-from graphysio.plotwidgets import curves
+from graphysio.plotwidgets.curves import CurveItem, CurveItemWithPOI
 from graphysio.utils import Colors
 from pyqtgraph.Qt import QtCore, QtGui
 
@@ -81,13 +81,15 @@ class PlotWidget(pg.PlotWidget):
         return {
             item.name(): item
             for item in self.listDataItems()
-            if isinstance(item, curves.CurveItem)
+            if isinstance(item, CurveItem)
         }
 
     def getPen(self):
         return next(self.colors)
 
-    def addSeriesAsCurve(self, series, pen=None, dorealign=False, withfeet=True):
+    def addSeriesAsCurve(
+        self, series, pen=None, dorealign=False, withfeet=True
+    ) -> Optional[CurveItem]:
         if dorealign and self.curves:
             # Timeshift new curves to make the beginnings coincide
             begins = [curve.series.index[0] for curve in self.curves.values()]
@@ -101,8 +103,11 @@ class PlotWidget(pg.PlotWidget):
             # New curve
             if pen is None:
                 pen = self.getPen()
-            Curve = curves.CurveItemWithPOI if withfeet else curves.CurveItem
-            curve = Curve(series=series, parent=self, pen=pen)
+            Curve = CurveItemWithPOI if withfeet else CurveItem
+            try:
+                curve = Curve(series=series, parent=self, pen=pen)
+            except ValueError:
+                return None
             self.addCurve(curve)
         return curve
 
