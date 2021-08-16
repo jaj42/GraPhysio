@@ -151,7 +151,7 @@ def savgol(series, samplerate, parameters):
 
 def lag(series, samplerate, parameters):
     (timedelta,) = parameters
-    nindex = series.index.values + timedelta * 1e9
+    nindex = series.index.values - timedelta * 1e9
     newname = f'{series.name}-{timedelta}s'
     newseries = pd.Series(series.values, index=nindex, name=newname)
     return (newseries, samplerate)
