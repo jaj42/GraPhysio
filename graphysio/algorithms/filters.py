@@ -23,7 +23,7 @@ class TF(object):
         return (np.squeeze(dnum), np.squeeze(dden))
 
 
-interpkind = ['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic']
+interpkind = ['linear', 'zero', 'pchip', 'nearest']
 Filters = {
     'Lowpass filter': Filter(
         name='lowpass',
@@ -196,9 +196,12 @@ def ventilation(series, samplerate, parameters):
 def interp(series, samplerate, parameters):
     newsamplerate, method = parameters
     oldidx = series.index
-    f = interpolate.interp1d(
-        oldidx, series.values, kind=method, fill_value='extrapolate'
-    )
+    if method == 'pchip':
+        f = interpolate.PchipInterpolator(oldidx, series.values, extrapolate=True)
+    else:
+        f = interpolate.interp1d(
+            oldidx, series.values, kind=method, fill_value='extrapolate'
+        )
     step = 1e9 / newsamplerate  # 1e9 to convert Hz to ns
     newidx = np.arange(oldidx[0], oldidx[-1], step, dtype=np.int64)
     resampled = f(newidx)
