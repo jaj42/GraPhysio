@@ -1,6 +1,6 @@
-import os
 from collections import namedtuple
 from enum import Enum
+from pathlib import Path
 
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
@@ -19,12 +19,13 @@ class CycleId(Enum):
     foot = 'Pressure foot'
     pressure = 'Pressure Full'
     velocity = 'Velocity'
+    rwave = 'ECG R Wave'
 
 
 class PlotData:
-    def __init__(self, data=[], filepath="", name=None):
+    def __init__(self, data=[], filepath='', name=None):
         self.data = data
-        self.filepath = filepath
+        self.filepath = Path(filepath)
         self._name = name
 
     @property
@@ -32,9 +33,9 @@ class PlotData:
         if self._name is not None:
             name = self._name
         else:
-            name, _ = os.path.splitext(os.path.basename(self.filepath))
+            name = self.filepath.stem
         return name
 
     @property
     def folder(self):
-        return os.path.dirname(self.filepath)
+        return self.filepath.parent

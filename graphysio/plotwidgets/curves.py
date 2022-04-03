@@ -8,6 +8,7 @@ from graphysio import utils
 from graphysio.algorithms import waveform
 from graphysio.structures import CycleId
 from graphysio.utils import estimateSampleRate
+from physiocurve.ecg import Ecg
 from pyqtgraph.Qt import QtCore, QtGui
 
 
@@ -74,6 +75,7 @@ class POIItem(pg.ScatterPlotItem):
         'systole': 't',
         'dicrotic': 'd',
         'point': 'o',
+        'rwave': '+',
     }
     # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
@@ -205,6 +207,9 @@ class CurveItemWithPOI(CurveItem):
             self.feetitem.indices['diastole'] = dia
             self.feetitem.indices['systole'] = sbp
             self.feetitem.indices['dicrotic'] = dic
+        elif cycleid is CycleId.rwave:
+            ecg = Ecg.from_pandas(self.series)
+            self.feetitem.indices['rwave'] = pd.Index(ecg.idxrwave)
         else:
             raise ValueError(cycleid)
         self.feetitem.render()

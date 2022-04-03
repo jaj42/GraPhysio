@@ -219,7 +219,7 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
         self.lstCurves.addItem(item)
 
     def accept(self):
-        items = self.lstCurves.findItems("", QtCore.Qt.MatchContains)
+        items = self.lstCurves.findItems('', QtCore.Qt.MatchContains)
         ischecked = lambda item: item.checkState() != QtCore.Qt.Unchecked
         checked = list(filter(ischecked, items))
         visible = {self.curvehash[item.text()] for item in checked}
