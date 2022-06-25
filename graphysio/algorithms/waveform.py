@@ -20,7 +20,7 @@ def findPressureFeet(curve):
         # Find pulse rising edge
         winsum = int(samplerate / sumcoef)
         winquant = int(samplerate * quantcoef)
-        sndderivsq = sndderiv ** 2
+        sndderivsq = sndderiv**2
         integral = sndderivsq.rolling(window=winsum, center=True).sum()
         thres = integral.rolling(window=winquant).quantile(0.7)
         thres = thres.fillna(method='backfill')

@@ -1,27 +1,36 @@
 [build-system]
-requires = ["flit_core >=2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
 
-[tool.flit.metadata]
-module = "graphysio"
-author = "Jona JOACHIM"
-author-email = "jona@joachim.cc"
-home-page = "https://github.com/jaj42/GraPhysio"
-classifiers = [ "License :: OSI Approved :: ISC License (ISCL)",]
-description-file = "README.md"
-requires-python=">=3.6"
-requires=[
-    "numpy>=1.16.4",
-    "pandas>=1.0",
-    "pathvalidate>=0.29.0",
-    "Pint>=0.9",
-    "PyQt5>=5.12.3",
-    "pyqtgraph>=0.10.0",
-    "scipy>=1.3.0",
-    "attrs>=18.2.0",
-    "numexpr>=2.6.7",
-    "physiocurve>=2021.6.10",
-]
+[tool.poetry]
+name = "graphysio"
+version = "2022.03.15"
+description = "Visualizer and analyser for biometric signals"
+authors = ["Jona Joachim <jona@joachim.cc>"]
+license = "ISC"
+readme = "README.md"
+repository = "https://github.com/jaj42/GraPhysio"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+pandas = "^1.4.3"
+pathvalidate = "^2.5.0"
+Pint = "^0.19.2"
+pyqtgraph = "^0.12.4"
+scipy = "^1.8.1"
+attrs = "^21.4.0"
+numexpr = "^2.8.3"
+physiocurve = "^2021.6.10"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0.1"
+flake8-bandit = "^3.0.0"
+safety = "^1.10.3"
+flake8-bugbear = "^22.4.25"
+Sphinx = "^5.0.1"
+sphinx-autodoc-typehints = "^1.18.2"
+flake8-docstrings = "^1.6.0"
+darglint = "^1.8.1"
 
 [tool.flit.metadata.requires-extra]
 edf = ["pyedflib>=0.1.17"]
@@ -32,6 +41,7 @@ graphysio = "graphysio.main:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py36', 'py37', 'py38', 'py39']
 extend-exclude = 'ui'
+target-version = ['py38', 'py39', 'py310']
 skip-string-normalization = true
+
