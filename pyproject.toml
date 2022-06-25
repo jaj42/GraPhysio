@@ -21,6 +21,8 @@ scipy = "^1.8.1"
 attrs = "^21.4.0"
 numexpr = "^2.8.3"
 physiocurve = "^2021.6.10"
+pyarrow = {version = "^8.0.0", optional = true}
+pyEDFlib = {version = "^0.1.29", optional = true}
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
@@ -32,11 +34,7 @@ sphinx-autodoc-typehints = "^1.18.2"
 flake8-docstrings = "^1.6.0"
 darglint = "^1.8.1"
 
-[tool.flit.metadata.requires-extra]
-edf = ["pyedflib>=0.1.17"]
-parquet = ["pyarrow>=0.17.0"]
-
-[tool.flit.scripts]
+[tool.poetry.scripts]
 graphysio = "graphysio.main:main"
 
 [tool.black]
