@@ -34,7 +34,7 @@ class FileReader:
         return filepath.parent
 
     # Meant to be executed in seperate thread
-    def get_plotdata(self) -> 'PlotData':
+    def get_plotdata(self):
         if self.reader:
             return self.reader()
         else:

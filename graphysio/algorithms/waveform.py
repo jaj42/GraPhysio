@@ -2,7 +2,6 @@ import itertools
 
 import numpy as np
 import pandas as pd
-
 from graphysio.utils import truncatevecs
 
 
@@ -73,7 +72,7 @@ def findFlowCycles(curve):
     try:
         cycleStops = cycleStops[cycleStops.index > cycleStarts.index[0]]
     except IndexError as e:
-        raise TypeError(f'No cycle detected: {e}')
+        raise TypeError('No cycle detected') from e
 
     return (cycleStarts.index, cycleStops.index)
 

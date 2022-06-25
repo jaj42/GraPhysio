@@ -25,10 +25,12 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         fixval = FixIndex(qbutton.text())
         self.poiselectorwidget.fixvalue = fixval
 
-    def __init__(self, series, parent, properties={}):
+    def __init__(self, series, parent, properties=None):
         super().__init__(parent=parent)
         self.setupUi(self)
         self.parent = parent
+        if properties is None:
+            properties = {}
 
         self.poiselectorplot = POISelectorPlot(
             series, parent=self, properties=properties
@@ -78,11 +80,10 @@ class POISelectorPlot(PlotWidget):
 
     @staticmethod
     def mouseMoved(self, evt):
-        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+        pos = evt[0]  # using signal proxy turns original arguments into a tuple
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.getViewBox().mapSceneToView(pos)
             self.vLine.setPos(mousePoint.x())
-        # super().mouseMoved(self, evt)
 
     @staticmethod
     def clicked(self, evt):
@@ -94,11 +95,11 @@ class POISelectorPlot(PlotWidget):
         elif button == 2:
             self.curve.feetitem.removePointsByLocation(self.pointkey, [pos])
 
-    def __init__(self, series, parent, properties={}):
+    def __init__(self, series, parent, properties=None):
         super().__init__(name=series.name, parent=parent)
         self.vb.setMouseMode(self.vb.PanMode)
         self.setMenuEnabled(False)
-        self.properties = properties
+        self.properties = properties if properties is not None else {}
 
         self.__sndderiv = None
         self.fixvalue = FixIndex.disabled

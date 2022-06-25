@@ -77,7 +77,8 @@ class POIItem(pg.ScatterPlotItem):
         'point': 'o',
         'rwave': '+',
     }
-    # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
+    # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in
+    # ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
     def __init__(self, parent, name, pen=None):
         super().__init__(pen=pen, name=name)
@@ -231,7 +232,7 @@ class CurveItemWithPOI(CurveItem):
         if not hasstarts:
             # We have no feet, treat the whole signal as one cycle
             locs = (s.index.get_loc(i, method='nearest') for i in [xmin, xmax])
-            indices = (s.index[l] for l in locs)
+            indices = (s.index[loc] for loc in locs)
             begins, ends = [np.array([i]) for i in indices]
         elif not hasstops:
             # We have no stops, starts serve as stops for previous cycle

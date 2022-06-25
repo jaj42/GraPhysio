@@ -44,17 +44,17 @@ class TimeAxisItem(pg.AxisItem):
 class PlotWidget(pg.PlotWidget):
     @staticmethod
     def mouseMoved(self, evt):
-        pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+        pos = evt[0]  # using signal proxy turns original arguments into a tuple
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.getViewBox().mapSceneToView(pos)
             self.parent.setcoords.emit(mousePoint.x(), mousePoint.y())
 
-    def __init__(self, name, parent=None, properties={}):
+    def __init__(self, name, parent=None, properties=None):
         self.parent = parent
         self.name = name
         self.colors = Colors()
         self.hiddencurves = set()
-        self.properties = properties
+        self.properties = properties if properties is not None else {}
 
         axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
         super().__init__(parent=parent, axisItems=axisItems, background='w')
@@ -129,7 +129,7 @@ class PlotWidget(pg.PlotWidget):
 
     def rebuildLegend(self):
         self.legend.clear()
-        for name, curve in self.curves.items():
+        for _, curve in self.curves.items():
             if isinstance(curve, pg.PlotDataItem):
                 self.legend.addItem(curve, curve.name())
 

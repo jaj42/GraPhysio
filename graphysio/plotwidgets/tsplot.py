@@ -3,7 +3,6 @@ from functools import partial
 
 import numexpr as ne
 import pandas as pd
-import pyqtgraph as pg
 from graphysio import dialogs, transformations
 from graphysio.algorithms import filters
 from graphysio.plotwidgets import (
@@ -18,7 +17,9 @@ from pyqtgraph.Qt import QtCore, QtGui
 
 
 class TSWidget(PlotWidget):
-    def __init__(self, plotdata, parent=None, properties={}):
+    def __init__(self, plotdata, parent=None, properties=None):
+        if properties is None:
+            properties = {}
         super().__init__(plotdata.name, parent=parent, properties=properties)
         self.exporter = exporter.TsExporter(self, plotdata.name)
         self.appendData(plotdata)

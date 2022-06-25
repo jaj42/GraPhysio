@@ -19,7 +19,7 @@ def interp_series(s, samplerate, start, stop):
     f = interpolate.interp1d(
         s.index, s.values, assume_sorted=True, copy=False, fill_value='extrapolate'
     )
-    # Recalculate the number of points needed over the duration to account for periods of missing data.
+    # Account for periods of missing data.
     duration_s = (stop - start) * 1e-9
     npoints = duration_s * samplerate
     newidx = np.linspace(start, stop, num=npoints)

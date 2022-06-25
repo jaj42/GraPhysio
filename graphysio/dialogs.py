@@ -174,9 +174,13 @@ class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
 class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, visible=[], hidden=[], parent=None):
+    def __init__(self, visible=None, hidden=None, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
+        if visible is None:
+            visible = []
+        if hidden is None:
+            hidden = []
 
         self.curveproperties = {}
 
@@ -324,8 +328,10 @@ class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
 class DlgCurveAlgebra(QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, parent=None, curvecorr={}):
+    def __init__(self, parent=None, curvecorr=None):
         super().__init__(parent=parent)
+        if curvecorr is None:
+            curvecorr = {}
         self.setupUi(curvecorr)
 
     def setupUi(self, curvecorr):
