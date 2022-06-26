@@ -8,7 +8,7 @@ from graphysio import utils
 from graphysio.algorithms import waveform
 from graphysio.structures import CycleId
 from graphysio.utils import estimateSampleRate
-from physiocurve.ecg import Ecg
+from physiocurve.pandas.ecg import Ecg
 from pyqtgraph.Qt import QtCore, QtGui
 
 
@@ -209,7 +209,7 @@ class CurveItemWithPOI(CurveItem):
             self.feetitem.indices['systole'] = sbp
             self.feetitem.indices['dicrotic'] = dic
         elif cycleid is CycleId.rwave:
-            ecg = Ecg.from_pandas(self.series)
+            ecg = Ecg(self.series)
             self.feetitem.indices['rwave'] = pd.Index(ecg.idxrwave)
         else:
             raise ValueError(cycleid)
