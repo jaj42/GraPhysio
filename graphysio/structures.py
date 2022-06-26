@@ -23,7 +23,7 @@ class CycleId(Enum):
 
 
 class PlotData:
-    def __init__(self, data, filepath, name):
+    def __init__(self, data, filepath: Path, name: str = None):
         self.data = data
         self.filepath = Path(filepath)
         self._name = name
