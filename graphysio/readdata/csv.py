@@ -187,7 +187,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
                 self.lstAll.appendRow([keyitem, valueitem])
         self.lstAll.sort(0)
 
-    def xChanged(self, newtext):
+    def xChanged(self, _newtext):
         if self.lstX.rowCount() > 0:
             self.chkGenX.setCheckState(QtCore.Qt.Unchecked)
         else:

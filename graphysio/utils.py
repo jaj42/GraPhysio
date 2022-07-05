@@ -6,7 +6,7 @@ from itertools import cycle
 
 import numpy as np
 import pathvalidate
-from pyqtgraph.Qt import QtGui, loadUiType
+from pyqtgraph.Qt import QtGui
 
 sanitize_filename = partial(pathvalidate.sanitize_filename, platform='auto')
 sanitize_filepath = partial(pathvalidate.sanitize_filepath, platform='auto')
@@ -23,16 +23,6 @@ def Colors():
         QtGui.QColor(162, 20, 47),
     ]
     return cycle(qtcolors)
-
-
-curPath = os.path.dirname(os.path.abspath(__file__))
-uiBasePath = os.path.join(curPath, 'ui')
-
-
-def loadUiFile(uiFile):
-    uiPath = os.path.join(uiBasePath, uiFile)
-    # form class and Qt base class.
-    return loadUiType(uiPath)
 
 
 def estimateSampleRate(series):

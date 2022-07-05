@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtWidgets
-
 from graphysio import dialogs
 from graphysio.structures import Parameter, PlotData
+from pyqtgraph.Qt import QtCore, QtWidgets
 
 
 class SpectrogramWidget(QtWidgets.QWidget):
@@ -43,7 +42,7 @@ class SpectroTimeAxisItem(pg.AxisItem):
         self.samplerate = samplerate
         self.chunksize = chunksize
 
-    def tickStrings(self, values, scale, spacing):
+    def tickStrings(self, values, _scale, _spacing):
         ret = []
         value_to_time = self.chunksize / self.samplerate + self.initvalue
         for value in values:

@@ -4,11 +4,11 @@ from graphysio.plotwidgets.puplot import LoopWidget
 from graphysio.plotwidgets.spectrogram import SpectrogramWidget
 from graphysio.plotwidgets.tsplot import TSWidget
 
-all = [
-    PlotWidget,
-    TimeAxisItem,
-    POISelectorWidget,
-    LoopWidget,
-    SpectrogramWidget,
-    TSWidget,
+__all__ = [
+    'PlotWidget',
+    'TimeAxisItem',
+    'POISelectorWidget',
+    'LoopWidget',
+    'SpectrogramWidget',
+    'TSWidget',
 ]

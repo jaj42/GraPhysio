@@ -4,11 +4,12 @@ from typing import Any
 import nox
 from nox.sessions import Session
 
-# nox.options.sessions = "lint", "safety", "docs"
-nox.options.sessions = "lint", "safety"
+# nox.options.sessions = "lint", "safety", "vulture", "docs"
+nox.options.sessions = "lint", "safety", "vulture"
 
 locations = ["graphysio"]
 python_versions = ['3.8']
+vulture_whitelist = '.vulture_whitelist.py'
 
 
 def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> None:
@@ -39,6 +40,7 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
 
 @nox.session(python=python_versions)
 def lint(session):
+    """Do the linting."""
     args = session.posargs or locations
     install_with_constraints(
         session,
@@ -49,6 +51,14 @@ def lint(session):
         "darglint",
     )
     session.run("flake8", *args)
+
+
+@nox.session(python=python_versions)
+def vulture(session):
+    """Find dead code."""
+    args = session.posargs or locations
+    install_with_constraints(session, "vulture")
+    session.run("vulture", "--exclude", ".vscode", vulture_whitelist, *args)
 
 
 @nox.session(python=python_versions)

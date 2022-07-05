@@ -6,14 +6,6 @@ Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
 
 
-class FootType(Enum):
-    start = 'start'
-    stop = 'stop'
-    diastole = 'diastole'
-    systole = 'systole'
-    dicrotic = 'dicrotic'
-
-
 class CycleId(Enum):
     none = 'None'
     foot = 'Pressure foot'
@@ -23,7 +15,7 @@ class CycleId(Enum):
 
 
 class PlotData:
-    def __init__(self, data, filepath: Path, name: str = None):
+    def __init__(self, data, filepath: Path, name: str = ''):
         self.data = data
         self.filepath = Path(filepath)
         self._name = name

@@ -31,7 +31,7 @@ class TimeAxisItem(pg.AxisItem):
     def is_relative_time(val):
         return val < 5e14  # Nov 1985
 
-    def tickStrings(self, values, scale, spacing):
+    def tickStrings(self, values, _scale, _spacing):
         if not values:
             return []
         if self.is_relative_time(values[0]):

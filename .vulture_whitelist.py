@@ -1,0 +1,7 @@
+updateTFs  # unused function (graphysio/algorithms/filters.py:83)
+_.paint  # unused method (graphysio/legend.py:8)
+_.tickStrings  # unused method (graphysio/plotwidgets/plotwidget.py:34)
+_.sigproxy  # unused attribute (graphysio/plotwidgets/plotwidget.py:71)
+_.tickStrings  # unused method (graphysio/plotwidgets/spectrogram.py:45)
+_.keyPressEvent  # unused method (graphysio/plotwidgets/tsplot.py:55)
+pyarrow  # unused import (graphysio/writedata/parquet.py:7)

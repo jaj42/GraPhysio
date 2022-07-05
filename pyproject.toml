@@ -33,6 +33,7 @@ Sphinx = "^5.0.1"
 sphinx-autodoc-typehints = "^1.18.2"
 flake8-docstrings = "^1.6.0"
 darglint = "^1.8.1"
+vulture = "^2.5"
 
 [tool.poetry.scripts]
 graphysio = "graphysio.main:main"
