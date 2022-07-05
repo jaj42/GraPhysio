@@ -1,10 +1,11 @@
 import csv
+from dataclasses import dataclass
 from functools import partial
+from pathlib import Path
 from typing import List
 
 import numpy as np
 import pandas as pd
-from attr import attrib, attrs
 from graphysio import ui
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
@@ -91,23 +92,25 @@ class CsvReader(BaseReader):
         return plotdata
 
 
-@attrs
+@dataclass
 class CsvRequest:
-    filepath = attrib()
-    seperator = attrib()
-    decimal = attrib()
-    dtfield = attrib()
-    yfields = attrib()
-    datetime_format = attrib()
-    droplines = attrib()
-    generatex = attrib()
-    clusterid = attrib()
-    timezone = attrib()
-    encoding = attrib()
-    samplerate = attrib()
+    """Group needed parameters to parse the CSV file."""
+
+    filepath: Path
+    seperator: str
+    decimal: str
+    dtfield: str
+    yfields: List[str]
+    datetime_format: str
+    droplines: int
+    generatex: bool
+    clusterid: str
+    timezone: str
+    encoding: str
+    samplerate: int
 
     @property
-    def fields(self):
+    def fields(self) -> List[str]:
         dtfields = [] if self.dtfield is None else [self.dtfield]
         clusterfields = [] if self.clusterid is None else [self.clusterid]
         return dtfields + clusterfields + self.yfields

@@ -83,7 +83,7 @@ def vermin(session):
     """Check minimum required Python version."""
     args = session.posargs or locations
     install_with_constraints(session, "vermin")
-    session.run("vermin", "--target=3.8-", *args)
+    session.run("vermin", "--no-tips", "--target=3.8-", *args)
 
 
 @nox.session(python=python_versions)
