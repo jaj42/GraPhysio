@@ -5,7 +5,7 @@ import nox
 from nox.sessions import Session
 
 # nox.options.sessions = "lint", "safety", "vulture", "docs"
-nox.options.sessions = "lint", "safety", "vulture"
+nox.options.sessions = "lint", "safety", "vulture", "vermin"
 
 locations = ["graphysio"]
 python_versions = ['3.8']
@@ -76,6 +76,14 @@ def safety(session: Session) -> None:
         )
         install_with_constraints(session, "safety")
         session.run("safety", "check", f"--file={requirements.name}", "--full-report")
+
+
+@nox.session(python=python_versions)
+def vermin(session):
+    """Check minimum required Python version."""
+    args = session.posargs or locations
+    install_with_constraints(session, "vermin")
+    session.run("vermin", "--target=3.8-", *args)
 
 
 @nox.session(python=python_versions)
