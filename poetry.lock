@@ -195,7 +195,7 @@ flake8 = "*"
 
 [[package]]
 name = "fonttools"
-version = "4.33.3"
+version = "4.34.2"
 description = "Tools to manipulate font files"
 category = "main"
 optional = false
@@ -903,7 +903,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "5efa00a50c9afec8d90f7940a7e854c083c4974eb316291dee26ba135f8f6a75"
+content-hash = "43441de3369e241e3ed295b7076484c814aefebb9feb34f66611611dff39ba64"
 
 [metadata.files]
 alabaster = [
@@ -975,8 +975,8 @@ flake8-polyfill = [
     {file = "flake8_polyfill-1.0.2-py2.py3-none-any.whl", hash = "sha256:12be6a34ee3ab795b19ca73505e7b55826d5f6ad7230d31b18e106400169b9e9"},
 ]
 fonttools = [
-    {file = "fonttools-4.33.3-py3-none-any.whl", hash = "sha256:f829c579a8678fa939a1d9e9894d01941db869de44390adb49ce67055a06cc2a"},
-    {file = "fonttools-4.33.3.zip", hash = "sha256:c0fdcfa8ceebd7c1b2021240bd46ef77aa8e7408cf10434be55df52384865f8e"},
+    {file = "fonttools-4.34.2-py3-none-any.whl", hash = "sha256:c6c5a896c9760132614caa57b444ee5b4719c08f84b304bf8ce9295edfb7cbc3"},
+    {file = "fonttools-4.34.2.zip", hash = "sha256:3fb3bef8e743dad8fe96e12a47a9ce9bd367ac0a24c089256615518c88309dbd"},
 ]
 gitdb = [
     {file = "gitdb-4.0.9-py3-none-any.whl", hash = "sha256:8033ad4e853066ba6ca92050b9df2f89301b8fc8bf7e9324d412a63f8bf1a8fd"},
