@@ -256,7 +256,7 @@ class Ui_NewPlot(object):
         self.txtEncoding.setItemText(1, _translate("NewPlot", "utf8"))
         self.label_5.setText(_translate("NewPlot", "Timezone"))
         self.txtTimezone.setItemText(0, _translate("NewPlot", "UTC"))
-        self.txtTimezone.setItemText(1, _translate("NewPlot", "CET"))
+        self.txtTimezone.setItemText(1, _translate("NewPlot", "Europe/Paris"))
         self.btnLoad.setText(_translate("NewPlot", "Load Fields"))
         self.groupBox_2.setTitle(_translate("NewPlot", "Loaded Fields"))
         self.btnToX.setText(_translate("NewPlot", "Move to X"))

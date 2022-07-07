@@ -21,7 +21,7 @@ def interp_series(s, samplerate, start, stop):
     )
     # Account for periods of missing data.
     duration_s = (stop - start) * 1e-9
-    npoints = duration_s * samplerate
+    npoints = int(duration_s * samplerate)
     newidx = np.linspace(start, stop, num=npoints)
     return f(newidx)
 

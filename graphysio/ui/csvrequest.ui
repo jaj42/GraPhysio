@@ -135,7 +135,7 @@
            </item>
            <item>
             <property name="text">
-             <string>CET</string>
+             <string>Europe/Paris</string>
             </property>
            </item>
           </widget>

@@ -12,7 +12,7 @@ from pyqtgraph.Qt import QtCore, QtGui
 class TimeAxisItem(pg.AxisItem):
     @staticmethod
     def conv_absolute(value, mainwindow=False):
-        value /= 1e6  # convert from ns to ms
+        value = int(value * 1e-6)  # convert from ns to ms
         date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
         date = date.toTimeSpec(QtCore.Qt.UTC)
         if mainwindow:
@@ -23,7 +23,7 @@ class TimeAxisItem(pg.AxisItem):
 
     @staticmethod
     def conv_relative(value):
-        value /= 1e6
+        value = int(value * 1e-6)  # convert from ns to ms
         td = timedelta(milliseconds=value)
         return str(td)
 

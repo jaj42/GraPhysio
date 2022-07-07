@@ -1,6 +1,7 @@
 from collections import namedtuple
 from enum import Enum
 from pathlib import Path
+from typing import Optional
 
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
@@ -15,7 +16,7 @@ class CycleId(Enum):
 
 
 class PlotData:
-    def __init__(self, data, filepath: Path, name: str = ''):
+    def __init__(self, data, filepath: Path, name: Optional[str] = None):
         self.data = data
         self.filepath = Path(filepath)
         self._name = name

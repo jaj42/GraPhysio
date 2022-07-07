@@ -64,11 +64,11 @@ class CsvReader(BaseReader):
                 timestamp = pd.to_datetime(timestamp, infer_datetime_format=True)
             else:
                 timestamp = pd.to_datetime(timestamp, format=dtformat)
+                timestamp = pd.Index(timestamp)
+                if timestamp.tz is None:
+                    timestamp = timestamp.tz_localize(request.timezone)
+                timestamp = timestamp.tz_convert('UTC')
 
-            # Convert timestamp to UTC and use as index
-            timestamp = (
-                pd.Index(timestamp).tz_localize(request.timezone).tz_convert('UTC')
-            )
             timestamp = timestamp.view(np.int64)
             data = data.set_index([timestamp])
 
