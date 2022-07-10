@@ -16,10 +16,15 @@ class CycleId(Enum):
 
 
 class PlotData:
-    def __init__(self, data, filepath: Path, name: Optional[str] = None):
-        self.data = data
-        self.filepath = Path(filepath)
+    def __init__(
+        self, data, filepath: Optional[Path] = None, name: Optional[str] = None
+    ):
+        if filepath is None and name is None:
+            raise ValueError('At least one of filepath or name needs to be specified.')
+        if filepath is not None:
+            self.filepath = Path(filepath)
         self._name = name
+        self.data = data
 
     @property
     def name(self):

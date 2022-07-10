@@ -21,7 +21,7 @@ scipy = "^1.8.1"
 numexpr = "^2.8.0"
 pyarrow = {version = "^8.0.0", optional = true}
 pyEDFlib = {version = "^0.1.29", optional = true}
-physiocurve = "^2022.6.26"
+physiocurve = ">=2022.6.26,<=2022.8"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
