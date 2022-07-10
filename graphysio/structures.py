@@ -13,6 +13,8 @@ class CycleId(Enum):
     pressure = 'Pressure Full'
     velocity = 'Velocity'
     rwave = 'ECG R Wave'
+    footbis = 'Pressure foot (physiocurve)'
+    pressurebis = 'Pressure full (physiocurve)'
 
 
 class PlotData:

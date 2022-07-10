@@ -8,7 +8,7 @@ from graphysio import utils
 from graphysio.algorithms import waveform
 from graphysio.structures import CycleId
 from graphysio.utils import estimateSampleRate
-from physiocurve.pandas.ecg import Ecg
+from physiocurve.pandas import PPG, Ecg
 from pyqtgraph.Qt import QtCore, QtGui
 
 
@@ -100,10 +100,7 @@ class POIItem(pg.ScatterPlotItem):
         if key not in self.indices:
             return
         oldidx = self.indices[key]
-        dellocs = []
-        for loc in locations:
-            locidx = oldidx.get_loc(loc, method='nearest')
-            dellocs.append(locidx)
+        dellocs = oldidx.get_indexer(locations, method='nearest')
         newidx = oldidx.delete(dellocs)
         self.indices[key] = newidx
         self.render()
@@ -116,7 +113,7 @@ class POIItem(pg.ScatterPlotItem):
             except KeyError:
                 # Should not happen
                 continue
-            nidx = idx.get_loc(point.pos().x(), method='nearest')
+            nidx = idx.get_indexer([point.pos().x()], method='nearest')
             self.indices[sym] = idx.delete(nidx)
         self.render()
 
@@ -210,7 +207,16 @@ class CurveItemWithPOI(CurveItem):
             self.feetitem.indices['dicrotic'] = dic
         elif cycleid is CycleId.rwave:
             ecg = Ecg(self.series)
-            self.feetitem.indices['rwave'] = pd.Index(ecg.idxrwave)
+            self.feetitem.indices['rwave'] = ecg.idxrwave
+        elif cycleid is CycleId.footbis:
+            ppg = PPG(self.series)
+            self.feetitem.indices['start'] = ppg.idxfeet
+        elif cycleid is CycleId.pressurebis:
+            ppg = PPG(self.series)
+            self.feetitem.indices['start'] = ppg.idxfeet
+            self.feetitem.indices['diastole'] = ppg.idxdia
+            self.feetitem.indices['systole'] = ppg.idxsys
+            self.feetitem.indices['dicrotic'] = ppg.idxdic
         else:
             raise ValueError(cycleid)
         self.feetitem.render()
@@ -231,13 +237,13 @@ class CurveItemWithPOI(CurveItem):
             xmax = s.index[-1]
         if not hasstarts:
             # We have no feet, treat the whole signal as one cycle
-            locs = (s.index.get_loc(i, method='nearest') for i in [xmin, xmax])
-            indices = (s.index[loc] for loc in locs)
+            locs = s.index.get_indexer([xmin, xmax], method='nearest')
+            indices = s.index[locs]
             begins, ends = [np.array([i]) for i in indices]
         elif not hasstops:
             # We have no stops, starts serve as stops for previous cycle
             begins = clip(self.feetitem.indices['start'].values)
-            endloc = s.index.get_loc(xmax, method='nearest')
+            endloc = s.index.get_indexer([xmax], method='nearest')
             end = s.index[endloc]
             ends = np.append(begins[1:], end)
         else:
