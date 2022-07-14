@@ -8,7 +8,7 @@ from graphysio import utils
 from graphysio.algorithms import waveform
 from graphysio.structures import CycleId
 from graphysio.utils import estimateSampleRate
-from physiocurve.pandas import PPG, Ecg
+from physiocurve.pandas import ECG, Pressure
 from pyqtgraph.Qt import QtCore, QtGui
 
 
@@ -75,7 +75,8 @@ class POIItem(pg.ScatterPlotItem):
         'systole': 't',
         'dicrotic': 'd',
         'point': 'o',
-        'rwave': '+',
+        'rwave': 'x',
+        'twave': 'star',
     }
     # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in
     # ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
@@ -206,17 +207,22 @@ class CurveItemWithPOI(CurveItem):
             self.feetitem.indices['systole'] = sbp
             self.feetitem.indices['dicrotic'] = dic
         elif cycleid is CycleId.rwave:
-            ecg = Ecg(self.series)
+            ecg = ECG(self.series)
             self.feetitem.indices['rwave'] = ecg.idxrwave
-        elif cycleid is CycleId.footbis:
-            ppg = PPG(self.series)
-            self.feetitem.indices['start'] = ppg.idxfeet
+        elif cycleid is CycleId.ecg:
+            ecg = ECG(self.series)
+            self.feetitem.indices['start'] = ecg.idxpwave
+            self.feetitem.indices['rwave'] = ecg.idxrwave
+            self.feetitem.indices['twave'] = ecg.idxtwave
+        elif cycleid is CycleId.foottan:
+            p = Pressure(self.series)
+            self.feetitem.indices['start'] = p.idxtanfeet
         elif cycleid is CycleId.pressurebis:
-            ppg = PPG(self.series)
-            self.feetitem.indices['start'] = ppg.idxfeet
-            self.feetitem.indices['diastole'] = ppg.idxdia
-            self.feetitem.indices['systole'] = ppg.idxsys
-            self.feetitem.indices['dicrotic'] = ppg.idxdic
+            p = Pressure(self.series)
+            self.feetitem.indices['start'] = p.idxfeet
+            self.feetitem.indices['diastole'] = p.idxdia
+            self.feetitem.indices['systole'] = p.idxsys
+            self.feetitem.indices['dicrotic'] = p.idxdic
         else:
             raise ValueError(cycleid)
         self.feetitem.render()

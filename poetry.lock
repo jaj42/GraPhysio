@@ -195,7 +195,7 @@ flake8 = "*"
 
 [[package]]
 name = "fonttools"
-version = "4.34.2"
+version = "4.34.4"
 description = "Tools to manipulate font files"
 category = "main"
 optional = false
@@ -445,7 +445,7 @@ python-versions = ">=2.6"
 
 [[package]]
 name = "physiocurve"
-version = "2022.6.26"
+version = "2022.7.14"
 description = "Analyse biometric time series"
 category = "main"
 optional = false
@@ -455,7 +455,6 @@ python-versions = ">=3.8,<3.11"
 neurokit2 = ">=0.2.0,<0.3.0"
 numba = ">=0.55.2,<0.56.0"
 pandas = ">=1.4.3,<2.0.0"
-scipy = ">=1.8.1,<2.0.0"
 
 [[package]]
 name = "pillow"
@@ -517,7 +516,7 @@ toml = ["toml"]
 
 [[package]]
 name = "pyedflib"
-version = "0.1.29"
+version = "0.1.30"
 description = "library to read/write EDF+/BDF+ files"
 category = "main"
 optional = true
@@ -656,7 +655,7 @@ numpy = ">=1.17.3,<1.25.0"
 
 [[package]]
 name = "setuptools-scm"
-version = "7.0.4"
+version = "7.0.5"
 description = "the blessed package to manage your versions by scm tags"
 category = "main"
 optional = false
@@ -815,11 +814,11 @@ test = ["pytest"]
 
 [[package]]
 name = "stevedore"
-version = "3.5.0"
+version = "4.0.0"
 description = "Manage dynamic plugins for Python applications"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 
 [package.dependencies]
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
@@ -858,11 +857,11 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "urllib3"
-version = "1.26.9"
+version = "1.26.10"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "dev"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4"
 
 [package.extras]
 brotli = ["brotlicffi (>=0.8.0)", "brotli (>=1.0.9)", "brotlipy (>=0.6.0)"]
@@ -890,20 +889,20 @@ toml = "*"
 
 [[package]]
 name = "zipp"
-version = "3.8.0"
+version = "3.8.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)"]
-testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
+docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)", "jaraco.tidelift (>=1.4)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.3)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "43441de3369e241e3ed295b7076484c814aefebb9feb34f66611611dff39ba64"
+content-hash = "7d93fe4cf6e174bb8cac9992b5601c5642b27971b72538e351362e236f0aa9e2"
 
 [metadata.files]
 alabaster = [
@@ -974,10 +973,7 @@ flake8-polyfill = [
     {file = "flake8-polyfill-1.0.2.tar.gz", hash = "sha256:e44b087597f6da52ec6393a709e7108b2905317d0c0b744cdca6208e670d8eda"},
     {file = "flake8_polyfill-1.0.2-py2.py3-none-any.whl", hash = "sha256:12be6a34ee3ab795b19ca73505e7b55826d5f6ad7230d31b18e106400169b9e9"},
 ]
-fonttools = [
-    {file = "fonttools-4.34.2-py3-none-any.whl", hash = "sha256:c6c5a896c9760132614caa57b444ee5b4719c08f84b304bf8ce9295edfb7cbc3"},
-    {file = "fonttools-4.34.2.zip", hash = "sha256:3fb3bef8e743dad8fe96e12a47a9ce9bd367ac0a24c089256615518c88309dbd"},
-]
+fonttools = []
 gitdb = [
     {file = "gitdb-4.0.9-py3-none-any.whl", hash = "sha256:8033ad4e853066ba6ca92050b9df2f89301b8fc8bf7e9324d412a63f8bf1a8fd"},
     {file = "gitdb-4.0.9.tar.gz", hash = "sha256:bac2fd45c0a1c9cf619e63a90d62bdc63892ef92387424b855792a6cabe789aa"},
@@ -1284,8 +1280,8 @@ pbr = [
     {file = "pbr-5.9.0.tar.gz", hash = "sha256:e8dca2f4b43560edef58813969f52a56cef023146cbb8931626db80e6c1c4308"},
 ]
 physiocurve = [
-    {file = "physiocurve-2022.6.26-py3-none-any.whl", hash = "sha256:51867cac959f97a4020e3498c992c929522590ab4d4d49f0194f2f61c303c698"},
-    {file = "physiocurve-2022.6.26.tar.gz", hash = "sha256:27ae9321b85a2e0c279145b96abe759c8577e1dedcbd1e204801c09d9f923d94"},
+    {file = "physiocurve-2022.7.14-py3-none-any.whl", hash = "sha256:1e000cdb71f65ec6129289612e11bbb6ff025618b76e2ad3ccf6a91abdc708f6"},
+    {file = "physiocurve-2022.7.14.tar.gz", hash = "sha256:df298ebcd8d75e001727b36a1e777ea8ee6a3c9592cacb2923d721fbbef0f5cc"},
 ]
 pillow = [
     {file = "Pillow-9.2.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:a9c9bc489f8ab30906d7a85afac4b4944a572a7432e00698a7239f44a44e6efb"},
@@ -1391,47 +1387,47 @@ pydocstyle = [
     {file = "pydocstyle-6.1.1.tar.gz", hash = "sha256:1d41b7c459ba0ee6c345f2eb9ae827cab14a7533a88c5c6f7e94923f72df92dc"},
 ]
 pyedflib = [
-    {file = "pyEDFlib-0.1.29-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:14201b174078b803335a2ca3ebc7891d74d7d9b9dd2b9ca2933b4778c3c18385"},
-    {file = "pyEDFlib-0.1.29-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:193583b578fc68d9e884f30d43c095493dc26d5bee0763bdfdfd1137d193fd72"},
-    {file = "pyEDFlib-0.1.29-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:37fce0a6a099721036ffc16be1c8c0439f53b237f9da6718af03b388f8fc2ad9"},
-    {file = "pyEDFlib-0.1.29-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:961291b3bf911eb7acdf5b322b9f97ef859def78e58d145cfebd9c74b42944a4"},
-    {file = "pyEDFlib-0.1.29-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:bc0caf63c029ea8d0d39f7e5b2fee83494800bf9c591abed70c045deec93c737"},
-    {file = "pyEDFlib-0.1.29-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:958f5e36bb9400ca8a4b4ea5a656fdc58199461c9cfdec2d594f15464d726a8e"},
-    {file = "pyEDFlib-0.1.29-cp310-cp310-win32.whl", hash = "sha256:766c81b7bee37dde0c7994b6ec09c1e168d25d8ca132de454766dd1619edd190"},
-    {file = "pyEDFlib-0.1.29-cp310-cp310-win_amd64.whl", hash = "sha256:62439f9edc09626d8efc946fe1f2939a4d2311433e6caf204528d3e7d3a3b23a"},
-    {file = "pyEDFlib-0.1.29-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:86e9cbebf086201e7dcab09cc438efe14da238dc6e892866a46f5fa000385e98"},
-    {file = "pyEDFlib-0.1.29-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:aa15a1286371641cd80bd212670c23fd4c7d03b88363575c5c7392cc2077a65e"},
-    {file = "pyEDFlib-0.1.29-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e272aa8e5b99737545aacf6b922389dd1696d0aae998b63027bec7c746026565"},
-    {file = "pyEDFlib-0.1.29-cp36-cp36m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:40dbef7ed49b78a76520915a046a524529f0b12523def8cab9d3af3deba270f3"},
-    {file = "pyEDFlib-0.1.29-cp36-cp36m-musllinux_1_1_i686.whl", hash = "sha256:dbcb841d604b74a95efdf987e0734da5b66e29faa27ade28d21133ab0caeecea"},
-    {file = "pyEDFlib-0.1.29-cp36-cp36m-musllinux_1_1_x86_64.whl", hash = "sha256:0d21bd46cc5e44413e8376d0654014d028fdb7abec3eae6c0651950c519f7126"},
-    {file = "pyEDFlib-0.1.29-cp36-cp36m-win32.whl", hash = "sha256:60a4b83189218554d2c075124f0d5c9c2ef781c7db5160cfa25b020b60e6d742"},
-    {file = "pyEDFlib-0.1.29-cp36-cp36m-win_amd64.whl", hash = "sha256:1dcaf974e7b595dff401d27bbeca1398052dd0c626346b968f83994535968a6f"},
-    {file = "pyEDFlib-0.1.29-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:346305702a2f53baa7946a859b59973741fa80e5fec8e83f0a76709fc0508121"},
-    {file = "pyEDFlib-0.1.29-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5823a478068a1888bf500d8768a2e6e9fcfa841fe20ad34aa7b8a2ca175aeb03"},
-    {file = "pyEDFlib-0.1.29-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8348291888e14eda40bdde91f5192bfcbdeedc003a21005dff827f96ddc2eef4"},
-    {file = "pyEDFlib-0.1.29-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:77846f146f75012c7dd54a5d1e40e298d89fcdb52d8aea3043da8ebfaf610f65"},
-    {file = "pyEDFlib-0.1.29-cp37-cp37m-musllinux_1_1_i686.whl", hash = "sha256:a49bb13da4dd0f4847a2624a8462dc28938ff3ccc6600d3772a3c80003edc90a"},
-    {file = "pyEDFlib-0.1.29-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:e83c0f00046f90f32d2c4a55855991c5fa86fa7950bb977a1c0bcbe8763ace1d"},
-    {file = "pyEDFlib-0.1.29-cp37-cp37m-win32.whl", hash = "sha256:cbf3ece991fe3a25edace077358b396e3be6577ed99d3c49e1e05ae51cbf9942"},
-    {file = "pyEDFlib-0.1.29-cp37-cp37m-win_amd64.whl", hash = "sha256:01049bcf76275952e5d6e2a8e9afd01cdb4ee0b869bb7c178919d77d37bea9f1"},
-    {file = "pyEDFlib-0.1.29-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:65e908d9e478ca3937a32c5988897b1f6c3117ab3c18b6af64eaae9a8f4ade53"},
-    {file = "pyEDFlib-0.1.29-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b4fb9e27064a7e615f6c25f654b70e3e6851ab539f230ac54bbab9756edbafd6"},
-    {file = "pyEDFlib-0.1.29-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:30dc9e1d01b627e59b6e2df51b4a3b8025206cfdba786b3478ddebcabf8d9593"},
-    {file = "pyEDFlib-0.1.29-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:5677fafd011dab207909526c700539494a5b284d27c1646db67f5d40525af58f"},
-    {file = "pyEDFlib-0.1.29-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:e053b7418d761b9a3bf1d7dc6b1da96c5e0549ebc63adb877a10dac4a9d9b36c"},
-    {file = "pyEDFlib-0.1.29-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:8ef6c264852c7cd05384f56577800e6f8f89526628a1c42d78adad575c252381"},
-    {file = "pyEDFlib-0.1.29-cp38-cp38-win32.whl", hash = "sha256:8234a69bbe002e8e585f79702f10fff83b157022d47899965475b7ef54f11a1c"},
-    {file = "pyEDFlib-0.1.29-cp38-cp38-win_amd64.whl", hash = "sha256:3eef5ad429b2434d9d73e6b0c9767ae8f72715eab32a44dc49fc0ebca0a03335"},
-    {file = "pyEDFlib-0.1.29-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:ee3765029f077abc3f268d22064d2314c057500ef7985e8efec26e6eada7c2f8"},
-    {file = "pyEDFlib-0.1.29-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:990807c59da881083d0a1306efec3b838c20ac06cf170344a51e7b478673b412"},
-    {file = "pyEDFlib-0.1.29-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a7d5b1571bb481b13ebcfc7ed997be9fc0eefefbba513771cd22858584f20854"},
-    {file = "pyEDFlib-0.1.29-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:35cf15cada8c58f3c9385f4955655cefa1f29c570caa10da471a28fa3f257637"},
-    {file = "pyEDFlib-0.1.29-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:006a2db2173402d1370ddef4a4b4154eb73d3d16c28ac552995d5324247da761"},
-    {file = "pyEDFlib-0.1.29-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:40845f1b4f9264edb9df30018f0110d5cb76d9c3fd2bf6467fea71ff9b1687e4"},
-    {file = "pyEDFlib-0.1.29-cp39-cp39-win32.whl", hash = "sha256:109f3d997cfff60f0cdb95247ab29256ada76c30bacedaf277d1a7bebad5a9bb"},
-    {file = "pyEDFlib-0.1.29-cp39-cp39-win_amd64.whl", hash = "sha256:6f798aec1af2af8ca869192ae0708c2cad1ffd676ba9b268d3e93fa87f164481"},
-    {file = "pyEDFlib-0.1.29.tar.gz", hash = "sha256:a987b84a7ae12394dcf7e30382456dfde5520457405932ebdeebb25cec39d0df"},
+    {file = "pyEDFlib-0.1.30-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:acdf079833d7ece3853d7e1e593c01574d1475d7b5dbd5fc8d5d1e3d1051de49"},
+    {file = "pyEDFlib-0.1.30-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:dfe285a8c5f6769a55408a5f94776320ca5370f68b7df56a788dec9ca02219d8"},
+    {file = "pyEDFlib-0.1.30-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:874a664bf947b1f19ed5227e8390d66a579a35b800671c939e271d0e613d5ba5"},
+    {file = "pyEDFlib-0.1.30-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:9d228b495677709c39ff16c12dd0027ac726133eb4b6234e6c63cee2a4141af0"},
+    {file = "pyEDFlib-0.1.30-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:f4f50c4a21ab421c281394993fff811238fcf821c08e936f35f92b9f14832291"},
+    {file = "pyEDFlib-0.1.30-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:2d65a4eac9b526cf9e7e62a6aaac61a3990b517712205063f22b36f1d9cbe3b1"},
+    {file = "pyEDFlib-0.1.30-cp310-cp310-win32.whl", hash = "sha256:349a2f3a42477c89dea51e6c299ec4f3094287897c8c1ecbf3ccfcb8ccdac8df"},
+    {file = "pyEDFlib-0.1.30-cp310-cp310-win_amd64.whl", hash = "sha256:3c0c4c2aedeefd6094b9f7f0ba41f9c57b81e728cb212ff38c6c0626651923a0"},
+    {file = "pyEDFlib-0.1.30-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:4fc2a1ef6e4a175255425ff868559551b6b79599407e84ce1bb4012cf2ed952b"},
+    {file = "pyEDFlib-0.1.30-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e58bc095593cba637b62fcd09449ae1eb30523913e3dc76302ba71d8a9c893fe"},
+    {file = "pyEDFlib-0.1.30-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:30de5d908e6461ede89b7cd501f9589fcaa0d2578b700c1d04d61bbb8dd1e4cb"},
+    {file = "pyEDFlib-0.1.30-cp36-cp36m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:2bd4ae5265772d672283a4511ec2a98de1eaad184004086892673cafe5a3acb6"},
+    {file = "pyEDFlib-0.1.30-cp36-cp36m-musllinux_1_1_i686.whl", hash = "sha256:d19fa1b13ae8d489ea47660c8f9d8b389fc585650c485d6806e8191961ec87f3"},
+    {file = "pyEDFlib-0.1.30-cp36-cp36m-musllinux_1_1_x86_64.whl", hash = "sha256:a300d23145b78c004e5c7abfad58e3a99c41c635984470f5cade015b79553bc9"},
+    {file = "pyEDFlib-0.1.30-cp36-cp36m-win32.whl", hash = "sha256:5e5dd41cf5245062bcd14825abd3a9f1bc1f944a92f66dae6486626667a58661"},
+    {file = "pyEDFlib-0.1.30-cp36-cp36m-win_amd64.whl", hash = "sha256:8f2f71316cf4e96cb0887b56e1d64b2ca2a714d90a48dfb0a8632a56a7a197cf"},
+    {file = "pyEDFlib-0.1.30-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:d92308ec93001d645f4a53792076cd6606bf216bb19361fbdf41f0001690db6a"},
+    {file = "pyEDFlib-0.1.30-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fd0643ec750195fc27a954c85899d07e44909297ed8b8667d99acc91a6cb4fbe"},
+    {file = "pyEDFlib-0.1.30-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:98c021deefbfd540c3d487c6c6fe634b1b9763141593c6c04c90ab7851215a76"},
+    {file = "pyEDFlib-0.1.30-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:8811c7e2eda24dba80c05faa3af5ca631b42a1110749e158cb215d7676f089da"},
+    {file = "pyEDFlib-0.1.30-cp37-cp37m-musllinux_1_1_i686.whl", hash = "sha256:449db6e99dff397bb9d2ccbe06f63c2679c9e8c2d1c2ad536ae57444e1f89767"},
+    {file = "pyEDFlib-0.1.30-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:8c9b1affcb63df9954f4cb51100da6ca3f7bbe092fdb3c826ff9ffe99d1fe707"},
+    {file = "pyEDFlib-0.1.30-cp37-cp37m-win32.whl", hash = "sha256:8ab2243f9cee201833161a27865680ef0e419556c5ad42d6b08abee81bffd0d4"},
+    {file = "pyEDFlib-0.1.30-cp37-cp37m-win_amd64.whl", hash = "sha256:da610654e6b4f4bbc953cf218eac93eb20920974b76a77856a92b67801e4552a"},
+    {file = "pyEDFlib-0.1.30-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:027f3f9c2cad6ecaef3a2a44cfdd80f3da81cfac635c53a6bbd30d107ce39ceb"},
+    {file = "pyEDFlib-0.1.30-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4a441f934b432da6014a4e2693f858596b06328a8d02036591c02842e717043f"},
+    {file = "pyEDFlib-0.1.30-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cbc37b3d1feb7946625b8bd6e8597f68790bebc687afa6971f185332bf139518"},
+    {file = "pyEDFlib-0.1.30-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ac4ebae1c1d5d4b3f2a9da1873d6fabba8990cb033be032763fab01c3117eb7d"},
+    {file = "pyEDFlib-0.1.30-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:78ebde94bf0a5cdd046534362c6fa5822ef0ec03959394797e85dff1e048042c"},
+    {file = "pyEDFlib-0.1.30-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:614d07509510da93a613f21feb811c60b65bd77beea30bced8d47a6f3147c39e"},
+    {file = "pyEDFlib-0.1.30-cp38-cp38-win32.whl", hash = "sha256:0904cd3de347b4755dca52bf810715b99d7bf2e0591c6af011c0fd289a4a36bd"},
+    {file = "pyEDFlib-0.1.30-cp38-cp38-win_amd64.whl", hash = "sha256:debff3da3429307c436b95af52bab50dd9338e97501e593d6e34f9e0df9c3cb3"},
+    {file = "pyEDFlib-0.1.30-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:1c8f716046f286ebca630e380290629e5f3f4ff697c384ee902b50b0e1a4536c"},
+    {file = "pyEDFlib-0.1.30-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bd4284da378832eaf04b538db1da2888543bb05bc84716c02c6bb61eef3db60e"},
+    {file = "pyEDFlib-0.1.30-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:acd14a1636b911807c900e9697576a0bd43fc6b0a563208c641f4b20edba6c60"},
+    {file = "pyEDFlib-0.1.30-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:905418440280e86c433f4cfb7237666cc389865b7b73291fedc620ed7654c721"},
+    {file = "pyEDFlib-0.1.30-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:c1bf09f35d50164811b87164b723225539ad0242637286368610fc6eaa9a3de6"},
+    {file = "pyEDFlib-0.1.30-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:bc53e30e6c9d6d00c8a3a61b91c50611ed51bc9205d06ea75bbbb37e58492d93"},
+    {file = "pyEDFlib-0.1.30-cp39-cp39-win32.whl", hash = "sha256:fa27bdf831ac398f7f93bc697ec9138c3ce3cf910f474f30d8a15612d58a6ae3"},
+    {file = "pyEDFlib-0.1.30-cp39-cp39-win_amd64.whl", hash = "sha256:b4f9850d6d505e98c3e36084ee884f32e53dabbb4eebcdc8d220f56ac31829e2"},
+    {file = "pyEDFlib-0.1.30.tar.gz", hash = "sha256:639af9b08eb50cf786167942fe4d57b29a5e3bf589979d1a49b9a9672f52cb8e"},
 ]
 pyflakes = [
     {file = "pyflakes-2.4.0-py2.py3-none-any.whl", hash = "sha256:3bb3a3f256f4b7968c9c788781e4ff07dce46bdf12339dcda61053375426ee2e"},
@@ -1545,10 +1541,7 @@ scipy = [
     {file = "scipy-1.8.1-cp39-cp39-win_amd64.whl", hash = "sha256:9dd4012ac599a1e7eb63c114d1eee1bcfc6dc75a29b589ff0ad0bb3d9412034f"},
     {file = "scipy-1.8.1.tar.gz", hash = "sha256:9e3fb1b0e896f14a85aa9a28d5f755daaeeb54c897b746df7a55ccb02b340f33"},
 ]
-setuptools-scm = [
-    {file = "setuptools_scm-7.0.4-py3-none-any.whl", hash = "sha256:53a6f51451a84d891ca485cec700a802413bbc5e76ee65da134e54c733a6e44d"},
-    {file = "setuptools_scm-7.0.4.tar.gz", hash = "sha256:c27bc1f48593cfc9527251f1f0fc41ce282ea57bbc7fd5a1ea3acb99325fab4c"},
-]
+setuptools-scm = []
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
@@ -1593,10 +1586,7 @@ sphinxcontrib-serializinghtml = [
     {file = "sphinxcontrib-serializinghtml-1.1.5.tar.gz", hash = "sha256:aa5f6de5dfdf809ef505c4895e51ef5c9eac17d0f287933eb49ec495280b6952"},
     {file = "sphinxcontrib_serializinghtml-1.1.5-py2.py3-none-any.whl", hash = "sha256:352a9a00ae864471d3a7ead8d7d79f5fc0b57e8b3f95e9867eb9eb28999b92fd"},
 ]
-stevedore = [
-    {file = "stevedore-3.5.0-py3-none-any.whl", hash = "sha256:a547de73308fd7e90075bb4d301405bebf705292fa90a90fc3bcf9133f58616c"},
-    {file = "stevedore-3.5.0.tar.gz", hash = "sha256:f40253887d8712eaa2bb0ea3830374416736dc8ec0e22f5a65092c1174c44335"},
-]
+stevedore = []
 threadpoolctl = [
     {file = "threadpoolctl-3.1.0-py3-none-any.whl", hash = "sha256:8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b"},
     {file = "threadpoolctl-3.1.0.tar.gz", hash = "sha256:a335baacfaa4400ae1f0d8e3a58d6674d2f8828e3716bb2802c44955ad391380"},
@@ -1613,10 +1603,7 @@ typing-extensions = [
     {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},
     {file = "typing_extensions-4.3.0.tar.gz", hash = "sha256:e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6"},
 ]
-urllib3 = [
-    {file = "urllib3-1.26.9-py2.py3-none-any.whl", hash = "sha256:44ece4d53fb1706f667c9bd1c648f5469a2ec925fcf3a776667042d645472c14"},
-    {file = "urllib3-1.26.9.tar.gz", hash = "sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e"},
-]
+urllib3 = []
 vermin = [
     {file = "vermin-1.4.0-py2.py3-none-any.whl", hash = "sha256:0370f562cfa004a234c2ca33cff3c187fe05741c1c36570ef27a514ad9b7e202"},
 ]
@@ -1624,7 +1611,4 @@ vulture = [
     {file = "vulture-2.5-py2.py3-none-any.whl", hash = "sha256:a7c7e7a23b11e78840fdd821509d05a6134aa9fd60418fe39d60b3026fe698d9"},
     {file = "vulture-2.5.tar.gz", hash = "sha256:2831694055eb2e36a09c3b7680934837102b9b6c0969206e3902d513612177c3"},
 ]
-zipp = [
-    {file = "zipp-3.8.0-py3-none-any.whl", hash = "sha256:c4f6e5bbf48e74f7a38e7cc5b0480ff42b0ae5178957d564d18932525d5cf099"},
-    {file = "zipp-3.8.0.tar.gz", hash = "sha256:56bf8aadb83c24db6c4b577e13de374ccfb67da2078beba1d037c17980bf43ad"},
-]
+zipp = []
