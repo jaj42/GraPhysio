@@ -9,7 +9,7 @@ from graphysio.algorithms.waveform import findPOIGreedy
 from graphysio.plotwidgets import PlotWidget
 from graphysio.structures import PlotData
 from graphysio.writedata import exporter
-from PyQt5 import QtGui, QtWidgets
+from pyqtgraph import QtGui, QtWidgets
 
 
 class FixIndex(Enum):

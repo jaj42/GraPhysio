@@ -4,10 +4,9 @@ from functools import partial
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from PyQt5 import QtWidgets
-
 from graphysio import ui
 from graphysio.writedata import exporter
+from pyqtgraph import QtWidgets
 
 Point = namedtuple('Point', ['x', 'y'])
 Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])

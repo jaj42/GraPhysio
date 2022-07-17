@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from queue import Empty, Queue
 
-from PyQt5 import QtCore, QtWidgets
+from pyqtgraph import QtCore, QtWidgets
 
 from graphysio import dialogs, readdata, ui, utils
 from graphysio.plotwidgets import TimeAxisItem, TSWidget
