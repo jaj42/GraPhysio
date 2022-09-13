@@ -1,17 +1,23 @@
 from typing import List
 
 import pandas as pd
-
 from graphysio.dialogs import askUserValue
 from graphysio.plotwidgets import PlotWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
 from graphysio.structures import Parameter
 
 
-def perfusionindex(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
+def get_perfusion_index(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     curvenames = list(plotwidget.curves.keys())
-    q = Parameter('Select Curve', curvenames)
-    curvename = askUserValue(q)
+    curvenames = list(plotwidget.curves.keys())
+    if len(curvenames) < 1:
+        raise ValueError('No curve')
+    elif len(curvenames) > 1:
+        q = Parameter('Select Curve', curvenames)
+        curvename = askUserValue(q)
+    else:
+        curvename = curvenames[0]
+
     curve = plotwidget.curves[curvename]
     if (
         'start' not in curve.feetitem.indices
@@ -41,28 +47,3 @@ def perfusionindex(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
         parent=plotwidget, series=piseries, pen=plotwidget.getPen()
     )
     return [newcurve]
-
-
-def feettocurve(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
-    feetitemhash = {}
-    for curve in plotwidget.curves.values():
-        feetitemhash.update(
-            {
-                f'{curve.name()}-{feetname}': (curve, feetname)
-                for feetname in curve.feetitem.indices.keys()
-            }
-        )
-    param = Parameter("Choose points to create curve", list(feetitemhash.keys()))
-    qresult = askUserValue(param)
-    curve, feetname = feetitemhash[qresult]
-
-    newseries = curve.getFeetPoints(feetname)
-    newseries.name = qresult
-
-    newcurve = CurveItemWithPOI(
-        parent=plotwidget, series=newseries, pen=plotwidget.getPen()
-    )
-    return [newcurve]
-
-
-Transformations = {'Perfusion Index': perfusionindex, 'Feet to Curve': feettocurve}

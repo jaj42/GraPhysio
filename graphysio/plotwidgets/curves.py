@@ -74,9 +74,8 @@ class POIItem(pg.ScatterPlotItem):
         'diastole': 't1',
         'systole': 't',
         'dicrotic': 'd',
-        'point': 'o',
         'rwave': 'x',
-        'twave': 'star',
+        'twave': 'o',
     }
     # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in
     # ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
@@ -111,9 +110,8 @@ class POIItem(pg.ScatterPlotItem):
             try:
                 sym = self.resym[point.symbol()]
                 idx = self.indices[sym]
-            except KeyError:
-                # Should not happen
-                continue
+            except KeyError as e:
+                raise KeyError('Point not found') from e
             nidx = idx.get_indexer([point.pos().x()], method='nearest')
             self.indices[sym] = idx.delete(nidx)
         self.render()
@@ -153,7 +151,6 @@ class POIItem(pg.ScatterPlotItem):
     def removeSelection(self):
         self.removePoints(self.selected)
         self.selected = []
-        self.render()
 
     def rename(self, newname: str):
         self.opts['name'] = newname
@@ -266,7 +263,9 @@ class CurveItemWithPOI(CurveItem):
         durations = ends - begins
         return (begins, durations)
 
-    def getFeetPoints(self, feetname):
+    def getFeetPoints(self, feetname) -> Optional[pd.Series]:
+        if feetname not in self.feetitem.indices:
+            return None
         feetidx = self.feetitem.indices[feetname]
         feetnona = feetidx[pd.notnull(feetidx)]
         return self.series.loc[feetnona]
