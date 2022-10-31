@@ -3,7 +3,7 @@ from typing import List
 from graphysio.dialogs import askUserValue
 from graphysio.plotwidgets import PlotWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
-from graphysio.structures import Parameter
+from graphysio.structures import Parameter, PlotData
 
 
 def get_feet_to_curve(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
@@ -19,10 +19,8 @@ def get_feet_to_curve(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     qresult = askUserValue(param)
     curve, feetname = feetitemhash[qresult]
 
-    newseries = curve.getFeetPoints(feetname)
-    newseries.name = qresult
+    out_series = curve.getFeetPoints(feetname)
+    sname = qresult
 
-    newcurve = CurveItemWithPOI(
-        parent=plotwidget, series=newseries, pen=plotwidget.getPen()
-    )
-    return [newcurve]
+    plotdata = PlotData(data=out_series, name=sname)
+    return [plotdata]

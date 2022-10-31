@@ -309,7 +309,7 @@ class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
         if prevdatetime is None:
             datetime = QtCore.QDateTime.currentDateTime()
         else:
-            datetime = QtCore.QDateTime.fromMSecsSinceEpoch(prevdatetime / 1e6)
+            datetime = QtCore.QDateTime.fromMSecsSinceEpoch(int(prevdatetime / 1e6))
         curdate = datetime.date()
         curtime = datetime.time()
         self.widgetCalendar.setSelectedDate(curdate)

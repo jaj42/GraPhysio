@@ -140,8 +140,9 @@ class TSWidget(PlotWidget):
         if qresult is None:
             return
         trans = transformations.Transformations[qresult]
-        for curve in trans(self):
-            self.addCurve(curve)
+        plotdatas = trans(self)
+        for plotdata in plotdatas:
+            self.parent.appendToPlotWithData(plotdata, do_timeshift=False)
 
     # Menu Plot
     def launchPOIWidget(self):

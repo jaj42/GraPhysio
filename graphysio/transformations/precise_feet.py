@@ -5,7 +5,7 @@ import pandas as pd
 from graphysio.dialogs import askUserValue
 from graphysio.plotwidgets import PlotWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
-from graphysio.structures import Parameter
+from graphysio.structures import Parameter, PlotData
 from physiocurve.pressure.foot import find_tangent_intersections
 
 
@@ -41,10 +41,7 @@ def get_precise_feet(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     y_values = wave.iloc[y_value_index]
 
     out_series = pd.Series(y_values.to_numpy(), index=intersections)
-    out_series.name = f'{wave.name}-precise_feet'
+    sname = f'{wave.name}-precise_feet'
 
-    newcurve = CurveItemWithPOI(
-        parent=plotwidget, series=out_series, pen=plotwidget.getPen()
-    )
-
-    return [newcurve]
+    plotdata = PlotData(data=out_series, name=sname)
+    return [plotdata]

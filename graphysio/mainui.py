@@ -5,6 +5,7 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from queue import Empty, Queue
+from typing import Optional
 
 from pyqtgraph import QtCore, QtWidgets
 
@@ -134,7 +135,9 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.addTab(plotwidget, plotdata.name)
         self.lblStatus.setText("Loading... done")
 
-    def appendToPlotWithData(self, plotdata, destidx=None):
+    def appendToPlotWithData(
+        self, plotdata, destidx=None, do_timeshift: Optional[bool] = None
+    ):
         if destidx is None:
             plotwidget = self.tabWidget.currentWidget()
         else:
@@ -142,10 +145,11 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         if plotwidget is None:
             utils.displayError('No plot selected.')
             return
-        dorealign = dialogs.userConfirm(
-            'Timeshift new curves to make the beginnings coincide?',
-            title='Append to plot',
-        )
+        if do_timeshift is None:
+            do_timeshift = dialogs.userConfirm(
+                'Timeshift new curves to make the beginnings coincide?',
+                title='Append to plot',
+            )
 
         for fieldname in plotdata.data:
             newname = plotwidget.validateNewCurveName(fieldname)
@@ -154,6 +158,6 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             if newname != fieldname:
                 plotdata.data.rename(columns={fieldname: newname}, inplace=True)
 
-        plotwidget.appendData(plotdata, dorealign)
+        plotwidget.appendData(plotdata, do_timeshift)
         plotwidget.properties['dircache'] = self.dircache
         self.lblStatus.setText("Loading... done")

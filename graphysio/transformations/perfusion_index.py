@@ -4,7 +4,7 @@ import pandas as pd
 from graphysio.dialogs import askUserValue
 from graphysio.plotwidgets import PlotWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
-from graphysio.structures import Parameter
+from graphysio.structures import Parameter, PlotData
 
 
 def get_perfusion_index(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
@@ -40,10 +40,8 @@ def get_perfusion_index(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
         pi = aucpulse / auctot
         pivalues.append(pi)
 
-    piseries = pd.Series(pivalues, index=begins)
-    piseries.name = f'{wave.name}-perf'
+    out_series = pd.Series(pivalues, index=begins)
+    sname = f'{wave.name}-perf'
 
-    newcurve = CurveItemWithPOI(
-        parent=plotwidget, series=piseries, pen=plotwidget.getPen()
-    )
-    return [newcurve]
+    plotdata = PlotData(data=out_series, name=sname)
+    return [plotdata]

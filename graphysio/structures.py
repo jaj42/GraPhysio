@@ -3,6 +3,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+import pandas as pd
+
 Filter = namedtuple('Filter', ['name', 'parameters'])
 Parameter = namedtuple('Parameter', ['description', 'request'])
 
@@ -27,7 +29,10 @@ class PlotData:
         if filepath is not None:
             self.filepath = Path(filepath)
         self._name = name
-        self.data = data
+        if isinstance(data, pd.Series):
+            self.data = data.to_frame(name=self.name)
+        else:
+            self.data = data
 
     @property
     def name(self):
