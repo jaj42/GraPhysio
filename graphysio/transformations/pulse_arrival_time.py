@@ -37,14 +37,12 @@ def get_pat(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     time_scale = (pulse.index[-1] - pulse.index[0]) / len(pulse)
     idx_precise_feet = precise_feet * time_scale + pulse.index[0]
 
-    idx_precise_feet, idxrwave, idx_orig_feet = truncatevecs(
-        [idx_precise_feet, idxrwave, idxfeet]
-    )
+    idx_precise_feet, idxrwave = truncatevecs([idx_precise_feet, idxrwave])
 
     pat = np.abs(idx_precise_feet - idxrwave)  # nanoseconds
     pat /= 1e6  # milliseconds
 
-    out_series = pd.Series(pat, index=idx_orig_feet)
+    out_series = pd.Series(pat, index=idxrwave)
     sname = f'PAT {pulse.name} (ms)'
     plotdata = PlotData(data=out_series, name=sname)
 
