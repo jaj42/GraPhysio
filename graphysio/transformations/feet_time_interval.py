@@ -4,7 +4,6 @@ from graphysio.dialogs import askUserValue
 from graphysio.plotwidgets import PlotWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
 from graphysio.structures import Parameter, PlotData
-from graphysio.utils import truncatevecs
 
 
 def get_feet_time_interval(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:

@@ -4,7 +4,7 @@ import pandas as pd
 from graphysio.plotwidgets.curves import CurveItem
 
 try:
-    import pyarrow.parquet
+    import pyarrow.parquet  # noqa: F401
 except ImportError:
     is_available = False
 else:

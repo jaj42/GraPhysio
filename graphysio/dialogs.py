@@ -224,7 +224,7 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
 
     def accept(self):
         items = self.lstCurves.findItems('', QtCore.Qt.MatchContains)
-        ischecked = lambda item: item.checkState() != QtCore.Qt.Unchecked
+        ischecked = lambda item: item.checkState() != QtCore.Qt.Unchecked  # noqa: E731
         checked = list(filter(ischecked, items))
         visible = {self.curvehash[item.text()] for item in checked}
         result = (visible, self.curveproperties)
@@ -407,7 +407,7 @@ class DlgListChoice(QtWidgets.QDialog):
         super().accept()
 
 
-def askUserValue(param):
+def askUserValue(param):  # noqa: C901
     if param.request == 'time':
         value, isok = QtGui.QInputDialog.getText(None, 'Enter time', param.description)
         try:
