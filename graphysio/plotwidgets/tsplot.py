@@ -3,6 +3,8 @@ from functools import partial
 
 import numexpr as ne
 import pandas as pd
+from pyqtgraph.Qt import QtCore, QtGui
+
 from graphysio import dialogs, transformations
 from graphysio.algorithms import filters
 from graphysio.plotwidgets import (
@@ -13,7 +15,6 @@ from graphysio.plotwidgets import (
 )
 from graphysio.structures import CycleId, Parameter, PlotData
 from graphysio.writedata import exporter
-from pyqtgraph.Qt import QtCore, QtGui
 
 
 class TSWidget(PlotWidget):
@@ -25,9 +26,7 @@ class TSWidget(PlotWidget):
         self.appendData(plotdata)
 
     def filterCurve(self, oldcurve, filtername, asnew=False):
-        newseries, newsamplerate = filters.filter(
-            oldcurve, filtername, dialogs.askUserValue
-        )
+        newseries, newsamplerate = filters.filter(oldcurve, filtername, dialogs.askUserValue)
         if asnew:
             newname = self.validateNewCurveName(newseries.name)
             if newname != newseries.name:
@@ -42,14 +41,8 @@ class TSWidget(PlotWidget):
                 oldcurve.set_samplerate(newsamplerate)
 
     def filterFeet(self, curve, filtername, asnew=False):
-        feetdict = curve.feetitem.indices
-        oldstarts = feetdict['start']
-        oldstops = feetdict['stop']
-        starts, stops = filters.filterFeet(
-            oldstarts, oldstops, filtername, dialogs.askUserValue
-        )
-        feetdict['start'] = starts
-        feetdict['stop'] = stops
+        new_feetdict = filters.filter_feet(curve, filtername, dialogs.askUserValue)
+        curve.feetitem.indices = new_feetdict
         curve.feetitem.render()
 
     def keyPressEvent(self, event):
@@ -116,9 +109,7 @@ class TSWidget(PlotWidget):
     def setDateTime(self):
         if len(self.curves) < 1:
             return
-        sortedcurves = sorted(
-            self.curves.values(), key=lambda curve: curve.series.index[0]
-        )
+        sortedcurves = sorted(self.curves.values(), key=lambda curve: curve.series.index[0])
         fstcurve = sortedcurves[0]
         curtimestamp = fstcurve.series.index[0]
         dlg = dialogs.DlgSetDateTime(prevdatetime=curtimestamp)
@@ -166,9 +157,7 @@ class TSWidget(PlotWidget):
         if not curvename:
             return
         curve = self.curves[curvename]
-        spectro = SpectrogramWidget(
-            curve.series, curve.samplerate, window, parent=self.parent
-        )
+        spectro = SpectrogramWidget(curve.series, curve.samplerate, window, parent=self.parent)
         self.parent.addTab(spectro, curve.name())
 
     def launchCurveAlgebra(self):
@@ -188,9 +177,7 @@ class TSWidget(PlotWidget):
 
             newvals = ne.evaluate(formula, local_dict=args)
             newname = self.validateNewCurveName(formula, True)
-            newseries = pd.Series(
-                newvals, index=argsdf.index, name=newname, dtype='float64'
-            )
+            newseries = pd.Series(newvals, index=argsdf.index, name=newname, dtype='float64')
             self.addSeriesAsCurve(newseries)
 
         dlgCurveAlgebra.dlgdata.connect(cb)

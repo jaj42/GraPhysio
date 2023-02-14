@@ -1,14 +1,17 @@
+from copy import copy
 from datetime import datetime
+from functools import reduce
 from math import floor
 from typing import Dict
 
 import numexpr as ne
 import numpy as np
 import pandas as pd
-from graphysio.structures import Filter, Parameter
-from graphysio.utils import truncatevecs
 from pint import UnitRegistry
 from scipy import interpolate, signal
+
+from graphysio.structures import Filter, Parameter
+from graphysio.utils import truncatevecs
 
 
 class TF(object):
@@ -47,16 +50,12 @@ Filters = {
             Parameter('Interpolation type', interpkind),
         ],
     ),
-    'Doppler cut': Filter(
-        name='dopplercut', parameters=[Parameter('Minimum value', int)]
-    ),
+    'Doppler cut': Filter(name='dopplercut', parameters=[Parameter('Minimum value', int)]),
     'Differentiate': Filter(
         name='diff',
         parameters=[Parameter('Order', int), Parameter('Denominator time unit', str)],
     ),
-    'Integrate': Filter(
-        name='integrate', parameters=[Parameter('Window duration', 'time')]
-    ),
+    'Integrate': Filter(name='integrate', parameters=[Parameter('Window duration', 'time')]),
     'Lag': Filter(name='lag', parameters=[Parameter('Time delta', 'time')]),
     'Normalize': Filter(name='norm1', parameters=[]),
     'Set start date/time': Filter(
@@ -72,9 +71,8 @@ Filters = {
 }
 
 FeetFilters = {
-    'Short cycles': Filter(
-        name='shortcycles', parameters=[Parameter('Minimum duration', 'time')]
-    )
+    'Short cycles': Filter(name='shortcycles', parameters=[Parameter('Minimum duration', 'time')]),
+    'Extra feet': Filter(name='extrafeet', parameters=[]),
 }
 
 TFs: Dict[str, TF] = {}
@@ -89,6 +87,7 @@ def updateTFs():
     )
 
 
+### Curve Filters ###
 def norm1(series, samplerate, parameters):
     series -= np.mean(series)
     series /= np.max(series) - np.min(series)
@@ -130,9 +129,7 @@ def sma(series, samplerate, parameters):
     winsize = int(window_s * samplerate)
     nwindows = floor(serlen / winsize)
     valstarts = np.arange(0, serlen - winsize, step=winsize)
-    resiter = (
-        np.mean(serarr[beg:end]) for beg, end in zip(valstarts, valstarts + winsize)
-    )
+    resiter = (np.mean(serarr[beg:end]) for beg, end in zip(valstarts, valstarts + winsize))
     result = np.fromiter(resiter, dtype=np.float64, count=nwindows)
     locidx = winsize * np.arange(0, nwindows) + winsize // 2
     newname = f'{series.name}-sma{window_s}s'
@@ -199,9 +196,7 @@ def interp(series, samplerate, parameters):
     if method == 'pchip':
         f = interpolate.PchipInterpolator(oldidx, series.values, extrapolate=True)
     else:
-        f = interpolate.interp1d(
-            oldidx, series.values, kind=method, fill_value='extrapolate'
-        )
+        f = interpolate.interp1d(oldidx, series.values, kind=method, fill_value='extrapolate')
     step = 1e9 / newsamplerate  # 1e9 to convert Hz to ns
     newidx = np.arange(oldidx[0], oldidx[-1], step, dtype=np.int64)
     resampled = f(newidx)
@@ -269,22 +264,59 @@ def filter(curve, filtname, paramgetter):
     return filtfuncs[filt.name](series, samplerate, parameters)
 
 
-def filterFeet(starts, stops, filtname, paramgetter):
+### Feet Filters ###
+def shortcycles(feetdict, samplerate, parameters):
+    starts = feetdict['start']
+    stops = feetdict['stop']
+    if len(stops) < 1:
+        # No stop information
+        raise ValueError('No stop feet')
+    (minimum_duration,) = parameters
+    minimum_cycle_len = minimum_duration * 1e9  # Transform to ns
+    cycle_durations = (stop - start for start, stop in zip(starts, stops))
+    boolidx = [d >= minimum_cycle_len for d in cycle_durations]
+    starts, stops, boolidx = truncatevecs([starts, stops, boolidx])
+    feetdict['start'] = starts[boolidx]
+    feetdict['stop'] = stops[boolidx]
+    return feetdict
+
+
+def extrafeet(feetdict, samplerate, parameters):
+    starts = feetdict['start']
+    interval_quant_lo, median_interval, interval_quant_hi = (
+        starts.to_series().diff().quantile([0.1, 0.5, 0.9])
+    )
+    interval_iqr = interval_quant_hi - interval_quant_lo
+
+    # Construct a list of acceptable locations
+    masks = []
+    pos = starts[0]
+    while True:
+        lo = pos - interval_iqr // 2
+        hi = pos + interval_iqr // 2
+        pos += median_interval
+        if lo > starts[-1]:
+            break
+        mask = np.ma.masked_outside(starts.to_numpy(), lo, hi).mask
+        if not isinstance(mask, bool):
+            masks.append(mask)
+
+    # Apply a mask of acceptable locations to input
+    mask = reduce(np.logical_and, masks)
+    valid_starts = starts[~mask]
+    feetdict['start'] = valid_starts
+    return feetdict
+
+
+feetfiltfuncs = {
+    'shortcycles': shortcycles,
+    'extrafeet': extrafeet,
+}
+
+
+def filter_feet(curve, filtname, paramgetter):
+    samplerate = curve.samplerate
+    feetdict = copy(curve.feetitem.indices)
     filt = FeetFilters[filtname]
     parameters = map(paramgetter, filt.parameters)
-
-    if filt.name == 'shortcycles':
-        if len(stops) < 1:
-            # No stop information
-            raise ValueError('No stop feet')
-        (minDuration,) = parameters
-        minCycleLength = minDuration * 1e9  # Transform ms to ns
-        cycleDurations = (stop - start for start, stop in zip(starts, stops))
-        boolidx = [d >= minCycleLength for d in cycleDurations]
-        starts, stops, boolidx = truncatevecs([starts, stops, boolidx])
-        newstarts = starts[boolidx]
-        newstops = stops[boolidx]
-    else:
-        errmsg = f'Unknown filter: {filtname}'
-        raise ValueError(errmsg)
-    return (newstarts, newstops)
+    return feetfiltfuncs[filt.name](feetdict, samplerate, parameters)
