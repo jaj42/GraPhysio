@@ -8,7 +8,7 @@ from nox.sessions import Session
 nox.options.sessions = "lint", "safety", "vulture", "vermin"
 
 locations = ["graphysio"]
-python_versions = ['3.8']
+python_versions = ['3.9','3.10','3.11']
 vulture_whitelist = '.vulture_whitelist.py'
 
 
