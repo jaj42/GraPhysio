@@ -3,7 +3,7 @@ from functools import partial
 
 import numexpr as ne
 import pandas as pd
-from pyqtgraph.Qt import QtCore, QtGui
+from pyqtgraph.Qt import QtCore, QtWidgets
 
 from graphysio import dialogs, transformations
 from graphysio.algorithms import filters
@@ -26,7 +26,9 @@ class TSWidget(PlotWidget):
         self.appendData(plotdata)
 
     def filterCurve(self, oldcurve, filtername, asnew=False):
-        newseries, newsamplerate = filters.filter(oldcurve, filtername, dialogs.askUserValue)
+        newseries, newsamplerate = filters.filter(
+            oldcurve, filtername, dialogs.askUserValue
+        )
         if asnew:
             newname = self.validateNewCurveName(newseries.name)
             if newname != newseries.name:
@@ -98,7 +100,7 @@ class TSWidget(PlotWidget):
             createnew, curvechoices = result
             filterfunc = self.filterFeet if filterfeet else self.filterCurve
             for curvename, choice in curvechoices.items():
-                if choice == 'None':
+                if choice == "None":
                     continue
                 curve = self.curves[curvename]
                 filterfunc(curve, choice, asnew=createnew)
@@ -109,7 +111,9 @@ class TSWidget(PlotWidget):
     def setDateTime(self):
         if len(self.curves) < 1:
             return
-        sortedcurves = sorted(self.curves.values(), key=lambda curve: curve.series.index[0])
+        sortedcurves = sorted(
+            self.curves.values(), key=lambda curve: curve.series.index[0]
+        )
         fstcurve = sortedcurves[0]
         curtimestamp = fstcurve.series.index[0]
         dlg = dialogs.DlgSetDateTime(prevdatetime=curtimestamp)
@@ -138,7 +142,7 @@ class TSWidget(PlotWidget):
     # Menu Plot
     def launchPOIWidget(self):
         curvenames = list(self.curves.keys())
-        q = Parameter('Select Curve', curvenames)
+        q = Parameter("Select Curve", curvenames)
         curvename = dialogs.askUserValue(q)
         if not curvename:
             return
@@ -150,14 +154,16 @@ class TSWidget(PlotWidget):
 
     def launchSpectrogram(self):
         curvenames = list(self.curves.keys())
-        q = Parameter('Select Curve', curvenames)
+        q = Parameter("Select Curve", curvenames)
         curvename = dialogs.askUserValue(q)
-        q = Parameter('Enter time window', 'time')
+        q = Parameter("Enter time window", "time")
         window = dialogs.askUserValue(q)
         if not curvename:
             return
         curve = self.curves[curvename]
-        spectro = SpectrogramWidget(curve.series, curve.samplerate, window, parent=self.parent)
+        spectro = SpectrogramWidget(
+            curve.series, curve.samplerate, window, parent=self.parent
+        )
         self.parent.addTab(spectro, curve.name())
 
     def launchCurveAlgebra(self):
@@ -173,11 +179,13 @@ class TSWidget(PlotWidget):
 
             argsdf = pd.concat(sers, axis=1, keys=symbols)
             argsdf = argsdf.interpolate()
-            args = argsdf.to_dict(orient='series')
+            args = argsdf.to_dict(orient="series")
 
             newvals = ne.evaluate(formula, local_dict=args)
             newname = self.validateNewCurveName(formula, True)
-            newseries = pd.Series(newvals, index=argsdf.index, name=newname, dtype='float64')
+            newseries = pd.Series(
+                newvals, index=argsdf.index, name=newname, dtype="float64"
+            )
             self.addSeriesAsCurve(newseries)
 
         dlgCurveAlgebra.dlgdata.connect(cb)
@@ -191,7 +199,7 @@ class TSWidget(PlotWidget):
             series = c.series.loc[xmin:xmax]
             sers.append(series)
         df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
-        newname = f'{self.name}-sub'
+        newname = f"{self.name}-sub"
         plotdata = PlotData(data=df, name=newname)
         self.parent.createNewPlotWithData(plotdata)
 
@@ -199,10 +207,10 @@ class TSWidget(PlotWidget):
         tabWidget = self.parent.tabWidget
         ntabs = tabWidget.count()
         tabdict = {tabWidget.tabText(idx): idx for idx in range(ntabs)}
-        desttabname, ok = QtGui.QInputDialog.getItem(
+        desttabname, ok = QtWidgets.QInputDialog.getItem(
             self,
-            'Select destination',
-            'Destination plot',
+            "Select destination",
+            "Destination plot",
             list(tabdict.keys()),
             editable=False,
         )
@@ -214,7 +222,7 @@ class TSWidget(PlotWidget):
             series = c.series.loc[xmin:xmax]
             sers.append(series)
         df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
-        newname = f'{self.name}-sub'
+        newname = f"{self.name}-sub"
         plotdata = PlotData(data=df, name=newname)
         self.parent.appendToPlotWithData(plotdata, destidx=tabdict[desttabname])
 
@@ -226,7 +234,7 @@ class TSWidget(PlotWidget):
             u = self.curves[uname]
             p = self.curves[pname]
             loopwidget = LoopWidget(u, p, self.vbrange, parent=self.parent)
-            newname = f'{self.name}-{p.name()}-loops'
+            newname = f"{self.name}-{p.name()}-loops"
             self.parent.addTab(loopwidget, newname)
 
         dlgSetupPU.dlgdata.connect(cb)
@@ -235,32 +243,32 @@ class TSWidget(PlotWidget):
     @property
     def menu(self):
         mcurves = {
-            'Visible Curves': self.showCurveList,
-            'Cycle Detection': self.launchCycleDetection,
-            'Filter Curve': partial(self.launchFilter, filterfeet=False),
-            'Filter Feet': partial(self.launchFilter, filterfeet=True),
-            'Transformation': self.launchTransformation,
-            'Set Date / Time': self.setDateTime,
+            "Visible Curves": self.showCurveList,
+            "Cycle Detection": self.launchCycleDetection,
+            "Filter Curve": partial(self.launchFilter, filterfeet=False),
+            "Filter Feet": partial(self.launchFilter, filterfeet=True),
+            "Transformation": self.launchTransformation,
+            "Set Date / Time": self.setDateTime,
         }
         mselect = {
-            'As new plot': self.launchNewPlotFromSelection,
-            'Append to other plot': self.launchAppendToPlotFromSelection,
-            'Generate PU-Loops': self.launchLoop,
+            "As new plot": self.launchNewPlotFromSelection,
+            "Append to other plot": self.launchAppendToPlotFromSelection,
+            "Generate PU-Loops": self.launchLoop,
         }
         mplot = {
-            'POI Selector': self.launchPOIWidget,
-            'Spectrogram': self.launchSpectrogram,
-            'Curve Algebra': self.launchCurveAlgebra,
+            "POI Selector": self.launchPOIWidget,
+            "Spectrogram": self.launchSpectrogram,
+            "Curve Algebra": self.launchCurveAlgebra,
         }
         mexport = {
-            'Curves': self.exporter.curves,
-            'Time info': self.exporter.periods,
-            'Cycle info': self.exporter.cyclepoints,
-            'Cycles to directory': self.exporter.cycles,
+            "Curves": self.exporter.curves,
+            "Time info": self.exporter.periods,
+            "Cycle info": self.exporter.cyclepoints,
+            "Cycles to directory": self.exporter.cycles,
         }
         return {
-            'Curves': mcurves,
-            'Plot': mplot,
-            'Seletion': mselect,
-            'Export': mexport,
+            "Curves": mcurves,
+            "Plot": mplot,
+            "Seletion": mselect,
+            "Export": mexport,
         }

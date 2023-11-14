@@ -33,16 +33,18 @@ class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
             return
 
         for n, curvename in enumerate(plotframe.curves.keys()):
-            combo = QtGui.QComboBox()
+            combo = QtWidgets.QComboBox()
             combo.addItems([ft.value for ft in CycleId])
-            curveitem = QtGui.QTableWidgetItem(curvename)
+            curveitem = QtWidgets.QTableWidgetItem(curvename)
 
             self.table.insertRow(n)
             self.table.setItem(n, 0, curveitem)
             self.table.setCellWidget(n, 1, combo)
             self.choices[curvename] = combo
 
-        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeToContents
+        )
 
     def accept(self):
         result = {curve: combo.currentText() for (curve, combo) in self.choices.items()}
@@ -69,13 +71,13 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
         def fillTable(items, itemtype, filters):
             rowoffset = self.table.rowCount()
             for n, itemname in enumerate(items):
-                combo = QtGui.QComboBox()
+                combo = QtWidgets.QComboBox()
 
-                combo.addItems(['None'])
+                combo.addItems(["None"])
                 filternames = list(filters.keys())
                 combo.addItems(filternames)
 
-                curveitem = QtGui.QTableWidgetItem(itemname)
+                curveitem = QtWidgets.QTableWidgetItem(itemname)
 
                 idx = rowoffset + n
                 self.table.insertRow(idx)
@@ -86,11 +88,13 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
         curves = list(plotframe.curves.keys())
         if filterfeet:
             self.chkNewcurve.hide()
-            fillTable(curves, 'curve', filters.FeetFilters)
+            fillTable(curves, "curve", filters.FeetFilters)
         else:
-            fillTable(curves, 'curve', filters.Filters)
+            fillTable(curves, "curve", filters.Filters)
 
-        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeToContents
+        )
 
     def accept(self):
         curvefilters = {}
@@ -147,14 +151,14 @@ class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
         self.btnBrowse.clicked.connect(self.selectFile)
 
     def selectFile(self):
-        filepath = QtGui.QFileDialog.getSaveFileName(
+        filepath = QtWidgets.QFileDialog.getSaveFileName(
             caption="Export to",
             filter="CSV files (*.csv *.dat)",
-            options=QtGui.QFileDialog.DontConfirmOverwrite,
+            options=QtWidgets.QFileDialog.DontConfirmOverwrite,
             directory=self.dircache,
         )
         # PyQt5 API change
-        if type(filepath) is not str:
+        if not isinstance(filepath, str):
             filepath = filepath[0]
 
         if filepath:
@@ -213,7 +217,7 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
         dlg.exec_()
 
     def addCurve(self, name, checked):
-        item = QtGui.QListWidgetItem()
+        item = QtWidgets.QListWidgetItem()
         item.setText(name)
         item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
         if checked:
@@ -223,7 +227,7 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
         self.lstCurves.addItem(item)
 
     def accept(self):
-        items = self.lstCurves.findItems('', QtCore.Qt.MatchContains)
+        items = self.lstCurves.findItems("", QtCore.Qt.MatchContains)
         ischecked = lambda item: item.checkState() != QtCore.Qt.Unchecked  # noqa: E731
         checked = list(filter(ischecked, items))
         visible = {self.curvehash[item.text()] for item in checked}
@@ -245,12 +249,12 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
         self.cancelButton.clicked.connect(self.reject)
         self.btnColor.clicked.connect(self.chooseColor)
 
-        connect = curve.opts['connect']
-        symbol = curve.opts['symbol']
+        connect = curve.opts["connect"]
+        symbol = curve.opts["symbol"]
         if symbol is None:
-            symbol = 'None'
+            symbol = "None"
 
-        pen = curve.opts['pen']
+        pen = curve.opts["pen"]
         if isinstance(pen, QtGui.QPen):
             color = pen.color()
             width = pen.width()
@@ -269,32 +273,32 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
         self.grpName.setTitle(curve.name())
         self.txtName.setText(curve.name())
         self.spnWidth.setValue(width)
-        self.btnColor.setStyleSheet(f'background-color: {color.name()}')
+        self.btnColor.setStyleSheet(f"background-color: {color.name()}")
         self.lblSamplerate.setText(str(curve.samplerate))
 
     def ok(self):
         symbol = self.cmbSymbol.currentText().lower()
-        symbol = None if symbol == 'none' else symbol
+        symbol = None if symbol == "none" else symbol
 
         connect = str(self.cmbConnect.currentText().lower())
-        connect = [0] if connect == 'none' else connect
+        connect = [0] if connect == "none" else connect
 
         result = {
-            'name': self.txtName.text(),
-            'connect': connect,
-            'symbol': symbol,
-            'width': self.spnWidth.value(),
-            'color': self.color,
+            "name": self.txtName.text(),
+            "connect": connect,
+            "symbol": symbol,
+            "width": self.spnWidth.value(),
+            "color": self.color,
         }
         self.dlgdata.emit(result)
         self.accept()
 
     def chooseColor(self):
-        color = QtGui.QColorDialog.getColor()
+        color = QtWidgets.QColorDialog.getColor()
         if not color.isValid():
             return
         self.color = color
-        self.btnColor.setStyleSheet(f'background-color: {color.name()}')
+        self.btnColor.setStyleSheet(f"background-color: {color.name()}")
 
 
 class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
@@ -337,13 +341,13 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
     def setupUi(self, curvecorr):
         vstack = QtWidgets.QVBoxLayout(self)
 
-        self.lbl = QtWidgets.QLabel('Enter formula for new curve:')
+        self.lbl = QtWidgets.QLabel("Enter formula for new curve:")
         vstack.addWidget(self.lbl)
 
-        self.formula = QtWidgets.QLineEdit('a**2 + log(2*b)')
+        self.formula = QtWidgets.QLineEdit("a**2 + log(2*b)")
         vstack.addWidget(self.formula)
 
-        curveslbl = '\n'.join([f'{x}: {y}' for x, y in curvecorr.items()])
+        curveslbl = "\n".join([f"{x}: {y}" for x, y in curvecorr.items()])
         self.curveletters = QtWidgets.QLabel(curveslbl)
         vstack.addWidget(self.curveletters)
 
@@ -366,16 +370,16 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
 class DlgListChoice(QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, items, title='', message='', parent=None):
+    def __init__(self, items, title="", message="", parent=None):
         super().__init__(parent=parent)
         form = QtWidgets.QFormLayout(self)
         form.addRow(QtWidgets.QLabel(message))
         self.listView = QtWidgets.QListView(self)
         form.addRow(self.listView)
-        model = QtGui.QStandardItemModel(self.listView)
+        model = QtWidgets.QStandardItemModel(self.listView)
         self.setWindowTitle(title)
         for item in items:
-            standardItem = QtGui.QStandardItem(item)
+            standardItem = QtWidgets.QStandardItem(item)
             standardItem.setCheckable(True)
             standardItem.setCheckState(QtCore.Qt.Checked)
             standardItem.setEditable(False)
@@ -408,38 +412,44 @@ class DlgListChoice(QtWidgets.QDialog):
 
 
 def askUserValue(param):  # noqa: C901
-    if param.request == 'time':
-        value, isok = QtGui.QInputDialog.getText(None, 'Enter time', param.description)
+    if param.request == "time":
+        value, isok = QtWidgets.QInputDialog.getText(
+            None, "Enter time", param.description
+        )
         try:
             value = ureg.Quantity(value)
             if value.dimensionless:
                 # Default to second if no unit is specified
-                value = ureg.Quantity(value.magnitude, 's')
+                value = ureg.Quantity(value.magnitude, "s")
             value = value.to_base_units().magnitude
         except (DimensionalityError, UndefinedUnitError, ValueError):
             return None
     elif param.request is str:
-        value, isok = QtGui.QInputDialog.getText(None, 'Enter value', param.description)
+        value, isok = QtWidgets.QInputDialog.getText(
+            None, "Enter value", param.description
+        )
     elif param.request is int:
-        value, isok = QtGui.QInputDialog.getInt(None, 'Enter value', param.description)
+        value, isok = QtWidgets.QInputDialog.getInt(
+            None, "Enter value", param.description
+        )
     elif param.request is float:
-        value, isok = QtGui.QInputDialog.getDouble(
-            None, 'Enter value', param.description, decimals=3
+        value, isok = QtWidgets.QInputDialog.getDouble(
+            None, "Enter value", param.description, decimals=3
         )
     elif param.request is bool:
-        request = ['Yes', 'No']
-        tmpvalue, isok = QtGui.QInputDialog.getItem(
-            None, 'Enter value', param.description, request, editable=False
+        request = ["Yes", "No"]
+        tmpvalue, isok = QtWidgets.QInputDialog.getItem(
+            None, "Enter value", param.description, request, editable=False
         )
-        value = tmpvalue == 'Yes'
+        value = tmpvalue == "Yes"
     elif param.request is datetime:
         dlg = DlgSetDateTime()
         isok = dlg.exec_()
         value = dlg.dlgdata
-    elif type(param.request) is list:
-        value, isok = QtGui.QInputDialog.getItem(
+    elif isinstance(param.request, list):
+        value, isok = QtWidgets.QInputDialog.getItem(
             None,
-            'Choose value',
+            "Choose value",
             param.description,
             param.request,
             editable=False,
@@ -453,20 +463,20 @@ def askUserValue(param):  # noqa: C901
         return None
 
 
-def userConfirm(question: str, title: str = '') -> bool:
+def userConfirm(question: str, title: str = "") -> bool:
     if not title:
         title = question
-    reply = QtGui.QMessageBox.question(
-        None, title, question, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No
+    reply = QtWidgets.QMessageBox.question(
+        None, title, question, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No
     )
-    return reply == QtGui.QMessageBox.Yes
+    return reply == QtWidgets.QMessageBox.Yes
 
 
 def askFilePath(
     func,
     caption: str,
-    filename: str = '',
-    folder: str = '',
+    filename: str = "",
+    folder: str = "",
     filter: str = "CSV files (*.csv *.dat)",
 ) -> Optional[pathlib.Path]:
     default = pathlib.Path(folder) if folder else pathlib.Path.home()
@@ -484,15 +494,15 @@ def askFilePath(
     return (filepath, ext)
 
 
-askOpenFilePath = partial(askFilePath, QtGui.QFileDialog.getOpenFileName)
-askSaveFilePath = partial(askFilePath, QtGui.QFileDialog.getSaveFileName)
+askOpenFilePath = partial(askFilePath, QtWidgets.QFileDialog.getOpenFileName)
+askSaveFilePath = partial(askFilePath, QtWidgets.QFileDialog.getSaveFileName)
 
 
-def askDirPath(caption: str, folder: str = '') -> Optional[pathlib.Path]:
+def askDirPath(caption: str, folder: str = "") -> Optional[pathlib.Path]:
     if not folder:
         folder = str(pathlib.Path.home())
 
-    outdirtmp = QtGui.QFileDialog.getExistingDirectory(
+    outdirtmp = QtWidgets.QFileDialog.getExistingDirectory(
         caption=caption, directory=folder
     )
     if not outdirtmp:

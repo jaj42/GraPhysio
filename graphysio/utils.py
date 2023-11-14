@@ -6,10 +6,10 @@ from itertools import cycle
 
 import numpy as np
 import pathvalidate
-from pyqtgraph.Qt import QtGui
+from pyqtgraph.Qt import QtGui, QtWidgets
 
-sanitize_filename = partial(pathvalidate.sanitize_filename, platform='auto')
-sanitize_filepath = partial(pathvalidate.sanitize_filepath, platform='auto')
+sanitize_filename = partial(pathvalidate.sanitize_filename, platform="auto")
+sanitize_filepath = partial(pathvalidate.sanitize_filepath, platform="auto")
 
 
 def Colors():
@@ -37,11 +37,11 @@ def estimateSampleRate(series):
 
 
 def loadmodule():
-    defaultdir = os.path.expanduser('~')
-    filepath = QtGui.QFileDialog.getOpenFileName(
+    defaultdir = os.path.expanduser("~")
+    filepath = QtWidgets.QFileDialog.getOpenFileName(
         caption="Import module", filter="Python files (*.py)", directory=defaultdir
     )
-    if type(filepath) is not str:
+    if not isinstance(filepath, str):
         # PyQt5 API change
         filepath = filepath[0]
     if not filepath:
@@ -55,7 +55,7 @@ def loadmodule():
     bcbak = sys.dont_write_bytecode
     try:
         sys.dont_write_bytecode = True
-        imp.load_module('graphysio.plugin', f, filename, description)
+        imp.load_module("graphysio.plugin", f, filename, description)
     finally:
         sys.dont_write_bytecode = bcbak
         f.close()
@@ -82,9 +82,9 @@ def getshell(ui=None):
 
 
 def displayError(errmsg):
-    msgbox = QtGui.QMessageBox()
+    msgbox = QtWidgets.QMessageBox()
     msgbox.setWindowTitle("Error")
     msgbox.setText(str(errmsg))
-    msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-    msgbox.setIcon(QtGui.QMessageBox.Critical)
+    msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    msgbox.setIcon(QtWidgets.QMessageBox.Critical)
     msgbox.exec_()

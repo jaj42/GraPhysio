@@ -6,10 +6,11 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
+
 from graphysio import ui
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
-from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 
 class CsvReader(BaseReader):
@@ -138,8 +139,8 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
 
         # Setup Field Table
         self.lstVAll.verticalHeader().hide()
-        self.lstVAll.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
-        self.lstVAll.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.lstVAll.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.lstVAll.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 
         # Connect callbacks
         self.btnLoad.clicked.connect(self.loadCsvFields)
@@ -245,9 +246,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
     def loadPlot(self):
         yRows = [i.text() for i in self.lstY.findItems("", QtCore.Qt.MatchContains)]
         xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
-        cRows = [
-            i.text() for i in self.lstCluster.findItems("", QtCore.Qt.MatchContains)
-        ]
+        cRows = [i.text() for i in self.lstCluster.findItems("", QtCore.Qt.MatchContains)]
 
         seperator = self.txtSep.currentText()
         seperator = '\t' if seperator == '<tab>' else seperator

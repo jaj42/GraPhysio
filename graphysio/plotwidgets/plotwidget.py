@@ -3,10 +3,11 @@ from functools import partial
 from typing import Optional
 
 import pyqtgraph as pg
+from pyqtgraph.Qt import QtCore, QtWidgets
+
 from graphysio.legend import LegendItem
 from graphysio.plotwidgets.curves import CurveItem, CurveItemWithPOI
 from graphysio.utils import Colors
-from pyqtgraph.Qt import QtCore, QtGui
 
 
 class TimeAxisItem(pg.AxisItem):
@@ -56,8 +57,8 @@ class PlotWidget(pg.PlotWidget):
         self.hiddencurves = set()
         self.properties = properties if properties is not None else {}
 
-        axisItems = {'bottom': TimeAxisItem(orientation='bottom')}
-        super().__init__(parent=parent, axisItems=axisItems, background='w')
+        axisItems = {"bottom": TimeAxisItem(orientation="bottom")}
+        super().__init__(parent=parent, axisItems=axisItems, background="w")
 
         self.legend = LegendItem()
         self.legend.setParentItem(self.getPlotItem())
@@ -138,7 +139,7 @@ class PlotWidget(pg.PlotWidget):
     ) -> Optional[str]:
         if proposedname not in self.curves and not alwaysShow:
             return proposedname
-        newname, okPressed = QtGui.QInputDialog.getText(
+        newname, okPressed = QtWidgets.QInputDialog.getText(
             self,
             "Series name",
             "Series with identical names will be merged.",
@@ -152,8 +153,8 @@ class PlotWidget(pg.PlotWidget):
         # Setting Symbol and Connect does not work. TODO dig into pyqtgraph
         # curve.setData(symbol=properties['symbol'])
         # curve.setData(connect=properties['connect'], symbol=properties['symbol'])
-        curve.setPen(properties['color'], width=properties['width'])
-        curve.rename(properties['name'])
+        curve.setPen(properties["color"], width=properties["width"])
+        curve.rename(properties["name"])
 
     @property
     def vbrange(self):

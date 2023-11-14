@@ -3,20 +3,21 @@ from functools import partial
 
 import pandas as pd
 import pyqtgraph as pg
+from pyqtgraph import QtWidgets
+
 from graphysio import ui
 from graphysio.algorithms.filters import savgol
 from graphysio.algorithms.waveform import findPOIGreedy
 from graphysio.plotwidgets import PlotWidget
 from graphysio.structures import PlotData
 from graphysio.writedata import exporter
-from pyqtgraph import QtGui, QtWidgets
 
 
 class FixIndex(Enum):
-    disabled = 'Disabled'
-    minimum = 'Local Minimum'
-    maximum = 'Local Maximum'
-    sndderiv = '2nd derivative peak'
+    disabled = "Disabled"
+    minimum = "Local Minimum"
+    maximum = "Local Maximum"
+    sndderiv = "2nd derivative peak"
 
 
 class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
@@ -41,8 +42,8 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         self.buttonGroup.buttonClicked.connect(buttonClicked)
 
     def loadPOI(self, plotdata):
-        columnname, ok = QtGui.QInputDialog.getItem(
-            self, 'Select POI series', 'Load POI', plotdata.data.columns, editable=False
+        columnname, ok = QtWidgets.QInputDialog.getItem(
+            self, "Select POI series", "Load POI", plotdata.data.columns, editable=False
         )
         if not ok:
             return
@@ -56,8 +57,8 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         poiidx = self.poiselectorplot.curve.feetitem.indices[
             self.poiselectorplot.pointkey
         ]
-        pois = srcseries[poiidx.dropna()].rename('poi')
-        sname = f'{srcseries.name}-poi'
+        pois = srcseries[poiidx.dropna()].rename("poi")
+        sname = f"{srcseries.name}-poi"
         df = pd.DataFrame({sname: pois})
         plotdata = PlotData(data=df, name=sname)
         self.parent.createNewPlotWithData(plotdata)
@@ -65,18 +66,18 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
     @property
     def menu(self):
         return {
-            'Plot': {
-                'Import POIs': partial(
+            "Plot": {
+                "Import POIs": partial(
                     self.parent.launchOpenFile, datahandler=self.loadPOI
                 ),
-                'POIs to New Plot': self.launchNewPlotFromPOIs,
+                "POIs to New Plot": self.launchNewPlotFromPOIs,
             },
-            'Export': {'POI to CSV': self.poiselectorplot.exporter.poi},
+            "Export": {"POI to CSV": self.poiselectorplot.exporter.poi},
         }
 
 
 class POISelectorPlot(PlotWidget):
-    pointkey = 'point'
+    pointkey = "point"
 
     @staticmethod
     def mouseMoved(self, evt):
@@ -106,10 +107,10 @@ class POISelectorPlot(PlotWidget):
 
         self.curve = self.addSeriesAsCurve(series)
         if self.curve is None:
-            raise ValueError('Not enough data')
+            raise ValueError("Not enough data")
         self.exporter = exporter.POIExporter(self, self.name)
 
-        pen = pg.mkPen('k', width=2)
+        pen = pg.mkPen("k", width=2)
         self.vLine = pg.InfiniteLine(angle=90, movable=False, pen=pen)
         self.addItem(self.vLine, ignoreBounds=True)
 
@@ -122,19 +123,19 @@ class POISelectorPlot(PlotWidget):
         xmin, xmax = self.vbrange
         if self.fixvalue is FixIndex.minimum:
             s = self.curve.series.loc[xmin:xmax]
-            posprop = findPOIGreedy(s, pos, 'min')
-            fixedposloc = s.index.get_loc(posprop, method='nearest')
+            posprop = findPOIGreedy(s, pos, "min")
+            fixedposloc = s.index.get_loc(posprop, method="nearest")
         elif self.fixvalue is FixIndex.maximum:
             s = self.curve.series.loc[xmin:xmax]
-            posprop = findPOIGreedy(s, pos, 'max')
-            fixedposloc = s.index.get_loc(posprop, method='nearest')
+            posprop = findPOIGreedy(s, pos, "max")
+            fixedposloc = s.index.get_loc(posprop, method="nearest")
         elif self.fixvalue is FixIndex.sndderiv:
             s = self.sndderiv.loc[xmin:xmax]
-            posprop = findPOIGreedy(s, pos, 'max')
-            fixedposloc = s.index.get_loc(posprop, method='nearest')
+            posprop = findPOIGreedy(s, pos, "max")
+            fixedposloc = s.index.get_loc(posprop, method="nearest")
         else:
             s = self.curve.series.loc[xmin:xmax]
-            fixedposloc = s.index.get_loc(pos, method='nearest')
+            fixedposloc = s.index.get_loc(pos, method="nearest")
         correctedpos = s.index[fixedposloc]
         return correctedpos
 
