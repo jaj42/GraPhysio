@@ -16,22 +16,22 @@ class ParquetReader(BaseReader):
     is_available = is_available
 
     def askUserInput(self):
-        filepath = self.userdata['filepath']
+        filepath = self.userdata["filepath"]
         s = pa.read_schema(filepath)
         colnames = s.names
 
         def cb(columns):
-            self.userdata['columns'] = columns
+            self.userdata["columns"] = columns
 
-        dlgchoice = DlgListChoice(colnames, 'Open Parquet', 'Choose curves to load')
+        dlgchoice = DlgListChoice(colnames, "Open Parquet", "Choose curves to load")
         dlgchoice.dlgdata.connect(cb)
         dlgchoice.exec_()
 
     def __call__(self) -> PlotData:
-        filepath = self.userdata['filepath']
-        data = pd.read_parquet(filepath, columns=self.userdata['columns'])
+        filepath = self.userdata["filepath"]
+        data = pd.read_parquet(filepath, columns=self.userdata["columns"])
 
-        data = data.dropna(axis='columns', how='all')
+        data = data.dropna(axis="columns", how="all")
         data = data.sort_index()
         data.index = data.index.view(np.int64)
 

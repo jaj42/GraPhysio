@@ -19,7 +19,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
-        self.dircache = os.path.expanduser('~')
+        self.dircache = os.path.expanduser("~")
 
         self.dataq = Queue()
         self.executor = ThreadPoolExecutor()
@@ -32,14 +32,14 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
         launchNewPlot = partial(self.launchOpenFile, self.createNewPlotWithData)
         launchAppendPlot = partial(self.launchOpenFile, self.appendToPlotWithData)
-        self.menuFile.addAction('New Plot', launchNewPlot)
-        self.menuFile.addAction('Append to Plot', launchAppendPlot)
+        self.menuFile.addAction("New Plot", launchNewPlot)
+        self.menuFile.addAction("Append to Plot", launchAppendPlot)
 
         self.menuFile.addSeparator()
-        self.menuFile.addAction('&Load plugin', self.errguard(utils.loadmodule))
-        self.menuFile.addAction('Get CLI shell', self.errguard(getCLIShell))
+        self.menuFile.addAction("&Load plugin", self.errguard(utils.loadmodule))
+        self.menuFile.addAction("Get CLI shell", self.errguard(getCLIShell))
         self.menuFile.addSeparator()
-        self.menuFile.addAction('&Quit', self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
+        self.menuFile.addAction("&Quit", self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
         self.setcoords.connect(self.setCoords)
 
@@ -54,7 +54,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             timestr = TimeAxisItem.conv_relative(x)
         else:
             timestr = TimeAxisItem.conv_absolute(x, mainwindow=True)
-        self.lblCoords.setText(f'Time: {timestr}, Value: {y}')
+        self.lblCoords.setText(f"Time: {timestr}, Value: {y}")
 
     def read_plot_data(self):
         try:
@@ -91,7 +91,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             tmptabname = tabname
             # Duplicate tab name. Add a number to the end
             for i in itertools.count():
-                tmptabname = f'{tabname}{i+1}'
+                tmptabname = f"{tabname}{i+1}"
                 if tmptabname not in tabnames:
                     break
             tabname = tmptabname
@@ -130,7 +130,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         future.add_done_callback(cb)
 
     def createNewPlotWithData(self, plotdata):
-        properties = {'dircache': self.dircache}
+        properties = {"dircache": self.dircache}
         plotwidget = TSWidget(plotdata, parent=self, properties=properties)
         self.addTab(plotwidget, plotdata.name)
         self.lblStatus.setText("Loading... done")
@@ -143,12 +143,12 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         else:
             plotwidget = self.tabWidget.widget(destidx)
         if plotwidget is None:
-            utils.displayError('No plot selected.')
+            utils.displayError("No plot selected.")
             return
         if do_timeshift is None:
             do_timeshift = dialogs.userConfirm(
-                'Timeshift new curves to make the beginnings coincide?',
-                title='Append to plot',
+                "Timeshift new curves to make the beginnings coincide?",
+                title="Append to plot",
             )
 
         for fieldname in plotdata.data:
@@ -159,5 +159,5 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
                 plotdata.data.rename(columns={fieldname: newname}, inplace=True)
 
         plotwidget.appendData(plotdata, do_timeshift)
-        plotwidget.properties['dircache'] = self.dircache
+        plotwidget.properties["dircache"] = self.dircache
         self.lblStatus.setText("Loading... done")

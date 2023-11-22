@@ -12,9 +12,9 @@ from physiocurve.pressure.foot import find_tangent_intersections
 def get_precise_feet(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     curvenames = list(plotwidget.curves.keys())
     if len(curvenames) < 1:
-        raise ValueError('No curve')
+        raise ValueError("No curve")
     elif len(curvenames) > 1:
-        q = Parameter('Select Curve', curvenames)
+        q = Parameter("Select Curve", curvenames)
         curvename = askUserValue(q)
     else:
         curvename = curvenames[0]
@@ -23,10 +23,10 @@ def get_precise_feet(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     wave = curve.series
 
     try:
-        idxdia = curve.feetitem.indices['diastole']
-        idxsys = curve.feetitem.indices['systole']
+        idxdia = curve.feetitem.indices["diastole"]
+        idxsys = curve.feetitem.indices["systole"]
     except KeyError as e:
-        raise ValueError('No systole or diastole') from e
+        raise ValueError("No systole or diastole") from e
 
     argdia = wave.index.get_indexer(idxdia)
     argsys = wave.index.get_indexer(idxsys)
@@ -37,11 +37,11 @@ def get_precise_feet(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     intersections = intersections * scale + wave.index[0]
     intersections = np.rint(intersections).astype(np.int64)
 
-    y_value_index = wave.index.get_indexer(intersections, method='nearest')
+    y_value_index = wave.index.get_indexer(intersections, method="nearest")
     y_values = wave.iloc[y_value_index]
 
     out_series = pd.Series(y_values.to_numpy(), index=intersections)
-    sname = f'{wave.name}-precise_feet'
+    sname = f"{wave.name}-precise_feet"
 
     plotdata = PlotData(data=out_series, name=sname)
     return [plotdata]

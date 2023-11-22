@@ -12,15 +12,15 @@ else:
 
 
 def export_curves(
-    curves: List[CurveItem], filepath: str, index_label: str = 'timens'
+    curves: List[CurveItem], filepath: str, index_label: str = "timens"
 ) -> None:
     sers = [c.series for c in curves]
     data = pd.concat(sers, axis=1).sort_index()
     data.to_parquet(
         filepath,
-        engine='pyarrow',
-        compression='gzip',
-        coerce_timestamps='us',
+        engine="pyarrow",
+        compression="gzip",
+        coerce_timestamps="us",
         allow_truncated_timestamps=True,
     )
 

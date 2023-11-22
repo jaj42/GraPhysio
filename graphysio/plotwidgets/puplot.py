@@ -8,9 +8,9 @@ from graphysio import ui
 from graphysio.writedata import exporter
 from pyqtgraph import QtWidgets
 
-Point = namedtuple('Point', ['x', 'y'])
-Cardinals = namedtuple('Cardinals', ['A', 'B', 'C'])
-Angles = namedtuple('Angles', ['alpha', 'beta', 'gala'])
+Point = namedtuple("Point", ["x", "y"])
+Cardinals = namedtuple("Cardinals", ["A", "B", "C"])
+Angles = namedtuple("Angles", ["alpha", "beta", "gala"])
 
 
 class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
@@ -29,8 +29,8 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
 
         self.curidx = 0
         self.loops = []
-        self.pen = p.opts['pen']
-        self.graphicsView.setBackground('w')
+        self.pen = p.opts["pen"]
+        self.graphicsView.setBackground("w")
 
         plotitem = self.graphicsView.getPlotItem()
         vb = plotitem.getViewBox()
@@ -107,7 +107,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
 
     @property
     def menu(self):
-        return {'Export': {'&Loop Data to CSV directory': self.exporter.exportloops}}
+        return {"Export": {"&Loop Data to CSV directory": self.exporter.exportloops}}
 
 
 class PULoop(object):
@@ -121,7 +121,7 @@ class PULoop(object):
         self.offset = abs(offset)
 
         df = pd.concat([u, p], axis=1)
-        self.df = df.interpolate(method='index')
+        self.df = df.interpolate(method="index")
 
         self.u = self.df[u.name]
         self.p = self.df[p.name]

@@ -20,7 +20,7 @@ class CurveItem(pg.PlotDataItem):
         self.parent = parent
         self.series = self.sanitize_data(series)
         if self.series is None:
-            raise ValueError('Not enough data')
+            raise ValueError("Not enough data")
         self.samplerate = estimateSampleRate(self.series)
         if pen is None:
             pen = QtGui.QColor(QtCore.Qt.black)
@@ -33,7 +33,7 @@ class CurveItem(pg.PlotDataItem):
             # XXX report error
             return
         self.clear()
-        self.series = newdata.rename(self.opts['name'])
+        self.series = newdata.rename(self.opts["name"])
         self.samplerate = estimateSampleRate(self.series)
         self.render()
 
@@ -53,7 +53,7 @@ class CurveItem(pg.PlotDataItem):
         self.samplerate = newsamplerate
 
     def rename(self, newname: str):
-        self.opts['name'] = newname
+        self.opts["name"] = newname
         self.series = self.series.rename(newname)
 
     def sanitize_data(self, series: pd.Series) -> Optional[pd.Series]:
@@ -69,13 +69,13 @@ class CurveItem(pg.PlotDataItem):
 
 class POIItem(pg.ScatterPlotItem):
     sym = {
-        'start': 'star',
-        'stop': 's',
-        'diastole': 't1',
-        'systole': 't',
-        'dicrotic': 'd',
-        'rwave': 'x',
-        'twave': 'o',
+        "start": "star",
+        "stop": "s",
+        "diastole": "t1",
+        "systole": "t",
+        "dicrotic": "d",
+        "rwave": "x",
+        "twave": "o",
     }
     # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in
     # ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
@@ -100,7 +100,7 @@ class POIItem(pg.ScatterPlotItem):
         if key not in self.indices:
             return
         oldidx = self.indices[key]
-        dellocs = oldidx.get_indexer(locations, method='nearest')
+        dellocs = oldidx.get_indexer(locations, method="nearest")
         newidx = oldidx.delete(dellocs)
         self.indices[key] = newidx
         self.render()
@@ -111,8 +111,8 @@ class POIItem(pg.ScatterPlotItem):
                 sym = self.resym[point.symbol()]
                 idx = self.indices[sym]
             except KeyError as e:
-                raise KeyError('Point not found') from e
-            nidx = idx.get_indexer([point.pos().x()], method='nearest')
+                raise KeyError("Point not found") from e
+            nidx = idx.get_indexer([point.pos().x()], method="nearest")
             self.indices[sym] = idx.delete(nidx)
         self.render()
 
@@ -123,14 +123,14 @@ class POIItem(pg.ScatterPlotItem):
                 continue
             idxnona = idx.dropna()
             points = self.parent.series.loc[idxnona]
-            tmp = pd.DataFrame({'points': points, 'sym': self.sym[key]}, index=idxnona)
+            tmp = pd.DataFrame({"points": points, "sym": self.sym[key]}, index=idxnona)
             data.append(tmp)
         if len(data) < 1:
             self.clear()
             return
         feet = pd.concat(data)
         self.setData(
-            x=feet.index.values, y=feet['points'].values, symbol=feet['sym'].values
+            x=feet.index.values, y=feet["points"].values, symbol=feet["sym"].values
         )
 
     def isPointSelected(self, point):
@@ -139,8 +139,8 @@ class POIItem(pg.ScatterPlotItem):
     def selectPoint(self, point):
         if not self.isPointSelected(point):
             self.selected.append(point)
-        point.setPen('r')
-        point.setBrush('r')
+        point.setPen("r")
+        point.setBrush("r")
 
     def unselectPoint(self, point):
         if self.isPointSelected(point):
@@ -153,7 +153,7 @@ class POIItem(pg.ScatterPlotItem):
         self.selected = []
 
     def rename(self, newname: str):
-        self.opts['name'] = newname
+        self.opts["name"] = newname
 
 
 class CurveItemWithPOI(CurveItem):
@@ -170,7 +170,7 @@ class CurveItemWithPOI(CurveItem):
 
     def __init__(self, series, parent, pen=None):
         super().__init__(series, parent, pen)
-        feetname = f'{series.name}-feet'
+        feetname = f"{series.name}-feet"
         self.feetitem = POIItem(self, name=feetname, pen=pen)
         parent.addItem(self.feetitem)
         self.feetitem.sigClicked.connect(self.sigPointClicked)
@@ -191,35 +191,35 @@ class CurveItemWithPOI(CurveItem):
             return
         elif cycleid is CycleId.velocity:
             starts, stops = waveform.findFlowCycles(self)
-            self.feetitem.indices['start'] = starts
-            self.feetitem.indices['stop'] = stops
+            self.feetitem.indices["start"] = starts
+            self.feetitem.indices["stop"] = stops
         elif cycleid is CycleId.foot:
             foot = waveform.findPressureFeet(self)
-            self.feetitem.indices['start'] = foot
+            self.feetitem.indices["start"] = foot
         elif cycleid is CycleId.pressure:
-            if 'start' not in self.feetitem.indices:
+            if "start" not in self.feetitem.indices:
                 self.addFeet(CycleId.foot)
             dia, sbp, dic = waveform.findPressureFull(self)
-            self.feetitem.indices['diastole'] = dia
-            self.feetitem.indices['systole'] = sbp
-            self.feetitem.indices['dicrotic'] = dic
+            self.feetitem.indices["diastole"] = dia
+            self.feetitem.indices["systole"] = sbp
+            self.feetitem.indices["dicrotic"] = dic
         elif cycleid is CycleId.rwave:
             ecg = ECG(self.series)
-            self.feetitem.indices['rwave'] = ecg.idxrwave
+            self.feetitem.indices["rwave"] = ecg.idxrwave
         elif cycleid is CycleId.ecg:
             ecg = ECG(self.series)
-            self.feetitem.indices['start'] = ecg.idxpwave
-            self.feetitem.indices['rwave'] = ecg.idxrwave
-            self.feetitem.indices['twave'] = ecg.idxtwave
+            self.feetitem.indices["start"] = ecg.idxpwave
+            self.feetitem.indices["rwave"] = ecg.idxrwave
+            self.feetitem.indices["twave"] = ecg.idxtwave
         elif cycleid is CycleId.foottan:
             p = Pressure(self.series)
-            self.feetitem.indices['start'] = p.idxtanfeet
+            self.feetitem.indices["start"] = p.idxtanfeet
         elif cycleid is CycleId.pressurebis:
             p = Pressure(self.series)
-            self.feetitem.indices['start'] = p.idxfeet
-            self.feetitem.indices['diastole'] = p.idxdia
-            self.feetitem.indices['systole'] = p.idxsys
-            self.feetitem.indices['dicrotic'] = p.idxdic
+            self.feetitem.indices["start"] = p.idxfeet
+            self.feetitem.indices["diastole"] = p.idxdia
+            self.feetitem.indices["systole"] = p.idxsys
+            self.feetitem.indices["dicrotic"] = p.idxdic
         else:
             raise ValueError(cycleid)
         self.feetitem.render()
@@ -227,11 +227,11 @@ class CurveItemWithPOI(CurveItem):
     def getCycleIndices(self, vrange=None):
         s = self.series
         clip = partial(utils.clip, vrange=vrange)
-        hasstarts = ('start' in self.feetitem.indices) and self.feetitem.indices[
-            'start'
+        hasstarts = ("start" in self.feetitem.indices) and self.feetitem.indices[
+            "start"
         ].size > 0
-        hasstops = ('stop' in self.feetitem.indices) and self.feetitem.indices[
-            'stop'
+        hasstops = ("stop" in self.feetitem.indices) and self.feetitem.indices[
+            "stop"
         ].size > 0
         if vrange:
             xmin, xmax = vrange
@@ -240,19 +240,19 @@ class CurveItemWithPOI(CurveItem):
             xmax = s.index[-1]
         if not hasstarts:
             # We have no feet, treat the whole signal as one cycle
-            locs = s.index.get_indexer([xmin, xmax], method='nearest')
+            locs = s.index.get_indexer([xmin, xmax], method="nearest")
             indices = s.index[locs]
             begins, ends = [np.array([i]) for i in indices]
         elif not hasstops:
             # We have no stops, starts serve as stops for previous cycle
-            begins = clip(self.feetitem.indices['start'].values)
-            endloc = s.index.get_indexer([xmax], method='nearest')
+            begins = clip(self.feetitem.indices["start"].values)
+            endloc = s.index.get_indexer([xmax], method="nearest")
             end = s.index[endloc]
             ends = np.append(begins[1:], end)
         else:
             # We have starts and stops, use them
-            begins = self.feetitem.indices['start'].values
-            ends = self.feetitem.indices['stop'].values
+            begins = self.feetitem.indices["start"].values
+            ends = self.feetitem.indices["stop"].values
             begins, ends = map(clip, [begins, ends])
 
         # Handle the case where we start in the middle of a cycle

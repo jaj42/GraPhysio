@@ -22,7 +22,7 @@ def findPressureFeet(curve):
         sndderivsq = sndderiv**2
         integral = sndderivsq.rolling(window=winsum, center=True).sum()
         thres = integral.rolling(window=winquant).quantile(0.7)
-        thres = thres.fillna(method='backfill')
+        thres = thres.fillna(method="backfill")
         risings = (integral > thres).astype(int)
         risingvar = risings.diff()
         (risingStarts,) = (risingvar > 0).to_numpy().nonzero()
@@ -72,7 +72,7 @@ def findFlowCycles(curve):
     try:
         cycleStops = cycleStops[cycleStops.index > cycleStarts.index[0]]
     except IndexError as e:
-        raise TypeError('No cycle detected') from e
+        raise TypeError("No cycle detected") from e
 
     return (cycleStarts.index, cycleStops.index)
 
@@ -85,8 +85,8 @@ def findPressureCycles(curve):
     for start, duration in zip(starts, durations):
         stop = start + duration
         diastop = start - duration
-        dia = findPOI(series, [start, diastop], 'min', windowsize=0.05, forcesign=False)
-        sbp = findPOI(series, [start, stop], 'max', windowsize=0.05)
+        dia = findPOI(series, [start, diastop], "min", windowsize=0.05, forcesign=False)
+        sbp = findPOI(series, [start, stop], "max", windowsize=0.05)
         cycle = (dia, sbp)
         cycles.append(cycle)
     return [pd.Index(idx, dtype=np.int64) for idx in zip(*cycles)]
@@ -104,11 +104,11 @@ def findPressureFull(curve):
 
 
 def isbetter(new, ref, kind, forcesign):
-    if kind == 'max':
+    if kind == "max":
         condition = new > ref
         if forcesign:
             condition = condition or (new < 0)
-    elif kind == 'min':
+    elif kind == "min":
         condition = new < ref
         if forcesign:
             condition = condition or (new > 0)
@@ -144,12 +144,12 @@ def genWindows(soi, interval, windowspan):
 
 
 def findPOI(soi, interval, kind, windowsize, forcesign=True):
-    if kind not in ['min', 'max']:
+    if kind not in ["min", "max"]:
         raise ValueError(kind)
-    argkind = 'idx' + kind
+    argkind = "idx" + kind
 
     goodwindow = []
-    previous = -np.inf if kind == 'max' else np.inf
+    previous = -np.inf if kind == "max" else np.inf
     for window in genWindows(soi, interval, windowsize):
         zoi = soi.loc[window]
         new = getattr(zoi, kind)()
@@ -168,16 +168,16 @@ def findPOI(soi, interval, kind, windowsize, forcesign=True):
 
 
 def findPOIGreedy(soi, start, kind):
-    if kind not in ['min', 'max']:
+    if kind not in ["min", "max"]:
         raise ValueError(kind)
-    loc = soi.index.get_loc(start, method='nearest')
+    loc = soi.index.get_loc(start, method="nearest")
     # Find direction
     try:
         finddir = soi.iloc[[loc - 1, loc, loc + 1]]
     except IndexError:
         # We're at the edge of the curve
         return start
-    npminmax = np.argmin if kind == 'min' else np.argmax
+    npminmax = np.argmin if kind == "min" else np.argmax
     direction = npminmax(finddir.values) - 1
     if direction == 0:
         # We're already at the local minimum

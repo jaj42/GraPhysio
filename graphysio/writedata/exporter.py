@@ -8,25 +8,25 @@ from graphysio import writedata
 from graphysio.dialogs import DlgPeriodExport, askDirPath, askSaveFilePath
 from graphysio.utils import sanitize_filename
 
-file_filters = ';;'.join(
-    [f'{ext.upper()} files (*.{ext})' for ext in writedata.curve_writers]
+file_filters = ";;".join(
+    [f"{ext.upper()} files (*.{ext})" for ext in writedata.curve_writers]
 )
 
 
 class TsExporter:
-    periodfields = ['patient', 'begin', 'end', 'periodid', 'comment']
+    periodfields = ["patient", "begin", "end", "periodid", "comment"]
 
     def __init__(self, parent, name):
         self.parent = parent
         self.name = name
         try:
-            self.outdir = parent.properties['dircache']
+            self.outdir = parent.properties["dircache"]
         except KeyError:
-            self.outdir = os.path.expanduser('~')
+            self.outdir = os.path.expanduser("~")
 
     def curves(self) -> None:
         filepath, ext = askSaveFilePath(
-            'Export to', f'{self.name}.csv', self.outdir, filter=file_filters
+            "Export to", f"{self.name}.csv", self.outdir, filter=file_filters
         )
         if filepath is None:
             return
@@ -46,7 +46,7 @@ class TsExporter:
             self.name = patient
             self.outdir = os.path.dirname(filepath)
 
-            with open(filepath, 'a', newline='') as csvfile:
+            with open(filepath, "a", newline="") as csvfile:
                 writer = csv.DictWriter(
                     csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL
                 )
@@ -54,11 +54,11 @@ class TsExporter:
                     writer.writeheader()
                 writer.writerow(
                     {
-                        'patient': patient,
-                        'begin': xmin,
-                        'end': xmax,
-                        'periodid': periodname,
-                        'comment': comment,
+                        "patient": patient,
+                        "begin": xmin,
+                        "end": xmax,
+                        "periodid": periodname,
+                        "comment": comment,
                     }
                 )
 
@@ -93,16 +93,16 @@ class TsExporter:
                 idxdelta = s.index[0] - idxstart
                 s.index -= idxdelta
             df = pd.concat(cycle, axis=1)
-            df['datetime'] = pd.to_datetime(df.index, unit='ns')
+            df["datetime"] = pd.to_datetime(df.index, unit="ns")
 
-            filename = sanitize_filename(f'{self.name}-{n+1}.csv')
+            filename = sanitize_filename(f"{self.name}-{n+1}.csv")
             filepath = os.path.join(self.outdir, filename)
             df.to_csv(
-                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens'
+                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label="timens"
             )
 
     def cyclepoints(self) -> None:
-        filepath, _ = askSaveFilePath('Export to', f'{self.name}-feet.csv', self.outdir)
+        filepath, _ = askSaveFilePath("Export to", f"{self.name}-feet.csv", self.outdir)
         if filepath is None:
             # Cancel pressed
             return
@@ -111,9 +111,9 @@ class TsExporter:
         feetseries = []
         for c in self.parent.curves.values():
             for k, v in c.feetitem.indices.items():
-                feetseries.append(pd.Series(v, name=f'{c.name()}-{k}'))
+                feetseries.append(pd.Series(v, name=f"{c.name()}-{k}"))
         df = pd.concat(feetseries, axis=1)
-        df.to_csv(filepath, index_label='idx')
+        df.to_csv(filepath, index_label="idx")
 
 
 class PuExporter:
@@ -121,12 +121,12 @@ class PuExporter:
         self.parent = parent
         self.name = name
         try:
-            self.outdir = parent.properties['dircache']
+            self.outdir = parent.properties["dircache"]
         except KeyError:
-            self.outdir = os.path.expanduser('~')
+            self.outdir = os.path.expanduser("~")
 
     def exportloops(self):
-        outdir = askDirPath('Export to', self.outdir)
+        outdir = askDirPath("Export to", self.outdir)
         if outdir is None:
             # Cancel pressed
             return
@@ -139,22 +139,22 @@ class PuExporter:
         for loop in self.parent.loops:
             alpha, beta, gala = loop.angles
             delay = loop.offset / 1e6
-            tmpdict = {'alpha': alpha, 'beta': beta, 'gala': gala, 'delay': delay}
+            tmpdict = {"alpha": alpha, "beta": beta, "gala": gala, "delay": delay}
             data.append(tmpdict)
         df = pd.DataFrame(data)
         df.index += 1
-        filename = sanitize_filename(f'{self.name}-loopdata.csv')
+        filename = sanitize_filename(f"{self.name}-loopdata.csv")
         filepath = os.path.join(self.outdir, filename)
-        df.to_csv(filepath, index_label='idx')
+        df.to_csv(filepath, index_label="idx")
 
     def writeloops(self):
         for n, loop in enumerate(self.parent.loops):
             df = loop.df
-            filename = sanitize_filename(f'{self.name}-{n+1}.csv')
+            filename = sanitize_filename(f"{self.name}-{n+1}.csv")
             filepath = os.path.join(self.outdir, filename)
-            df['datetime'] = pd.to_datetime(df.index, unit='ns')
+            df["datetime"] = pd.to_datetime(df.index, unit="ns")
             df.to_csv(
-                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens'
+                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label="timens"
             )
 
 
@@ -163,12 +163,12 @@ class POIExporter:
         self.parent = parent
         self.name = name
         try:
-            self.outdir = parent.properties['dircache']
+            self.outdir = parent.properties["dircache"]
         except KeyError:
-            self.outdir = os.path.expanduser('~')
+            self.outdir = os.path.expanduser("~")
 
     def poi(self):
-        filepath, _ = askSaveFilePath('Export to', f'{self.name}-poi.csv', self.outdir)
+        filepath, _ = askSaveFilePath("Export to", f"{self.name}-poi.csv", self.outdir)
         if filepath is None:
             # Cancel pressed
             return
@@ -176,8 +176,8 @@ class POIExporter:
 
         srcseries = self.parent.curve.series
         poiidx = self.parent.curve.feetitem.indices[self.parent.pointkey]
-        pois = srcseries[poiidx.dropna()].rename('poi')
+        pois = srcseries[poiidx.dropna()].rename("poi")
         sers = [srcseries, pois]
         df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
-        df['datetime'] = pd.to_datetime(df.index, unit='ns')
-        df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label='timens')
+        df["datetime"] = pd.to_datetime(df.index, unit="ns")
+        df.to_csv(filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label="timens")

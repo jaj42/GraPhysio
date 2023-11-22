@@ -14,21 +14,21 @@ from physiocurve.pressure.incycle import find_dia_sys
 def get_pat(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     curvenames = list(plotwidget.curves.keys())
     if len(curvenames) < 2:
-        raise ValueError('Insufficient data')
-    q = Parameter('Select ECG curve', curvenames)
+        raise ValueError("Insufficient data")
+    q = Parameter("Select ECG curve", curvenames)
     curvename = askUserValue(q)
     ecgcurve = plotwidget.curves[curvename]
 
-    q = Parameter('Select Pulse curve', curvenames)
+    q = Parameter("Select Pulse curve", curvenames)
     curvename = askUserValue(q)
     pulsecurve = plotwidget.curves[curvename]
     pulse = pulsecurve.series
 
     try:
-        idxfeet = pulsecurve.feetitem.indices['start']
-        idxrwave = ecgcurve.feetitem.indices['rwave']
+        idxfeet = pulsecurve.feetitem.indices["start"]
+        idxrwave = ecgcurve.feetitem.indices["rwave"]
     except KeyError as e:
-        raise ValueError('Detect feet and R waves first') from e
+        raise ValueError("Detect feet and R waves first") from e
 
     argfeet = pulse.index.get_indexer(idxfeet)
     argdia, argsys = find_dia_sys(pulse.to_numpy(), pulsecurve.samplerate, argfeet)
@@ -43,7 +43,7 @@ def get_pat(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     pat /= 1e6  # milliseconds
 
     out_series = pd.Series(pat, index=idxrwave)
-    sname = f'PAT {pulse.name} (ms)'
+    sname = f"PAT {pulse.name} (ms)"
     plotdata = PlotData(data=out_series, name=sname)
 
     return [plotdata]

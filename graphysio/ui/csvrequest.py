@@ -80,7 +80,9 @@ class Ui_NewPlot(object):
         self.verticalLayout_3.addWidget(self.line)
         self.horizontalLayout_4.addLayout(self.verticalLayout_3)
         self.groupBox_2 = QtWidgets.QGroupBox(NewPlot)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.groupBox_2.sizePolicy().hasHeightForWidth())
@@ -89,7 +91,9 @@ class Ui_NewPlot(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.groupBox_2)
         self.verticalLayout.setObjectName("verticalLayout")
         self.lstVAll = QtWidgets.QTableView(self.groupBox_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lstVAll.sizePolicy().hasHeightForWidth())
@@ -136,9 +140,13 @@ class Ui_NewPlot(object):
         self.txtDateTime.addItem("")
         self.txtDateTime.addItem("")
         self.txtDateTime.addItem("")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.txtDateTime)
+        self.formLayout_2.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.txtDateTime
+        )
         self.lstVX = QtWidgets.QComboBox(self.groupBox_6)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lstVX.sizePolicy().hasHeightForWidth())
@@ -147,7 +155,9 @@ class Ui_NewPlot(object):
         self.lstVX.setObjectName("lstVX")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.lstVX)
         self.btnRemoveX = QtWidgets.QPushButton(self.groupBox_6)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnRemoveX.sizePolicy().hasHeightForWidth())
@@ -177,7 +187,9 @@ class Ui_NewPlot(object):
         self.verticalLayout_6 = QtWidgets.QVBoxLayout()
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.lstVY = QtWidgets.QListView(self.groupBox_5)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lstVY.sizePolicy().hasHeightForWidth())
@@ -186,7 +198,9 @@ class Ui_NewPlot(object):
         self.lstVY.setObjectName("lstVY")
         self.verticalLayout_6.addWidget(self.lstVY)
         self.btnRemoveY = QtWidgets.QPushButton(self.groupBox_5)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnRemoveY.sizePolicy().hasHeightForWidth())
@@ -220,7 +234,9 @@ class Ui_NewPlot(object):
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.btnOk = QtWidgets.QPushButton(NewPlot)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnOk.sizePolicy().hasHeightForWidth())
@@ -228,7 +244,9 @@ class Ui_NewPlot(object):
         self.btnOk.setObjectName("btnOk")
         self.horizontalLayout_3.addWidget(self.btnOk)
         self.btnCancel = QtWidgets.QPushButton(NewPlot)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btnCancel.sizePolicy().hasHeightForWidth())
@@ -238,7 +256,7 @@ class Ui_NewPlot(object):
         self.verticalLayout_4.addLayout(self.horizontalLayout_3)
 
         self.retranslateUi(NewPlot)
-        self.chkGenX.clicked['bool'].connect(self.lstVX.setDisabled)
+        self.chkGenX.clicked["bool"].connect(self.lstVX.setDisabled)
         QtCore.QMetaObject.connectSlotsByName(NewPlot)
 
     def retranslateUi(self, NewPlot):

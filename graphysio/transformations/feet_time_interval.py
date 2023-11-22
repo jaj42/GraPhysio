@@ -11,7 +11,7 @@ def get_feet_time_interval(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     for curve in plotwidget.curves.values():
         feetitemhash.update(
             {
-                f'{curve.name()}-{feetname}': (curve, feetname)
+                f"{curve.name()}-{feetname}": (curve, feetname)
                 for feetname in curve.feetitem.indices.keys()
             }
         )
@@ -23,7 +23,7 @@ def get_feet_time_interval(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     time_intervals = points.index.to_series().diff()  # ns
     time_intervals /= 1e6  # ms
 
-    sname = f'{qresult}(ms)'
+    sname = f"{qresult}(ms)"
 
     plotdata = PlotData(data=time_intervals, name=sname)
     return [plotdata]

@@ -15,12 +15,12 @@ class SpectrogramWidget(QtWidgets.QWidget):
         layout = QtWidgets.QHBoxLayout()
 
         lolayout = QtWidgets.QVBoxLayout()
-        lothres = QtWidgets.QLabel('Low')
+        lothres = QtWidgets.QLabel("Low")
         lolayout.addWidget(lothres)
         lolayout.addWidget(self.loslider)
 
         hilayout = QtWidgets.QVBoxLayout()
-        hithres = QtWidgets.QLabel('High')
+        hithres = QtWidgets.QLabel("High")
         hilayout.addWidget(hithres)
         hilayout.addWidget(self.hislider)
 
@@ -31,8 +31,8 @@ class SpectrogramWidget(QtWidgets.QWidget):
 
     @property
     def menu(self):
-        mplot = {'Extract SEF': self.spectro.launchSEFExtract}
-        return {'Plot': mplot}
+        mplot = {"Extract SEF": self.spectro.launchSEFExtract}
+        return {"Plot": mplot}
 
 
 class SpectroTimeAxisItem(pg.AxisItem):
@@ -74,14 +74,14 @@ class SpectrogramPlotWidget(pg.PlotWidget):
             initvalue=self.origidx[0],
             samplerate=self.fs,
             chunksize=self.chunksize,
-            orientation='bottom',
+            orientation="bottom",
         )
-        axisItems = {'bottom': axisItem}
+        axisItems = {"bottom": axisItem}
         super().__init__(parent=self.parent, axisItems=axisItems)
 
         self.img = pg.ImageItem()
         self.addItem(self.img)
-        self.setLabel('left', 'Frequency', units='Hz')
+        self.setLabel("left", "Frequency", units="Hz")
 
         # bipolar colormap
         pos = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
@@ -136,11 +136,11 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         return result.astype(int)
 
     def launchSEFExtract(self):
-        q = Parameter('SEF percentage', int)
+        q = Parameter("SEF percentage", int)
         sefperc = dialogs.askUserValue(q)
         if not sefperc:
             return
-        curvename = f'{self.name}-sef{sefperc}'
+        curvename = f"{self.name}-sef{sefperc}"
         sef = self.calcsef(sefperc)
         sefseries = pd.Series(sef, index=self.genIndex(), name=curvename)
         data = {curvename: sefseries}

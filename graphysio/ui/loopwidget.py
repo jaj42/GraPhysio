@@ -31,7 +31,9 @@ class Ui_LoopWidget(object):
         self.btnPrev = QtWidgets.QPushButton(LoopWidget)
         self.btnPrev.setObjectName("btnPrev")
         self.gridLayout.addWidget(self.btnPrev, 1, 0, 1, 1)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.gridLayout.addItem(spacerItem, 4, 0, 1, 1)
         self.label_2 = QtWidgets.QLabel(LoopWidget)
         self.label_2.setObjectName("label_2")
@@ -50,7 +52,9 @@ class Ui_LoopWidget(object):
         self.lblIdx.setAlignment(QtCore.Qt.AlignCenter)
         self.lblIdx.setObjectName("lblIdx")
         self.gridLayout.addWidget(self.lblIdx, 3, 0, 1, 1)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.gridLayout.addItem(spacerItem1, 0, 0, 1, 1)
         self.label_3 = QtWidgets.QLabel(LoopWidget)
         self.label_3.setObjectName("label_3")
@@ -65,7 +69,9 @@ class Ui_LoopWidget(object):
         self.label_7 = QtWidgets.QLabel(LoopWidget)
         self.label_7.setObjectName("label_7")
         self.gridLayout.addWidget(self.label_7, 8, 0, 1, 1)
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem2 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.gridLayout.addItem(spacerItem2, 0, 1, 1, 1)
         self.btnNext = QtWidgets.QPushButton(LoopWidget)
         self.btnNext.setObjectName("btnNext")
@@ -75,7 +81,9 @@ class Ui_LoopWidget(object):
         self.lblAlpha.setObjectName("lblAlpha")
         self.gridLayout.addWidget(self.lblAlpha, 6, 1, 1, 1)
         self.lblTot = QtWidgets.QLabel(LoopWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lblTot.sizePolicy().hasHeightForWidth())
@@ -83,7 +91,9 @@ class Ui_LoopWidget(object):
         self.lblTot.setAlignment(QtCore.Qt.AlignCenter)
         self.lblTot.setObjectName("lblTot")
         self.gridLayout.addWidget(self.lblTot, 3, 1, 1, 1)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem3 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.gridLayout.addItem(spacerItem3, 4, 1, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout)
         self.comboSeries = QtWidgets.QComboBox(LoopWidget)
@@ -111,4 +121,6 @@ class Ui_LoopWidget(object):
         self.btnNext.setText(_translate("LoopWidget", ">"))
         self.lblTot.setText(_translate("LoopWidget", "0"))
         self.btnDelete.setText(_translate("LoopWidget", "Delete current Loop"))
+
+
 from pyqtgraph import PlotWidget

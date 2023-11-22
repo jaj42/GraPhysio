@@ -16,37 +16,37 @@ class EdfReader(BaseReader):
     is_available = is_available
 
     def askUserInput(self):
-        filepath = str(self.userdata['filepath'])
+        filepath = str(self.userdata["filepath"])
         edf = pyedflib.EdfReader(filepath)
 
         signals = {}
         for i in range(edf.signals_in_file):
             h = edf.getSignalHeader(i)
-            signals[h['label']] = i
+            signals[h["label"]] = i
         edf.close()
 
         def cb(colnames):
-            self.userdata['columns'] = [signals[lbl] for lbl in colnames]
+            self.userdata["columns"] = [signals[lbl] for lbl in colnames]
 
         colnames = list(signals.keys())
-        dlgchoice = DlgListChoice(colnames, 'Open EDF', 'Choose curves to load')
+        dlgchoice = DlgListChoice(colnames, "Open EDF", "Choose curves to load")
         dlgchoice.dlgdata.connect(cb)
         dlgchoice.exec_()
 
     def __call__(self) -> PlotData:
-        filepath = str(self.userdata['filepath'])
+        filepath = str(self.userdata["filepath"])
         edf = pyedflib.EdfReader(filepath)
         beginns = edf.getStartdatetime().timestamp() * 1e9
         nsamplesPerChannel = edf.getNSamples()
 
         signals = []
-        for i in self.userdata['columns']:
+        for i in self.userdata["columns"]:
             h = edf.getSignalHeader(i)
-            fs = h['sample_rate']
+            fs = h["sample_rate"]
             n = nsamplesPerChannel[i]
             endns = beginns + n * 1e9 / fs
             idx = np.linspace(beginns, endns, num=n, dtype=np.int64)
-            s = pd.Series(edf.readSignal(i), index=idx, name=h['label'])
+            s = pd.Series(edf.readSignal(i), index=idx, name=h["label"])
             signals.append(s)
         edf.close()
 

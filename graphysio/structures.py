@@ -5,19 +5,19 @@ from typing import Optional
 
 import pandas as pd
 
-Filter = namedtuple('Filter', ['name', 'parameters'])
-Parameter = namedtuple('Parameter', ['description', 'request'])
+Filter = namedtuple("Filter", ["name", "parameters"])
+Parameter = namedtuple("Parameter", ["description", "request"])
 
 
 class CycleId(Enum):
-    none = 'None'
-    foot = 'Pressure foot'
-    pressure = 'Pressure Full'
-    velocity = 'Velocity'
-    rwave = 'ECG R Wave'
-    foottan = 'Pressure foot (tangents)'
-    pressurebis = 'Pressure full (physiocurve)'
-    ecg = 'ECG full'
+    none = "None"
+    foot = "Pressure foot"
+    pressure = "Pressure Full"
+    velocity = "Velocity"
+    rwave = "ECG R Wave"
+    foottan = "Pressure foot (tangents)"
+    pressurebis = "Pressure full (physiocurve)"
+    ecg = "ECG full"
 
 
 class PlotData:
@@ -25,7 +25,7 @@ class PlotData:
         self, data, filepath: Optional[Path] = None, name: Optional[str] = None
     ):
         if filepath is None and name is None:
-            raise ValueError('At least one of filepath or name needs to be specified.')
+            raise ValueError("At least one of filepath or name needs to be specified.")
         if filepath is not None:
             self.filepath = Path(filepath)
         self._name = name

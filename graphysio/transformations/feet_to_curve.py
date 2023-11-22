@@ -11,7 +11,7 @@ def get_feet_to_curve(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     for curve in plotwidget.curves.values():
         feetitemhash.update(
             {
-                f'{curve.name()}-{feetname}': (curve, feetname)
+                f"{curve.name()}-{feetname}": (curve, feetname)
                 for feetname in curve.feetitem.indices.keys()
             }
         )

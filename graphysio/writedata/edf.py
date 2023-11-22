@@ -17,7 +17,7 @@ else:
 
 def interp_series(s, samplerate, start, stop):
     f = interpolate.interp1d(
-        s.index, s.values, assume_sorted=True, copy=False, fill_value='extrapolate'
+        s.index, s.values, assume_sorted=True, copy=False, fill_value="extrapolate"
     )
     # Account for periods of missing data.
     duration_s = (stop - start) * 1e-9
@@ -27,7 +27,7 @@ def interp_series(s, samplerate, start, stop):
 
 
 def curves_to_edf(
-    curves: List[CurveItem], filepath: str, index_label: str = 'timens'
+    curves: List[CurveItem], filepath: str, index_label: str = "timens"
 ) -> None:
     headers = []
     signals = []
@@ -41,20 +41,20 @@ def curves_to_edf(
     physmin = min(c.series.min() for c in curves)
 
     # Ask the user for the physical dimension shared by all curves
-    dim = askUserValue(Parameter('Enter physical dimension', str))
+    dim = askUserValue(Parameter("Enter physical dimension", str))
 
     for c in curves:
         s = c.series
         header = {
-            'label': c.name(),
-            'sample_rate': c.samplerate,
-            'physical_max': physmax,
-            'physical_min': physmin,
-            'digital_max': 32767,
-            'digital_min': -32768,
-            'transducer': '',
-            'prefilter': '',
-            'dimension': dim,
+            "label": c.name(),
+            "sample_rate": c.samplerate,
+            "physical_max": physmax,
+            "physical_min": physmin,
+            "digital_max": 32767,
+            "digital_min": -32768,
+            "transducer": "",
+            "prefilter": "",
+            "dimension": dim,
         }
         headers.append(header)
         resampled = interp_series(s, c.samplerate, beginns, endns)

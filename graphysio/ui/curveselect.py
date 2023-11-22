@@ -26,7 +26,9 @@ class Ui_CurveSelection(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.okButton = QtWidgets.QPushButton(CurveSelection)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.okButton.sizePolicy().hasHeightForWidth())
@@ -35,7 +37,9 @@ class Ui_CurveSelection(object):
         self.okButton.setObjectName("okButton")
         self.horizontalLayout.addWidget(self.okButton)
         self.cancelButton = QtWidgets.QPushButton(CurveSelection)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.cancelButton.sizePolicy().hasHeightForWidth())
@@ -49,7 +53,9 @@ class Ui_CurveSelection(object):
 
     def retranslateUi(self, CurveSelection):
         _translate = QtCore.QCoreApplication.translate
-        CurveSelection.setWindowTitle(_translate("CurveSelection", "Select visible curves"))
+        CurveSelection.setWindowTitle(
+            _translate("CurveSelection", "Select visible curves")
+        )
         self.btnProperties.setText(_translate("CurveSelection", "Curve Properties"))
         self.okButton.setText(_translate("CurveSelection", "Ok"))
         self.cancelButton.setText(_translate("CurveSelection", "Cancel"))

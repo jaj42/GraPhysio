@@ -5,10 +5,10 @@ from graphysio.plotwidgets.spectrogram import SpectrogramWidget
 from graphysio.plotwidgets.tsplot import TSWidget
 
 __all__ = [
-    'PlotWidget',
-    'TimeAxisItem',
-    'POISelectorWidget',
-    'LoopWidget',
-    'SpectrogramWidget',
-    'TSWidget',
+    "PlotWidget",
+    "TimeAxisItem",
+    "POISelectorWidget",
+    "LoopWidget",
+    "SpectrogramWidget",
+    "TSWidget",
 ]

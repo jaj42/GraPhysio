@@ -15,7 +15,7 @@ class TimeAxisItem(pg.AxisItem):
     def conv_absolute(value, mainwindow=False):
         value = int(value * 1e-6)  # convert from ns to ms
         date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
-        date = date.toTimeSpec(QtCore.Qt.UTC)
+        date = date.toLocalTime()
         if mainwindow:
             timestr = date.toString("dd/MM/yyyy hh:mm:ss.zzz")
         else:
