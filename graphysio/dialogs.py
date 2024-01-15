@@ -376,10 +376,10 @@ class DlgListChoice(QtWidgets.QDialog):
         form.addRow(QtWidgets.QLabel(message))
         self.listView = QtWidgets.QListView(self)
         form.addRow(self.listView)
-        model = QtWidgets.QStandardItemModel(self.listView)
+        model = QtGui.QStandardItemModel(self.listView)
         self.setWindowTitle(title)
         for item in items:
-            standardItem = QtWidgets.QStandardItem(item)
+            standardItem = QtGui.QStandardItem(item)
             standardItem.setCheckable(True)
             standardItem.setCheckState(QtCore.Qt.Checked)
             standardItem.setEditable(False)
