@@ -3,6 +3,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 import scipy.io
+
 from graphysio.plotwidgets.curves import CurveItem
 
 
@@ -11,7 +12,7 @@ def curves_to_matlab(
 ) -> None:
     sers = [c.series for c in curves]
     data = pd.concat(sers, axis=1).sort_index()
-    data["timens"] = data.index.view(np.int64)
+    data["timens"] = data.index.astype(np.int64)
     scipy.io.savemat(filepath, {"data": data.to_dict("list")})
 
 

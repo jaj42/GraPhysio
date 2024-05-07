@@ -503,7 +503,7 @@ def askDirPath(caption: str, folder: str = "") -> Optional[pathlib.Path]:
         folder = str(pathlib.Path.home())
 
     outdirtmp = QtWidgets.QFileDialog.getExistingDirectory(
-        caption=caption, directory=folder
+        caption=caption, directory=str(folder)
     )
     if not outdirtmp:
         # Cancel pressed

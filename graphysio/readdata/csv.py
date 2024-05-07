@@ -50,7 +50,10 @@ class CsvReader(BaseReader):
             # Force all columns to numeric
             datacols = data.columns.difference([request.clusterid])
             data[datacols] = data[datacols].apply(pdtonum)
-            data = data.dropna(axis="rows", how="all", subset=datacols)
+            # data = data.dropna(axis="rows", how="all", subset=datacols)
+            nanrows = data[datacols].isna().all(axis=1)
+            data = data[~nanrows]
+            timestamp = timestamp[~nanrows]
 
             if dtformat == "<seconds>":
                 timestamp = pdtonum(timestamp)
@@ -73,7 +76,7 @@ class CsvReader(BaseReader):
                     timestamp = timestamp.tz_localize(request.timezone)
                 timestamp = timestamp.tz_convert("UTC")
 
-            timestamp = timestamp.view(np.int64)
+            timestamp = timestamp.astype(np.int64)
             data = data.set_index([timestamp])
 
         data = data.dropna(axis="columns", how="all")

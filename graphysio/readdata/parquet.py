@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 from graphysio.dialogs import DlgListChoice
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
@@ -33,6 +34,6 @@ class ParquetReader(BaseReader):
 
         data = data.dropna(axis="columns", how="all")
         data = data.sort_index()
-        data.index = data.index.view(np.int64)
+        data.index = data.index.astype(np.int64)
 
         return PlotData(data=data, filepath=filepath)

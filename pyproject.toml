@@ -12,17 +12,17 @@ readme = "README.md"
 repository = "https://github.com/jaj42/GraPhysio"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
-pandas = "^1.4"
-pathvalidate = "^3.2.0"
-Pint = "^0.22"
-pyqtgraph = "^0.13.3"
-scipy = "^1.11.3"
-numexpr = "2.8.7"
-physiocurve = "^2022.7.14"
+python = ">=3.9,<3.13"
+pandas = "^2"
+pathvalidate = "^3"
+Pint = "^0.23"
+pyqtgraph = "^0.13"
+scipy = "^1.13"
+numexpr = "^2.9"
+physiocurve = "^2024"
 pyshortcuts = "^1.9.0"
-pyarrow = {version = "^14.0.1", optional = true}
-pyEDFlib = {version = "^0.1.32", optional = true}
+pyarrow = {version = ">=14", optional = true}
+pyEDFlib = {version = "^0.1.37", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^4.0.1"
@@ -35,9 +35,7 @@ safety = "^2"
 [tool.poetry.scripts]
 graphysio = "graphysio.main:main"
 
-[tool.black]
-line-length = 88
+[tool.ruff.lint]
+select = ["ALL"]
 extend-exclude = 'ui'
-target-version = ['py38', 'py39', 'py310']
-skip-string-normalization = true
-
+line-length = 88

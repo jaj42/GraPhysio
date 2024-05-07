@@ -4,12 +4,13 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+from physiocurve.pandas import ECG, Pressure
+from pyqtgraph.Qt import QtCore, QtGui
+
 from graphysio import utils
 from graphysio.algorithms import waveform
 from graphysio.structures import CycleId
 from graphysio.utils import estimateSampleRate
-from physiocurve.pandas import ECG, Pressure
-from pyqtgraph.Qt import QtCore, QtGui
 
 
 class CurveItem(pg.PlotDataItem):
@@ -74,7 +75,9 @@ class POIItem(pg.ScatterPlotItem):
         "diastole": "t1",
         "systole": "t",
         "dicrotic": "d",
+        "qwave": "t1",
         "rwave": "x",
+        "swave": "t",
         "twave": "o",
     }
     # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in
@@ -209,7 +212,9 @@ class CurveItemWithPOI(CurveItem):
         elif cycleid is CycleId.ecg:
             ecg = ECG(self.series)
             self.feetitem.indices["start"] = ecg.idxpwave
+            self.feetitem.indices["qwave"] = ecg.idxqwave
             self.feetitem.indices["rwave"] = ecg.idxrwave
+            self.feetitem.indices["swave"] = ecg.idxswave
             self.feetitem.indices["twave"] = ecg.idxtwave
         elif cycleid is CycleId.foottan:
             p = Pressure(self.series)
