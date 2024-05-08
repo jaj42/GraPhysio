@@ -12,8 +12,7 @@ def curves_to_matlab(
 ) -> None:
     sers = [c.series for c in curves]
     data = pd.concat(sers, axis=1).sort_index()
-    data["timens"] = data.index.astype(np.int64)
+    data["timens"] = data.index.to_numpy()
     scipy.io.savemat(filepath, {"data": data.to_dict("list")})
-
 
 curves_to_matlab.is_available = True

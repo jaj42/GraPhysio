@@ -1,5 +1,5 @@
-import numpy as np
 import pandas as pd
+from pandas.api.types import is_datetime64_any_dtype
 
 from graphysio.dialogs import DlgListChoice
 from graphysio.readdata.baseclass import BaseReader
@@ -34,6 +34,9 @@ class ParquetReader(BaseReader):
 
         data = data.dropna(axis="columns", how="all")
         data = data.sort_index()
-        data.index = data.index.astype(np.int64)
+
+        if is_datetime64_any_dtype(data.index):
+            data.index = data.index.tz_localize(None)
+        data.index = data.index.astype('datetime64[ns]').astype('int')
 
         return PlotData(data=data, filepath=filepath)

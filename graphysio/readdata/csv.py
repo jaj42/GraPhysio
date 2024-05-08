@@ -39,7 +39,7 @@ class CsvReader(BaseReader):
         pdtonum = partial(pd.to_numeric, errors="coerce")
         dtformat = request.datetime_format
         if request.generatex:
-            data.index = (1e9 * data.index / request.samplerate).astype(np.int64)
+            data.index = (1e9 * data.index / request.samplerate).astype('int')
             # Make all data numeric and remove empty rows
             datacols = data.columns.difference([request.clusterid])
             data[datacols] = data[datacols].apply(pdtonum)
@@ -74,9 +74,9 @@ class CsvReader(BaseReader):
                 timestamp = pd.Index(timestamp)
                 if timestamp.tz is None:
                     timestamp = timestamp.tz_localize(request.timezone)
-                timestamp = timestamp.tz_convert("UTC")
+                timestamp = timestamp.tz_convert("UTC").tz_localize(None)
 
-            timestamp = timestamp.astype(np.int64)
+            timestamp = timestamp.astype('datetime64[ns]').astype('int')
             data = data.set_index([timestamp])
 
         data = data.dropna(axis="columns", how="all")

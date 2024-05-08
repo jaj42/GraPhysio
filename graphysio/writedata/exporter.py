@@ -112,7 +112,7 @@ class TsExporter:
         for c in self.parent.curves.values():
             for k, v in c.feetitem.indices.items():
                 feetseries.append(pd.Series(v, name=f"{c.name()}-{k}"))
-        df = pd.concat(feetseries, axis=1)
+        df = pd.concat(feetseries, axis=1).astype('Int64')
         df.to_csv(filepath, index_label="idx")
 
 

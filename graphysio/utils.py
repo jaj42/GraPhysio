@@ -1,4 +1,3 @@
-import imp
 import os
 import sys
 from functools import partial
@@ -10,6 +9,8 @@ from pyqtgraph.Qt import QtGui, QtWidgets
 
 sanitize_filename = partial(pathvalidate.sanitize_filename, platform="auto")
 sanitize_filepath = partial(pathvalidate.sanitize_filepath, platform="auto")
+
+import importlib.util
 
 
 def Colors():
@@ -48,17 +49,15 @@ def loadmodule():
         # Cancel pressed
         return
 
-    folder, filename = os.path.split(filepath)
-    modulename, _ = os.path.splitext(filename)
-    f, filename, description = imp.find_module(modulename, [folder])
-
     bcbak = sys.dont_write_bytecode
     try:
         sys.dont_write_bytecode = True
-        imp.load_module("graphysio.plugin", f, filename, description)
+        spec = importlib.util.spec_from_file_location("graphysio.plugin", filepath)
+        foo = importlib.util.module_from_spec(spec)
+        sys.modules["graphysio.plugin"] = foo
+        spec.loader.exec_module(foo)
     finally:
         sys.dont_write_bytecode = bcbak
-        f.close()
 
 
 def clip(vec, vrange):

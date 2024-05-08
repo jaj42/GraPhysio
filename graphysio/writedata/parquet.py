@@ -16,6 +16,7 @@ def export_curves(
 ) -> None:
     sers = [c.series for c in curves]
     data = pd.concat(sers, axis=1).sort_index()
+    data.index = pd.to_datetime(data.index, unit='ns', utc=True)
     data.to_parquet(
         filepath,
         engine="pyarrow",
