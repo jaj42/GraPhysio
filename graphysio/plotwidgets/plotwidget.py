@@ -44,13 +44,13 @@ class TimeAxisItem(pg.AxisItem):
 
 class PlotWidget(pg.PlotWidget):
     @staticmethod
-    def mouseMoved(self, evt):
+    def mouseMoved(self, evt) -> None:
         pos = evt[0]  # using signal proxy turns original arguments into a tuple
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.getViewBox().mapSceneToView(pos)
             self.parent.setcoords.emit(mousePoint.x(), mousePoint.y())
 
-    def __init__(self, name, parent=None, properties=None):
+    def __init__(self, name, parent=None, properties=None) -> None:
         self.parent = parent
         self.name = name
         self.colors = Colors()
@@ -73,7 +73,7 @@ class PlotWidget(pg.PlotWidget):
             self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved,
         )
 
-    def appendData(self, newplotdata, dorealign=False):
+    def appendData(self, newplotdata, dorealign=False) -> None:
         for seriesname in newplotdata.data:
             self.addSeriesAsCurve(newplotdata.data[seriesname], dorealign=dorealign)
 
@@ -112,7 +112,7 @@ class PlotWidget(pg.PlotWidget):
             self.addCurve(curve)
         return curve
 
-    def addCurve(self, curve, pen=None):
+    def addCurve(self, curve, pen=None) -> None:
         if curve.name() in self.curves:
             return
         if pen is not None:
@@ -121,16 +121,16 @@ class PlotWidget(pg.PlotWidget):
         self.rebuildLegend()
         curve.visible.emit()
 
-    def removeCurve(self, curve):
+    def removeCurve(self, curve) -> None:
         if curve.name() not in self.curves:
             return
         self.removeItem(curve)
         self.rebuildLegend()
         curve.invisible.emit()
 
-    def rebuildLegend(self):
+    def rebuildLegend(self) -> None:
         self.legend.clear()
-        for _, curve in self.curves.items():
+        for curve in self.curves.values():
             if isinstance(curve, pg.PlotDataItem):
                 self.legend.addItem(curve, curve.name())
 

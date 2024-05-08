@@ -15,7 +15,7 @@ from graphysio.utils import truncatevecs
 
 
 class TF:
-    def __init__(self, num, den, name=""):
+    def __init__(self, num, den, name="") -> None:
         self.num = num
         self.den = den
         self.name = name
@@ -84,7 +84,7 @@ FeetFilters = {
 TFs: Dict[str, TF] = {}
 
 
-def updateTFs():
+def updateTFs() -> None:
     tflist = list(TFs.keys())
     if not tflist:
         return
@@ -280,7 +280,8 @@ def shortcycles(feetdict, samplerate, parameters):
     stops = feetdict["stop"]
     if len(stops) < 1:
         # No stop information
-        raise ValueError("No stop feet")
+        msg = "No stop feet"
+        raise ValueError(msg)
     (minimum_duration,) = parameters
     minimum_cycle_len = minimum_duration * 1e9  # Transform to ns
     cycle_durations = (stop - start for start, stop in zip(starts, stops))

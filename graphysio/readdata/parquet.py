@@ -16,12 +16,12 @@ else:
 class ParquetReader(BaseReader):
     is_available = is_available
 
-    def askUserInput(self):
+    def askUserInput(self) -> None:
         filepath = self.userdata["filepath"]
         s = pa.read_schema(filepath)
         colnames = s.names
 
-        def cb(columns):
+        def cb(columns) -> None:
             self.userdata["columns"] = columns
 
         dlgchoice = DlgListChoice(colnames, "Open Parquet", "Choose curves to load")

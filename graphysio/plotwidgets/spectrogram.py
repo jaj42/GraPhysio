@@ -1,3 +1,5 @@
+import contextlib
+
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
@@ -8,7 +10,7 @@ from graphysio.structures import Parameter, PlotData
 
 
 class SpectrogramWidget(QtWidgets.QWidget):
-    def __init__(self, series, Fs, s_chunklen, parent=None):
+    def __init__(self, series, Fs, s_chunklen, parent=None) -> None:
         super().__init__(parent=parent)
         self.spectro = SpectrogramPlotWidget(series, Fs, s_chunklen, parent)
         self.loslider = QtWidgets.QSlider()
@@ -37,7 +39,7 @@ class SpectrogramWidget(QtWidgets.QWidget):
 
 
 class SpectroTimeAxisItem(pg.AxisItem):
-    def __init__(self, initvalue, samplerate, chunksize, *args, **kwargs):
+    def __init__(self, initvalue, samplerate, chunksize, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.initvalue = initvalue / 1e6  # ns to ms
         self.samplerate = samplerate
@@ -60,7 +62,7 @@ class SpectroTimeAxisItem(pg.AxisItem):
 # levels
 # color gradient
 class SpectrogramPlotWidget(pg.PlotWidget):
-    def __init__(self, series, Fs, s_chunklen, parent=None):
+    def __init__(self, series, Fs, s_chunklen, parent=None) -> None:
         # s_chunklen in seconds
         self.name = series.name
         self.parent = parent
@@ -113,13 +115,11 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         for i, columncs in enumerate(psdcs):
             thres = perc * columncs[-1] / 100
             sefidx = np.where(columncs > thres)
-            try:
+            with contextlib.suppress(IndexError):
                 buf[i] = self.idx_to_hz(sefidx[0][0])
-            except IndexError:
-                pass
         return buf
 
-    def calculate_psd(self):
+    def calculate_psd(self) -> None:
         nsplit = int(len(self.data) / self.chunksize)
         chunks = self.data[0 : nsplit * self.chunksize]
         chunks = np.split(chunks, nsplit)
@@ -136,7 +136,7 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         result = np.apply_along_axis(np.mean, 1, windows)
         return result.astype(int)
 
-    def launchSEFExtract(self):
+    def launchSEFExtract(self) -> None:
         q = Parameter("SEF percentage", int)
         sefperc = dialogs.askUserValue(q)
         if not sefperc:
@@ -148,7 +148,7 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         plotdata = PlotData(data, name=curvename)
         self.parent.createNewPlotWithData(plotdata)
 
-    def render(self):
+    def render(self) -> None:
         # TODO make lo / hi adjustable
         psdnona = self.psd[~np.isnan(self.psd)]
         hi = np.percentile(psdnona, 95)

@@ -18,14 +18,14 @@ from graphysio.writedata import exporter
 
 
 class TSWidget(PlotWidget):
-    def __init__(self, plotdata, parent=None, properties=None):
+    def __init__(self, plotdata, parent=None, properties=None) -> None:
         if properties is None:
             properties = {}
         super().__init__(plotdata.name, parent=parent, properties=properties)
         self.exporter = exporter.TsExporter(self, plotdata.name)
         self.appendData(plotdata)
 
-    def filterCurve(self, oldcurve, filtername, asnew=False):
+    def filterCurve(self, oldcurve, filtername, asnew=False) -> None:
         newseries, newsamplerate = filters.filter(
             oldcurve, filtername, dialogs.askUserValue,
         )
@@ -42,25 +42,25 @@ class TSWidget(PlotWidget):
             if newsamplerate:
                 oldcurve.set_samplerate(newsamplerate)
 
-    def filterFeet(self, curve, filtername, asnew=False):
+    def filterFeet(self, curve, filtername, asnew=False) -> None:
         new_feetdict = filters.filter_feet(curve, filtername, dialogs.askUserValue)
         curve.feetitem.indices = new_feetdict
         curve.feetitem.render()
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event) -> None:
         if event.key() == QtCore.Qt.Key_Delete:
             for curve in self.curves.values():
                 curve.feetitem.removeSelection()
 
     # Menu Curves
-    def showCurveList(self):
+    def showCurveList(self) -> None:
         dlgCurveSelection = dialogs.DlgCurveSelection(
             parent=self.parent,
             visible=self.curves.values(),
             hidden=self.hiddencurves,
         )
 
-        def cb(result):
+        def cb(result) -> None:
             currently_visible = set(self.curves.values())
             currently_hidden = self.hiddencurves
             allcurves = currently_visible | currently_hidden
@@ -82,10 +82,10 @@ class TSWidget(PlotWidget):
         dlgCurveSelection.dlgdata.connect(cb)
         dlgCurveSelection.exec_()
 
-    def launchCycleDetection(self):
+    def launchCycleDetection(self) -> None:
         dlgCycles = dialogs.DlgCycleDetection(parent=self.parent)
 
-        def cb(choices):
+        def cb(choices) -> None:
             for curvename, choice in choices.items():
                 curve = self.curves[curvename]
                 curve.addFeet(CycleId(choice))
@@ -93,10 +93,10 @@ class TSWidget(PlotWidget):
         dlgCycles.dlgdata.connect(cb)
         dlgCycles.exec_()
 
-    def launchFilter(self, filterfeet):
+    def launchFilter(self, filterfeet) -> None:
         dlgFilter = dialogs.DlgFilter(parent=self.parent, filterfeet=filterfeet)
 
-        def cb(result):
+        def cb(result) -> None:
             createnew, curvechoices = result
             filterfunc = self.filterFeet if filterfeet else self.filterCurve
             for curvename, choice in curvechoices.items():
@@ -108,7 +108,7 @@ class TSWidget(PlotWidget):
         dlgFilter.dlgdata.connect(cb)
         dlgFilter.exec_()
 
-    def setDateTime(self):
+    def setDateTime(self) -> None:
         if len(self.curves) < 1:
             return
         sortedcurves = sorted(
@@ -126,7 +126,7 @@ class TSWidget(PlotWidget):
             curve.series.index += offset
             curve.render()
 
-    def launchTransformation(self):
+    def launchTransformation(self) -> None:
         param = Parameter(
             "Choose Transformation",
             list(transformations.Transformations.keys()),
@@ -140,7 +140,7 @@ class TSWidget(PlotWidget):
             self.parent.appendToPlotWithData(plotdata, do_timeshift=False)
 
     # Menu Plot
-    def launchPOIWidget(self):
+    def launchPOIWidget(self) -> None:
         curvenames = list(self.curves.keys())
         q = Parameter("Select Curve", curvenames)
         curvename = dialogs.askUserValue(q)
@@ -152,7 +152,7 @@ class TSWidget(PlotWidget):
         )
         self.parent.addTab(poiselector, curve.name())
 
-    def launchSpectrogram(self):
+    def launchSpectrogram(self) -> None:
         curvenames = list(self.curves.keys())
         q = Parameter("Select Curve", curvenames)
         curvename = dialogs.askUserValue(q)
@@ -166,11 +166,11 @@ class TSWidget(PlotWidget):
         )
         self.parent.addTab(spectro, curve.name())
 
-    def launchCurveAlgebra(self):
-        curvecorr = {n: c for n, c in zip(string.ascii_lowercase, self.curves.keys())}
+    def launchCurveAlgebra(self) -> None:
+        curvecorr = dict(zip(string.ascii_lowercase, self.curves.keys()))
         dlgCurveAlgebra = dialogs.DlgCurveAlgebra(self, curvecorr)
 
-        def cb(formula):
+        def cb(formula) -> None:
             symbols = list(ne.NumExpr(formula).input_names)
             curvenames = [curvecorr[x] for x in symbols]
             sers = [self.curves[c].series for c in curvenames]
@@ -192,7 +192,7 @@ class TSWidget(PlotWidget):
         dlgCurveAlgebra.exec_()
 
     # Menu Selection
-    def launchNewPlotFromSelection(self):
+    def launchNewPlotFromSelection(self) -> None:
         xmin, xmax = self.vbrange
         sers = []
         for c in self.curves.values():
@@ -203,7 +203,7 @@ class TSWidget(PlotWidget):
         plotdata = PlotData(data=df, name=newname)
         self.parent.createNewPlotWithData(plotdata)
 
-    def launchAppendToPlotFromSelection(self):
+    def launchAppendToPlotFromSelection(self) -> None:
         tabWidget = self.parent.tabWidget
         ntabs = tabWidget.count()
         tabdict = {tabWidget.tabText(idx): idx for idx in range(ntabs)}
@@ -226,10 +226,10 @@ class TSWidget(PlotWidget):
         plotdata = PlotData(data=df, name=newname)
         self.parent.appendToPlotWithData(plotdata, destidx=tabdict[desttabname])
 
-    def launchLoop(self):
+    def launchLoop(self) -> None:
         dlgSetupPU = dialogs.DlgSetupPULoop(self, parent=self.parent)
 
-        def cb(result):
+        def cb(result) -> None:
             uname, pname = result
             u = self.curves[uname]
             p = self.curves[pname]

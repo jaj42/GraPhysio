@@ -57,8 +57,7 @@ def findPressureFeet(curve):
             else:
                 yield maximum
 
-    cycleStarts = pd.Index(list(locateMaxima()))
-    return cycleStarts
+    return pd.Index(list(locateMaxima()))
 
 
 def findFlowCycles(curve):
@@ -73,7 +72,8 @@ def findFlowCycles(curve):
     try:
         cycleStops = cycleStops[cycleStops.index > cycleStarts.index[0]]
     except IndexError as e:
-        raise TypeError("No cycle detected") from e
+        msg = "No cycle detected"
+        raise TypeError(msg) from e
 
     return (cycleStarts.index, cycleStops.index)
 

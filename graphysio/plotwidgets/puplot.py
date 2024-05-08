@@ -15,7 +15,7 @@ Angles = namedtuple("Angles", ["alpha", "beta", "gala"])
 
 
 class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
-    def __init__(self, u, p, subsetrange, parent):
+    def __init__(self, u, p, subsetrange, parent) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
         self.properties = {}
@@ -48,7 +48,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
             self.lblTot.setText(str(len(self.loops)))
             self.renderloop(0)
 
-    def initloopdata(self, u, p):
+    def initloopdata(self, u, p) -> None:
         ubegins, udurations = u.getCycleIndices(self.subsetrange)
         pbegins, pdurations = p.getCycleIndices(self.subsetrange)
         durations = map(min, zip(udurations, pdurations))
@@ -57,7 +57,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
             loopp = p.series.loc[pbegin : pbegin + duration]
             self.loops.append(PULoop(loopu, loopp))
 
-    def renderloop(self, idx=None):
+    def renderloop(self, idx=None) -> None:
         if idx is None:
             idx = self.curidx
 
@@ -83,19 +83,19 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
         self.curveitem.setData(curloop.u.values, curloop.p.values, pen=self.pen)
         self.scatteritem.setData(np.array(cardx), np.array(cardy))
 
-    def prevloop(self):
+    def prevloop(self) -> None:
         idx = self.curidx - 1
         if idx >= 0:
             self.curidx = idx
             self.renderloop()
 
-    def nextloop(self):
+    def nextloop(self) -> None:
         idx = self.curidx + 1
         if idx < len(self.loops):
             self.curidx = idx
             self.renderloop()
 
-    def delloop(self):
+    def delloop(self) -> None:
         try:
             self.loops.pop(self.curidx)
         except IndexError:
@@ -112,7 +112,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
 
 
 class PULoop:
-    def __init__(self, u, p):
+    def __init__(self, u, p) -> None:
         self.__angles = None
         self.__cardpoints = None
 

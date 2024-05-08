@@ -22,11 +22,11 @@ class FixIndex(Enum):
 
 class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
     @staticmethod
-    def buttonClicked(self, qbutton):
+    def buttonClicked(self, qbutton) -> None:
         fixval = FixIndex(qbutton.text())
         self.poiselectorwidget.fixvalue = fixval
 
-    def __init__(self, series, parent, properties=None):
+    def __init__(self, series, parent, properties=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
         self.parent = parent
@@ -41,7 +41,7 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         buttonClicked = partial(self.buttonClicked, self)
         self.buttonGroup.buttonClicked.connect(buttonClicked)
 
-    def loadPOI(self, plotdata):
+    def loadPOI(self, plotdata) -> None:
         columnname, ok = QtWidgets.QInputDialog.getItem(
             self, "Select POI series", "Load POI", plotdata.data.columns, editable=False,
         )
@@ -52,7 +52,7 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
             self.poiselectorplot.pointkey, poiseries,
         )
 
-    def launchNewPlotFromPOIs(self):
+    def launchNewPlotFromPOIs(self) -> None:
         srcseries = self.poiselectorplot.curve.series
         poiidx = self.poiselectorplot.curve.feetitem.indices[
             self.poiselectorplot.pointkey
@@ -80,14 +80,14 @@ class POISelectorPlot(PlotWidget):
     pointkey = "point"
 
     @staticmethod
-    def mouseMoved(self, evt):
+    def mouseMoved(self, evt) -> None:
         pos = evt[0]  # using signal proxy turns original arguments into a tuple
         if self.sceneBoundingRect().contains(pos):
             mousePoint = self.getViewBox().mapSceneToView(pos)
             self.vLine.setPos(mousePoint.x())
 
     @staticmethod
-    def clicked(self, evt):
+    def clicked(self, evt) -> None:
         button = evt.button()
         pos = self.vLine.value()
         if button == 1:
@@ -96,7 +96,7 @@ class POISelectorPlot(PlotWidget):
         elif button == 2:
             self.curve.feetitem.removePointsByLocation(self.pointkey, [pos])
 
-    def __init__(self, series, parent, properties=None):
+    def __init__(self, series, parent, properties=None) -> None:
         super().__init__(name=series.name, parent=parent)
         self.vb.setMouseMode(self.vb.PanMode)
         self.setMenuEnabled(False)
@@ -107,7 +107,8 @@ class POISelectorPlot(PlotWidget):
 
         self.curve = self.addSeriesAsCurve(series)
         if self.curve is None:
-            raise ValueError("Not enough data")
+            msg = "Not enough data"
+            raise ValueError(msg)
         self.exporter = exporter.POIExporter(self, self.name)
 
         pen = pg.mkPen("k", width=2)
@@ -119,7 +120,6 @@ class POISelectorPlot(PlotWidget):
 
     def fixpos(self, pos):
         # Need to go through get_loc, otherwise strange things happen
-        correctedpos = pos
         xmin, xmax = self.vbrange
         if self.fixvalue is FixIndex.minimum:
             s = self.curve.series.loc[xmin:xmax]
@@ -136,8 +136,7 @@ class POISelectorPlot(PlotWidget):
         else:
             s = self.curve.series.loc[xmin:xmax]
             fixedposloc = s.index.get_loc(pos, method="nearest")
-        correctedpos = s.index[fixedposloc]
-        return correctedpos
+        return s.index[fixedposloc]
 
     @property
     def sndderiv(self):

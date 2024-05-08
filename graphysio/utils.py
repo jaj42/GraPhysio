@@ -37,7 +37,7 @@ def estimateSampleRate(series):
     return fs
 
 
-def loadmodule():
+def loadmodule() -> None:
     defaultdir = os.path.expanduser("~")
     filepath = QtWidgets.QFileDialog.getOpenFileName(
         caption="Import module", filter="Python files (*.py)", directory=defaultdir,
@@ -74,13 +74,13 @@ def truncatevecs(vecs):
     return [vec[0:maxidx] for vec in vecs]
 
 
-def getshell(ui=None):
+def getshell(ui=None) -> None:
     import IPython
 
     IPython.embed(ui=ui)
 
 
-def displayError(errmsg):
+def displayError(errmsg) -> None:
     msgbox = QtWidgets.QMessageBox()
     msgbox.setWindowTitle("Error")
     msgbox.setText(str(errmsg))

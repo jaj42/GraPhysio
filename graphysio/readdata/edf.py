@@ -16,7 +16,7 @@ else:
 class EdfReader(BaseReader):
     is_available = is_available
 
-    def askUserInput(self):
+    def askUserInput(self) -> None:
         filepath = str(self.userdata["filepath"])
         edf = pyedflib.EdfReader(filepath)
 
@@ -26,7 +26,7 @@ class EdfReader(BaseReader):
             signals[h["label"]] = i
         edf.close()
 
-        def cb(colnames):
+        def cb(colnames) -> None:
             self.userdata["columns"] = [signals[lbl] for lbl in colnames]
 
         colnames = list(signals.keys())

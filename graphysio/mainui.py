@@ -16,7 +16,7 @@ from graphysio.plotwidgets import TimeAxisItem, TSWidget
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
     setcoords = QtCore.pyqtSignal(float, float)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
         self.dircache = os.path.expanduser("~")
@@ -49,14 +49,14 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.data_timer.setInterval(1000)  # Milliseconds
         self.data_timer.start()
 
-    def setCoords(self, x, y):
+    def setCoords(self, x, y) -> None:
         if TimeAxisItem.is_relative_time(x):
             timestr = TimeAxisItem.conv_relative(x)
         else:
             timestr = TimeAxisItem.conv_absolute(x, mainwindow=True)
         self.lblCoords.setText(f"Time: {timestr}, Value: {y}")
 
-    def read_plot_data(self):
+    def read_plot_data(self) -> None:
         try:
             data = self.dataq.get(block=False)
         except Empty:
@@ -69,13 +69,13 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         for plotdata in data:
             self.datahandler(plotdata)
 
-    def print_exception(self, e):
+    def print_exception(self, e) -> None:
         traceback.print_exc(file=sys.stdout)
         utils.displayError(e)
 
     def errguard(self, f):
         # Lift exceptions to UI reported errors
-        def wrapped():
+        def wrapped() -> None:
             try:
                 f()
             except Exception as e:
@@ -105,7 +105,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         w.deleteLater()
         del w
 
-    def tabChanged(self, tabid):
+    def tabChanged(self, tabid) -> None:
         destwidget = self.tabWidget.widget(tabid)
         if destwidget is None:
             return
@@ -116,12 +116,12 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             for title, item in submenu.items():
                 menu.addAction(title, item)
 
-    def launchOpenFile(self, datahandler):
+    def launchOpenFile(self, datahandler) -> None:
         reader = readdata.FileReader()
         self.dircache = reader.askFile(self.dircache)
         future = self.executor.submit(reader.get_plotdata)
 
-        def cb(future):
+        def cb(future) -> None:
             plotdata = future.result()
             if plotdata:
                 self.dataq.put(plotdata)
@@ -129,7 +129,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.datahandler = datahandler
         future.add_done_callback(cb)
 
-    def createNewPlotWithData(self, plotdata):
+    def createNewPlotWithData(self, plotdata) -> None:
         properties = {"dircache": self.dircache}
         plotwidget = TSWidget(plotdata, parent=self, properties=properties)
         self.addTab(plotwidget, plotdata.name)
@@ -137,7 +137,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def appendToPlotWithData(
         self, plotdata, destidx=None, do_timeshift: Optional[bool] = None,
-    ):
+    ) -> None:
         if destidx is None:
             plotwidget = self.tabWidget.currentWidget()
         else:
@@ -156,7 +156,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             if newname is None:
                 continue
             if newname != fieldname:
-                plotdata.data.rename(columns={fieldname: newname}, inplace=True)
+                plotdata.data = plotdata.data.rename(columns={fieldname: newname})
 
         plotwidget.appendData(plotdata, do_timeshift)
         plotwidget.properties["dircache"] = self.dircache

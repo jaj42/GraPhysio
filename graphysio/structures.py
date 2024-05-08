@@ -23,9 +23,10 @@ class CycleId(Enum):
 class PlotData:
     def __init__(
         self, data, filepath: Optional[Path] = None, name: Optional[str] = None,
-    ):
+    ) -> None:
         if filepath is None and name is None:
-            raise ValueError("At least one of filepath or name needs to be specified.")
+            msg = "At least one of filepath or name needs to be specified."
+            raise ValueError(msg)
         if filepath is not None:
             self.filepath = Path(filepath)
         self._name = name
@@ -36,11 +37,7 @@ class PlotData:
 
     @property
     def name(self):
-        if self._name is not None:
-            name = self._name
-        else:
-            name = self.filepath.stem
-        return name
+        return self._name if self._name is not None else self.filepath.stem
 
     @property
     def folder(self):

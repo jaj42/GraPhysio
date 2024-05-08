@@ -12,7 +12,8 @@ def get_perfusion_index(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     curvenames = list(plotwidget.curves.keys())
     curvenames = list(plotwidget.curves.keys())
     if len(curvenames) < 1:
-        raise ValueError("No curve")
+        msg = "No curve"
+        raise ValueError(msg)
     elif len(curvenames) > 1:
         q = Parameter("Select Curve", curvenames)
         curvename = askUserValue(q)
@@ -24,7 +25,8 @@ def get_perfusion_index(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
         "start" not in curve.feetitem.indices
         or curve.feetitem.indices["start"].size < 1
     ):
-        raise ValueError("No start information for curve")
+        msg = "No start information for curve"
+        raise ValueError(msg)
 
     wave = curve.series
     starts = curve.getFeetPoints("start")

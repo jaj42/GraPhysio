@@ -13,7 +13,8 @@ from graphysio.structures import Parameter, PlotData
 def get_precise_feet(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     curvenames = list(plotwidget.curves.keys())
     if len(curvenames) < 1:
-        raise ValueError("No curve")
+        msg = "No curve"
+        raise ValueError(msg)
     elif len(curvenames) > 1:
         q = Parameter("Select Curve", curvenames)
         curvename = askUserValue(q)
@@ -27,7 +28,8 @@ def get_precise_feet(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
         idxdia = curve.feetitem.indices["diastole"]
         idxsys = curve.feetitem.indices["systole"]
     except KeyError as e:
-        raise ValueError("No systole or diastole") from e
+        msg = "No systole or diastole"
+        raise ValueError(msg) from e
 
     argdia = wave.index.get_indexer(idxdia)
     argsys = wave.index.get_indexer(idxsys)

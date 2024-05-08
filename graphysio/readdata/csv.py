@@ -15,7 +15,7 @@ from graphysio.structures import PlotData
 class CsvReader(BaseReader):
     is_available = True
 
-    def askUserInput(self):
+    def askUserInput(self) -> None:
         filepath = self.userdata["filepath"]
         dlg = DlgNewPlotCsv(filepath)
         dlg.exec_()
@@ -123,7 +123,7 @@ class CsvRequest:
 
 
 class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
-    def __init__(self, filepath, parent=None):
+    def __init__(self, filepath, parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
         self.setWindowTitle(f"Open {filepath.name}")
@@ -175,7 +175,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             decimal = "." if "." in next(csvfile) else ","
         return (seperator, decimal)
 
-    def loadCsvFields(self):
+    def loadCsvFields(self) -> None:
         sep = self.txtSep.currentText()
         if sep == "<tab>":
             sep = "\t"
@@ -198,13 +198,13 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
                 self.lstAll.appendRow([keyitem, valueitem])
         self.lstAll.sort(0)
 
-    def xChanged(self, _newtext):
+    def xChanged(self, _newtext) -> None:
         if self.lstX.rowCount() > 0:
             self.chkGenX.setCheckState(QtCore.Qt.Unchecked)
         else:
             self.chkGenX.setCheckState(QtCore.Qt.Checked)
 
-    def moveToCluster(self):
+    def moveToCluster(self) -> None:
         if self.lstCluster.rowCount() > 0:
             # Only allow one element for Cluster Id.
             return
@@ -213,7 +213,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         row = self.lstAll.takeRow(rowindex)
         self.lstCluster.appendRow(row)
 
-    def moveToX(self):
+    def moveToX(self) -> None:
         if self.lstX.rowCount() > 0:
             # Only allow one element for X.
             return
@@ -222,7 +222,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         row = self.lstAll.takeRow(rowindex)
         self.lstX.appendRow(row)
 
-    def moveToY(self):
+    def moveToY(self) -> None:
         while True:
             selection = self.lstVAll.selectedIndexes()
             if len(selection) < 1:
@@ -230,19 +230,19 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             rowindex = selection[0].row()
             self.lstY.appendRow(self.lstAll.takeRow(rowindex))
 
-    def delFromCluster(self):
+    def delFromCluster(self) -> None:
         if not self.lstCluster.rowCount():
             return
         row = self.lstCluster.takeRow(0)
         self.lstAll.appendRow(row)
 
-    def delFromX(self):
+    def delFromX(self) -> None:
         if not self.lstX.rowCount():
             return
         row = self.lstX.takeRow(0)
         self.lstAll.appendRow(row)
 
-    def delFromY(self):
+    def delFromY(self) -> None:
         while True:
             rowindexes = self.lstVY.selectedIndexes()
             if len(rowindexes) < 1:
@@ -250,7 +250,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             row = rowindexes[0].row()
             self.lstAll.appendRow(self.lstY.takeRow(row))
 
-    def loadPlot(self):
+    def loadPlot(self) -> None:
         yRows = [i.text() for i in self.lstY.findItems("", QtCore.Qt.MatchContains)]
         xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
         cRows = [

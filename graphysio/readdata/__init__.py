@@ -1,4 +1,5 @@
-import pathlib
+
+from typing import TYPE_CHECKING
 
 from graphysio.dialogs import askOpenFilePath
 
@@ -6,12 +7,15 @@ from .csv import CsvReader
 from .edf import EdfReader
 from .parquet import ParquetReader
 
+if TYPE_CHECKING:
+    import pathlib
+
 file_readers = {"csv": CsvReader, "parquet": ParquetReader, "edf": EdfReader}
 file_readers = {k: mod for k, mod in file_readers.items() if mod.is_available}
 
 
 class FileReader:
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.reader = None
 

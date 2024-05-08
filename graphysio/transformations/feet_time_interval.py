@@ -12,7 +12,7 @@ def get_feet_time_interval(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
         feetitemhash.update(
             {
                 f"{curve.name()}-{feetname}": (curve, feetname)
-                for feetname in curve.feetitem.indices.keys()
+                for feetname in curve.feetitem.indices
             },
         )
     param = Parameter("Choose points to create curve", list(feetitemhash.keys()))

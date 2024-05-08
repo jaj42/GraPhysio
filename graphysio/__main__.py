@@ -5,7 +5,7 @@ from pyshortcuts import make_shortcut
 from .main import main as graphysio_main
 
 
-def mk_shortscuts():
+def mk_shortscuts() -> None:
     pycmd = "_ -m graphysio"
     make_shortcut(pycmd, name="GraPhysio", terminal=False)
 

@@ -15,7 +15,8 @@ from graphysio.utils import truncatevecs
 def get_pat(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     curvenames = list(plotwidget.curves.keys())
     if len(curvenames) < 2:
-        raise ValueError("Insufficient data")
+        msg = "Insufficient data"
+        raise ValueError(msg)
     q = Parameter("Select ECG curve", curvenames)
     curvename = askUserValue(q)
     ecgcurve = plotwidget.curves[curvename]
@@ -29,7 +30,8 @@ def get_pat(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
         idxfeet = pulsecurve.feetitem.indices["start"]
         idxrwave = ecgcurve.feetitem.indices["rwave"]
     except KeyError as e:
-        raise ValueError("Detect feet and R waves first") from e
+        msg = "Detect feet and R waves first"
+        raise ValueError(msg) from e
 
     argfeet = pulse.index.get_indexer(idxfeet)
     argdia, argsys = find_dia_sys(pulse.to_numpy(), pulsecurve.samplerate, argfeet)

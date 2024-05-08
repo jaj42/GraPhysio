@@ -17,18 +17,19 @@ class CurveItem(pg.PlotDataItem):
     visible = QtCore.pyqtSignal()
     invisible = QtCore.pyqtSignal()
 
-    def __init__(self, series, parent, pen=None):
+    def __init__(self, series, parent, pen=None) -> None:
         self.parent = parent
         self.series = self.sanitize_data(series)
         if self.series is None:
-            raise ValueError("Not enough data")
+            msg = "Not enough data"
+            raise ValueError(msg)
         self.samplerate = estimateSampleRate(self.series)
         if pen is None:
             pen = QtGui.QColor(QtCore.Qt.black)
         super().__init__(name=series.name, pen=pen, antialias=True)
         self.render()
 
-    def replace_data(self, newdata):
+    def replace_data(self, newdata) -> None:
         newdata = self.sanitize_data(newdata)
         if newdata is None:
             # XXX report error
@@ -38,7 +39,7 @@ class CurveItem(pg.PlotDataItem):
         self.samplerate = estimateSampleRate(self.series)
         self.render()
 
-    def extend(self, newseries):
+    def extend(self, newseries) -> None:
         merged = self.series.append(newseries)
         newdata = self.sanitize_data(merged)
         if newdata is None:
@@ -47,13 +48,13 @@ class CurveItem(pg.PlotDataItem):
         self.series = newdata
         self.render()
 
-    def render(self):
+    def render(self) -> None:
         self.setData(x=self.series.index.to_numpy(), y=self.series.to_numpy())
 
-    def set_samplerate(self, newsamplerate):
+    def set_samplerate(self, newsamplerate) -> None:
         self.samplerate = newsamplerate
 
-    def rename(self, newname: str):
+    def rename(self, newname: str) -> None:
         self.opts["name"] = newname
         self.series = self.series.rename(newname)
 
@@ -64,8 +65,7 @@ class CurveItem(pg.PlotDataItem):
         if len(series) < 2:
             return None
         # Make timestamp unique and use mean of values on duplicates
-        series = series.groupby(level=0).mean()
-        return series
+        return series.groupby(level=0).mean()
 
 
 class POIItem(pg.ScatterPlotItem):
@@ -83,7 +83,7 @@ class POIItem(pg.ScatterPlotItem):
     # Symbols = OrderedDict([(name, QtGui.QPainterPath()) for name in
     # ['o', 's', 't', 't1', 't2', 't3','d', '+', 'x', 'p', 'h', 'star']])
 
-    def __init__(self, parent, name, pen=None):
+    def __init__(self, parent, name, pen=None) -> None:
         super().__init__(pen=pen, name=name)
         self.parent = parent
         self.indices = {}
@@ -91,7 +91,7 @@ class POIItem(pg.ScatterPlotItem):
         self.resym = {value: key for key, value in self.sym.items()}
         self.render()
 
-    def addPointsByLocation(self, key, locations):
+    def addPointsByLocation(self, key, locations) -> None:
         if key not in self.indices:
             self.indices[key] = pd.Index([])
         oldidx = self.indices[key]
@@ -99,7 +99,7 @@ class POIItem(pg.ScatterPlotItem):
         self.indices[key] = newidx.unique().sort_values()
         self.render()
 
-    def removePointsByLocation(self, key, locations):
+    def removePointsByLocation(self, key, locations) -> None:
         if key not in self.indices:
             return
         oldidx = self.indices[key]
@@ -108,18 +108,19 @@ class POIItem(pg.ScatterPlotItem):
         self.indices[key] = newidx
         self.render()
 
-    def removePoints(self, points):
+    def removePoints(self, points) -> None:
         for point in points:
             try:
                 sym = self.resym[point.symbol()]
                 idx = self.indices[sym]
             except KeyError as e:
-                raise KeyError("Point not found") from e
+                msg = "Point not found"
+                raise KeyError(msg) from e
             nidx = idx.get_indexer([point.pos().x()], method="nearest")
             self.indices[sym] = idx.delete(nidx)
         self.render()
 
-    def render(self):
+    def render(self) -> None:
         data = []
         for key, idx in self.indices.items():
             if len(idx) < 1:
@@ -139,23 +140,23 @@ class POIItem(pg.ScatterPlotItem):
     def isPointSelected(self, point):
         return point in self.selected
 
-    def selectPoint(self, point):
+    def selectPoint(self, point) -> None:
         if not self.isPointSelected(point):
             self.selected.append(point)
         point.setPen("r")
         point.setBrush("r")
 
-    def unselectPoint(self, point):
+    def unselectPoint(self, point) -> None:
         if self.isPointSelected(point):
             self.selected.remove(point)
         point.resetPen()
         point.resetBrush()
 
-    def removeSelection(self):
+    def removeSelection(self) -> None:
         self.removePoints(self.selected)
         self.selected = []
 
-    def rename(self, newname: str):
+    def rename(self, newname: str) -> None:
         self.opts["name"] = newname
 
 
@@ -164,14 +165,14 @@ class CurveItemWithPOI(CurveItem):
     invisible = QtCore.pyqtSignal()
 
     @staticmethod
-    def sigPointClicked(feetitem, points):
+    def sigPointClicked(feetitem, points) -> None:
         point = points[0]  # only one point per click
         if not feetitem.isPointSelected(point):
             feetitem.selectPoint(point)
         else:
             feetitem.unselectPoint(point)
 
-    def __init__(self, series, parent, pen=None):
+    def __init__(self, series, parent, pen=None) -> None:
         super().__init__(series, parent, pen)
         feetname = f"{series.name}-feet"
         self.feetitem = POIItem(self, name=feetname, pen=pen)
@@ -180,16 +181,16 @@ class CurveItemWithPOI(CurveItem):
         self.visible.connect(self.__becameVisible)
         self.invisible.connect(self.__becameInvisible)
 
-    def __becameVisible(self):
+    def __becameVisible(self) -> None:
         if self.feetitem not in self.parent.listDataItems():
             self.parent.addItem(self.feetitem)
         self.render()
         self.feetitem.render()
 
-    def __becameInvisible(self):
+    def __becameInvisible(self) -> None:
         self.parent.removeItem(self.feetitem)
 
-    def addFeet(self, cycleid):
+    def addFeet(self, cycleid) -> None:
         if cycleid is CycleId.none:
             return
         elif cycleid is CycleId.velocity:

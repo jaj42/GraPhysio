@@ -19,7 +19,7 @@ ureg = UnitRegistry()
 class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -46,7 +46,7 @@ class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
             QtWidgets.QHeaderView.ResizeToContents,
         )
 
-    def accept(self):
+    def accept(self) -> None:
         result = {curve: combo.currentText() for (curve, combo) in self.choices.items()}
         self.dlgdata.emit(result)
         super().accept()
@@ -55,7 +55,7 @@ class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
 class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, parent=None, filterfeet=False):
+    def __init__(self, parent=None, filterfeet=False) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -68,7 +68,7 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
         if not plotframe:
             return
 
-        def fillTable(items, itemtype, filters):
+        def fillTable(items, itemtype, filters) -> None:
             rowoffset = self.table.rowCount()
             for n, itemname in enumerate(items):
                 combo = QtWidgets.QComboBox()
@@ -96,7 +96,7 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
             QtWidgets.QHeaderView.ResizeToContents,
         )
 
-    def accept(self):
+    def accept(self) -> None:
         curvefilters = {}
         for itemname, value in self.choices.items():
             combo, itemtype = value
@@ -110,7 +110,7 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
 class DlgSetupPULoop(ui.Ui_SetupPULoop, QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, sourcewidget, parent=None):
+    def __init__(self, sourcewidget, parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -125,7 +125,7 @@ class DlgSetupPULoop(ui.Ui_SetupPULoop, QtWidgets.QDialog):
         self.comboU.addItems(curvenames)
         self.comboP.addItems(curvenames)
 
-    def accept(self):
+    def accept(self) -> None:
         uname = self.comboU.currentText()
         pname = self.comboP.currentText()
         result = (uname, pname)
@@ -136,7 +136,7 @@ class DlgSetupPULoop(ui.Ui_SetupPULoop, QtWidgets.QDialog):
 class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, begin, end, patient="", directory="", parent=None):
+    def __init__(self, begin, end, patient="", directory="", parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -150,7 +150,7 @@ class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
         self.btnCancel.clicked.connect(self.reject)
         self.btnBrowse.clicked.connect(self.selectFile)
 
-    def selectFile(self):
+    def selectFile(self) -> None:
         filepath = QtWidgets.QFileDialog.getSaveFileName(
             caption="Export to",
             filter="CSV files (*.csv *.dat)",
@@ -165,7 +165,7 @@ class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
             self.txtFile.setText(filepath)
             self.dircache = os.path.dirname(filepath)
 
-    def accept(self):
+    def accept(self) -> None:
         patient = self.txtPatient.text()
         comment = self.txtComment.text()
         periodname = self.txtPeriod.currentText()
@@ -178,7 +178,7 @@ class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
 class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, visible=None, hidden=None, parent=None):
+    def __init__(self, visible=None, hidden=None, parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
         if visible is None:
@@ -201,7 +201,7 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
         for curve in hidden:
             self.addCurve(curve.name(), checked=False)
 
-    def openProperties(self):
+    def openProperties(self) -> None:
         selected = self.lstCurves.selectedItems()
         try:
             curvename = selected[0].text()
@@ -209,14 +209,14 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
             return
         curve = self.curvehash[curvename]
 
-        def cb(resultdict):
+        def cb(resultdict) -> None:
             self.curveproperties[curve] = resultdict
 
         dlg = DlgCurveProperties(curve)
         dlg.dlgdata.connect(cb)
         dlg.exec_()
 
-    def addCurve(self, name, checked):
+    def addCurve(self, name, checked) -> None:
         item = QtWidgets.QListWidgetItem()
         item.setText(name)
         item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
@@ -226,7 +226,7 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
             item.setCheckState(QtCore.Qt.Unchecked)
         self.lstCurves.addItem(item)
 
-    def accept(self):
+    def accept(self) -> None:
         items = self.lstCurves.findItems("", QtCore.Qt.MatchContains)
         ischecked = lambda item: item.checkState() != QtCore.Qt.Unchecked  # noqa: E731
         checked = list(filter(ischecked, items))
@@ -239,7 +239,7 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
 class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, curve, parent=None):
+    def __init__(self, curve, parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -276,7 +276,7 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
         self.btnColor.setStyleSheet(f"background-color: {color.name()}")
         self.lblSamplerate.setText(str(curve.samplerate))
 
-    def ok(self):
+    def ok(self) -> None:
         symbol = self.cmbSymbol.currentText().lower()
         symbol = None if symbol == "none" else symbol
 
@@ -293,7 +293,7 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
         self.dlgdata.emit(result)
         self.accept()
 
-    def chooseColor(self):
+    def chooseColor(self) -> None:
         color = QtWidgets.QColorDialog.getColor()
         if not color.isValid():
             return
@@ -302,7 +302,7 @@ class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
 
 
 class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
-    def __init__(self, parent=None, prevdatetime=None):
+    def __init__(self, parent=None, prevdatetime=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
 
@@ -320,7 +320,7 @@ class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
         self.edDate.setDate(curdate)
         self.edTime.setTime(curtime)
 
-    def ok(self):
+    def ok(self) -> None:
         date = self.edDate.date()
         time = self.edTime.time()
         dt = QtCore.QDateTime(date, time, QtCore.Qt.UTC)
@@ -332,13 +332,13 @@ class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
 class DlgCurveAlgebra(QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, parent=None, curvecorr=None):
+    def __init__(self, parent=None, curvecorr=None) -> None:
         super().__init__(parent=parent)
         if curvecorr is None:
             curvecorr = {}
         self.setupUi(curvecorr)
 
-    def setupUi(self, curvecorr):
+    def setupUi(self, curvecorr) -> None:
         vstack = QtWidgets.QVBoxLayout(self)
 
         self.lbl = QtWidgets.QLabel("Enter formula for new curve:")
@@ -361,7 +361,7 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
 
         self.setLayout(vstack)
 
-    def accept(self):
+    def accept(self) -> None:
         result = self.formula.text()
         self.dlgdata.emit(result)
         super().accept()
@@ -370,7 +370,7 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
 class DlgListChoice(QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, items, title="", message="", parent=None):
+    def __init__(self, items, title="", message="", parent=None) -> None:
         super().__init__(parent=parent)
         form = QtWidgets.QFormLayout(self)
         form.addRow(QtWidgets.QLabel(message))
@@ -405,7 +405,7 @@ class DlgListChoice(QtWidgets.QDialog):
             i += 1
         return selected
 
-    def accept(self):
+    def accept(self) -> None:
         result = self.itemsSelected()
         self.dlgdata.emit(result)
         super().accept()
@@ -455,7 +455,8 @@ def askUserValue(param):  # noqa: C901
             editable=False,
         )
     else:
-        raise TypeError("Unknown request type")
+        msg = "Unknown request type"
+        raise TypeError(msg)
 
     if isok:
         return value

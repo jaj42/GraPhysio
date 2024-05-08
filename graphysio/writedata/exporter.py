@@ -16,7 +16,7 @@ file_filters = ";;".join(
 class TsExporter:
     periodfields = ["patient", "begin", "end", "periodid", "comment"]
 
-    def __init__(self, parent, name):
+    def __init__(self, parent, name) -> None:
         self.parent = parent
         self.name = name
         try:
@@ -35,13 +35,13 @@ class TsExporter:
         export_func = writedata.curve_writers[ext]
         export_func(curves, filepath)
 
-    def periods(self):
+    def periods(self) -> None:
         xmin, xmax = self.parent.vbrange
         dlg = DlgPeriodExport(
             begin=xmin, end=xmax, patient=self.name, directory=self.outdir,
         )
 
-        def cb(result):
+        def cb(result) -> None:
             patient, comment, periodname, filepath = result
             self.name = patient
             self.outdir = os.path.dirname(filepath)
@@ -117,7 +117,7 @@ class TsExporter:
 
 
 class PuExporter:
-    def __init__(self, parent, name):
+    def __init__(self, parent, name) -> None:
         self.parent = parent
         self.name = name
         try:
@@ -125,7 +125,7 @@ class PuExporter:
         except KeyError:
             self.outdir = os.path.expanduser("~")
 
-    def exportloops(self):
+    def exportloops(self) -> None:
         outdir = askDirPath("Export to", self.outdir)
         if outdir is None:
             # Cancel pressed
@@ -134,7 +134,7 @@ class PuExporter:
         self.writetable()
         self.writeloops()
 
-    def writetable(self):
+    def writetable(self) -> None:
         data = []
         for loop in self.parent.loops:
             alpha, beta, gala = loop.angles
@@ -147,7 +147,7 @@ class PuExporter:
         filepath = os.path.join(self.outdir, filename)
         df.to_csv(filepath, index_label="idx")
 
-    def writeloops(self):
+    def writeloops(self) -> None:
         for n, loop in enumerate(self.parent.loops):
             df = loop.df
             filename = sanitize_filename(f"{self.name}-{n+1}.csv")
@@ -159,7 +159,7 @@ class PuExporter:
 
 
 class POIExporter:
-    def __init__(self, parent, name):
+    def __init__(self, parent, name) -> None:
         self.parent = parent
         self.name = name
         try:
@@ -167,7 +167,7 @@ class POIExporter:
         except KeyError:
             self.outdir = os.path.expanduser("~")
 
-    def poi(self):
+    def poi(self) -> None:
         filepath, _ = askSaveFilePath("Export to", f"{self.name}-poi.csv", self.outdir)
         if filepath is None:
             # Cancel pressed
