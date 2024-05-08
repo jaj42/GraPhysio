@@ -13,7 +13,7 @@ def mk_shortscuts():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("GraPhysio")
     parser.add_argument(
-        "-S", "--shortcuts", action="store_true", help="Install Desktop shortcuts."
+        "-S", "--shortcuts", action="store_true", help="Install Desktop shortcuts.",
     )
     args = parser.parse_args()
 

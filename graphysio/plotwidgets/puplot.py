@@ -4,9 +4,10 @@ from functools import partial
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+from pyqtgraph import QtWidgets
+
 from graphysio import ui
 from graphysio.writedata import exporter
-from pyqtgraph import QtWidgets
 
 Point = namedtuple("Point", ["x", "y"])
 Cardinals = namedtuple("Cardinals", ["A", "B", "C"])
@@ -110,7 +111,7 @@ class LoopWidget(ui.Ui_LoopWidget, QtWidgets.QWidget):
         return {"Export": {"&Loop Data to CSV directory": self.exporter.exportloops}}
 
 
-class PULoop(object):
+class PULoop:
     def __init__(self, u, p):
         self.__angles = None
         self.__cardpoints = None

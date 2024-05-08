@@ -34,7 +34,7 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
             properties = {}
 
         self.poiselectorplot = POISelectorPlot(
-            series, parent=self, properties=properties
+            series, parent=self, properties=properties,
         )
         self.horizontalLayout.addWidget(self.poiselectorplot)
 
@@ -43,13 +43,13 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
 
     def loadPOI(self, plotdata):
         columnname, ok = QtWidgets.QInputDialog.getItem(
-            self, "Select POI series", "Load POI", plotdata.data.columns, editable=False
+            self, "Select POI series", "Load POI", plotdata.data.columns, editable=False,
         )
         if not ok:
             return
         poiseries = plotdata.data[columnname].dropna().index
         self.poiselectorplot.curve.feetitem.addPointsByLocation(
-            self.poiselectorplot.pointkey, poiseries
+            self.poiselectorplot.pointkey, poiseries,
         )
 
     def launchNewPlotFromPOIs(self):
@@ -68,7 +68,7 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         return {
             "Plot": {
                 "Import POIs": partial(
-                    self.parent.launchOpenFile, datahandler=self.loadPOI
+                    self.parent.launchOpenFile, datahandler=self.loadPOI,
                 ),
                 "POIs to New Plot": self.launchNewPlotFromPOIs,
             },

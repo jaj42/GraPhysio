@@ -2,11 +2,12 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from physiocurve.pressure.foot import find_tangent_intersections
+
 from graphysio.dialogs import askUserValue
 from graphysio.plotwidgets import PlotWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
 from graphysio.structures import Parameter, PlotData
-from physiocurve.pressure.foot import find_tangent_intersections
 
 
 def get_precise_feet(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:

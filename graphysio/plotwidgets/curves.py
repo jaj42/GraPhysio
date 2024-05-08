@@ -133,7 +133,7 @@ class POIItem(pg.ScatterPlotItem):
             return
         feet = pd.concat(data)
         self.setData(
-            x=feet.index.values, y=feet["points"].values, symbol=feet["sym"].values
+            x=feet.index.values, y=feet["points"].values, symbol=feet["sym"].values,
         )
 
     def isPointSelected(self, point):
@@ -247,7 +247,7 @@ class CurveItemWithPOI(CurveItem):
             # We have no feet, treat the whole signal as one cycle
             locs = s.index.get_indexer([xmin, xmax], method="nearest")
             indices = s.index[locs]
-            begins, ends = [np.array([i]) for i in indices]
+            begins, ends = (np.array([i]) for i in indices)
         elif not hasstops:
             # We have no stops, starts serve as stops for previous cycle
             begins = clip(self.feetitem.indices["start"].values)

@@ -16,14 +16,14 @@ class FileReader:
         self.reader = None
 
         filters = ";;".join(
-            [f"{ext.upper()} files (*.{ext})(*.{ext})" for ext in file_readers]
+            [f"{ext.upper()} files (*.{ext})(*.{ext})" for ext in file_readers],
         )
         supported = " ".join(f"*.{ext}" for ext in file_readers)
         self.file_filters = f"All supported ({supported});;{filters}"
 
     def askFile(self, folder="") -> "pathlib.PurePath":
         filepath, ext = askOpenFilePath(
-            "Open File", folder=folder, filter=self.file_filters
+            "Open File", folder=folder, filter=self.file_filters,
         )
         if not filepath:
             return folder

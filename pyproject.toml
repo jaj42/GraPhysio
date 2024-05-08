@@ -35,7 +35,7 @@ safety = "^2"
 [tool.poetry.scripts]
 graphysio = "graphysio.main:main"
 
-[tool.ruff.lint]
+[tool.ruff]
 select = ["ALL"]
-extend-exclude = 'ui'
+extend-exclude = ["ui"]
 line-length = 88

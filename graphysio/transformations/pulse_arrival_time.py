@@ -2,13 +2,14 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from physiocurve.pressure.foot import find_tangent_intersections
+from physiocurve.pressure.incycle import find_dia_sys
+
 from graphysio.dialogs import askUserValue
 from graphysio.plotwidgets import PlotWidget
 from graphysio.plotwidgets.curves import CurveItemWithPOI
 from graphysio.structures import Parameter, PlotData
 from graphysio.utils import truncatevecs
-from physiocurve.pressure.foot import find_tangent_intersections
-from physiocurve.pressure.incycle import find_dia_sys
 
 
 def get_pat(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:

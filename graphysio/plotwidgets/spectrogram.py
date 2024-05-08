@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+from pyqtgraph.Qt import QtCore, QtWidgets
+
 from graphysio import dialogs
 from graphysio.structures import Parameter, PlotData
-from pyqtgraph.Qt import QtCore, QtWidgets
 
 
 class SpectrogramWidget(QtWidgets.QWidget):
@@ -130,7 +131,7 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         nwindows = self.psd.shape[0]
         winsize = self.chunksize
         windows = np.lib.stride_tricks.as_strided(
-            self.origidx, shape=(nwindows, winsize)
+            self.origidx, shape=(nwindows, winsize),
         )
         result = np.apply_along_axis(np.mean, 1, windows)
         return result.astype(int)

@@ -2,10 +2,11 @@ from datetime import datetime
 from typing import List
 
 import numpy as np
+from scipy import interpolate
+
 from graphysio.dialogs import askUserValue
 from graphysio.plotwidgets.curves import CurveItem
 from graphysio.structures import Parameter
-from scipy import interpolate
 
 try:
     import pyedflib
@@ -17,7 +18,7 @@ else:
 
 def interp_series(s, samplerate, start, stop):
     f = interpolate.interp1d(
-        s.index, s.values, assume_sorted=True, copy=False, fill_value="extrapolate"
+        s.index, s.values, assume_sorted=True, copy=False, fill_value="extrapolate",
     )
     # Account for periods of missing data.
     duration_s = (stop - start) * 1e-9
@@ -27,7 +28,7 @@ def interp_series(s, samplerate, start, stop):
 
 
 def curves_to_edf(
-    curves: List[CurveItem], filepath: str, index_label: str = "timens"
+    curves: List[CurveItem], filepath: str, index_label: str = "timens",
 ) -> None:
     headers = []
     signals = []
@@ -61,7 +62,7 @@ def curves_to_edf(
         signals.append(resampled)
 
     edf = pyedflib.EdfWriter(
-        str(filepath), len(signals), file_type=pyedflib.FILETYPE_EDFPLUS
+        str(filepath), len(signals), file_type=pyedflib.FILETYPE_EDFPLUS,
     )
     edf.setStartdatetime(begindt)
     edf.setSignalHeaders(headers)

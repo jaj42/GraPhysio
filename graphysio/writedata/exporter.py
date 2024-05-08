@@ -9,7 +9,7 @@ from graphysio.dialogs import DlgPeriodExport, askDirPath, askSaveFilePath
 from graphysio.utils import sanitize_filename
 
 file_filters = ";;".join(
-    [f"{ext.upper()} files (*.{ext})" for ext in writedata.curve_writers]
+    [f"{ext.upper()} files (*.{ext})" for ext in writedata.curve_writers],
 )
 
 
@@ -26,7 +26,7 @@ class TsExporter:
 
     def curves(self) -> None:
         filepath, ext = askSaveFilePath(
-            "Export to", f"{self.name}.csv", self.outdir, filter=file_filters
+            "Export to", f"{self.name}.csv", self.outdir, filter=file_filters,
         )
         if filepath is None:
             return
@@ -38,7 +38,7 @@ class TsExporter:
     def periods(self):
         xmin, xmax = self.parent.vbrange
         dlg = DlgPeriodExport(
-            begin=xmin, end=xmax, patient=self.name, directory=self.outdir
+            begin=xmin, end=xmax, patient=self.name, directory=self.outdir,
         )
 
         def cb(result):
@@ -48,7 +48,7 @@ class TsExporter:
 
             with open(filepath, "a", newline="") as csvfile:
                 writer = csv.DictWriter(
-                    csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL
+                    csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL,
                 )
                 if not os.path.exists(filepath):
                     writer.writeheader()
@@ -59,7 +59,7 @@ class TsExporter:
                         "end": xmax,
                         "periodid": periodname,
                         "comment": comment,
-                    }
+                    },
                 )
 
         dlg.dlgdata.connect(cb)
@@ -98,7 +98,7 @@ class TsExporter:
             filename = sanitize_filename(f"{self.name}-{n+1}.csv")
             filepath = os.path.join(self.outdir, filename)
             df.to_csv(
-                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label="timens"
+                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label="timens",
             )
 
     def cyclepoints(self) -> None:
@@ -112,7 +112,7 @@ class TsExporter:
         for c in self.parent.curves.values():
             for k, v in c.feetitem.indices.items():
                 feetseries.append(pd.Series(v, name=f"{c.name()}-{k}"))
-        df = pd.concat(feetseries, axis=1).astype('Int64')
+        df = pd.concat(feetseries, axis=1).astype("Int64")
         df.to_csv(filepath, index_label="idx")
 
 
@@ -154,7 +154,7 @@ class PuExporter:
             filepath = os.path.join(self.outdir, filename)
             df["datetime"] = pd.to_datetime(df.index, unit="ns")
             df.to_csv(
-                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label="timens"
+                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label="timens",
             )
 
 

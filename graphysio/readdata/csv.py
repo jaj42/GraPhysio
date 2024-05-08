@@ -4,7 +4,6 @@ from functools import partial
 from pathlib import Path
 from typing import List
 
-import numpy as np
 import pandas as pd
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
@@ -39,7 +38,7 @@ class CsvReader(BaseReader):
         pdtonum = partial(pd.to_numeric, errors="coerce")
         dtformat = request.datetime_format
         if request.generatex:
-            data.index = (1e9 * data.index / request.samplerate).astype('int')
+            data.index = (1e9 * data.index / request.samplerate).astype("int")
             # Make all data numeric and remove empty rows
             datacols = data.columns.difference([request.clusterid])
             data[datacols] = data[datacols].apply(pdtonum)
@@ -76,7 +75,7 @@ class CsvReader(BaseReader):
                     timestamp = timestamp.tz_localize(request.timezone)
                 timestamp = timestamp.tz_convert("UTC").tz_localize(None)
 
-            timestamp = timestamp.astype('datetime64[ns]').astype('int')
+            timestamp = timestamp.astype("datetime64[ns]").astype("int")
             data = data.set_index([timestamp])
 
         data = data.dropna(axis="columns", how="all")
@@ -146,7 +145,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         # Setup Field Table
         self.lstVAll.verticalHeader().hide()
         self.lstVAll.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch
+            QtWidgets.QHeaderView.Stretch,
         )
         self.lstVAll.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 
@@ -171,7 +170,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
     # Methods / Callbacks
     def estimateDelimiters(self, filepath):
         encoding = self.txtEncoding.currentText()
-        with open(filepath, "r", encoding=encoding) as csvfile:
+        with open(filepath, encoding=encoding) as csvfile:
             seperator = ";" if ";" in next(csvfile) else ","
             decimal = "." if "." in next(csvfile) else ","
         return (seperator, decimal)
@@ -185,7 +184,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             lst.clear()
         self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
         encoding = self.txtEncoding.currentText()
-        with open(self.filepath, "r", encoding=encoding) as csvfile:
+        with open(self.filepath, encoding=encoding) as csvfile:
             # Artificially drop n first lines as requested
             for _ in range(self.spnLinedrop.value()):
                 next(csvfile)
