@@ -132,7 +132,7 @@ class POIItem(pg.ScatterPlotItem):
         if len(data) < 1:
             self.clear()
             return
-        feet = pd.concat(data)
+        feet = pd.concat(data).sort_index()
         self.setData(
             x=feet.index.values,
             y=feet["points"].values,
