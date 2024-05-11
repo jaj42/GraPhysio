@@ -51,32 +51,38 @@ Filters = {
         ],
     ),
     "Doppler cut": Filter(
-        name="dopplercut", parameters=[Parameter("Minimum value", int)],
+        name="dopplercut",
+        parameters=[Parameter("Minimum value", int)],
     ),
     "Differentiate": Filter(
         name="diff",
         parameters=[Parameter("Order", int), Parameter("Denominator time unit", str)],
     ),
     "Integrate": Filter(
-        name="integrate", parameters=[Parameter("Window duration", "time")],
+        name="integrate",
+        parameters=[Parameter("Window duration", "time")],
     ),
     "Lag": Filter(name="lag", parameters=[Parameter("Time delta", "time")]),
     "Normalize": Filter(name="norm1", parameters=[]),
     "Set start date/time": Filter(
-        name="setdatetime", parameters=[Parameter("DateTime", datetime)],
+        name="setdatetime",
+        parameters=[Parameter("DateTime", datetime)],
     ),
     "Tolerant Normalize": Filter(name="norm2", parameters=[]),
     "Enter expression (variable = x)": Filter(
-        name="expression", parameters=[Parameter("Expression", str)],
+        name="expression",
+        parameters=[Parameter("Expression", str)],
     ),
     "Strided Moving average": Filter(
-        name="sma", parameters=[Parameter("Window duration", "time")],
+        name="sma",
+        parameters=[Parameter("Window duration", "time")],
     ),
 }
 
 FeetFilters = {
     "Short cycles": Filter(
-        name="shortcycles", parameters=[Parameter("Minimum duration", "time")],
+        name="shortcycles",
+        parameters=[Parameter("Minimum duration", "time")],
     ),
     "Extra feet": Filter(name="extrafeet", parameters=[]),
 }
@@ -89,7 +95,8 @@ def updateTFs() -> None:
     if not tflist:
         return
     Filters["Transfer function"] = Filter(
-        name="tf", parameters=[Parameter("Transfer function", tflist)],
+        name="tf",
+        parameters=[Parameter("Transfer function", tflist)],
     )
 
 
@@ -205,7 +212,10 @@ def interp(series, samplerate, parameters):
         f = interpolate.PchipInterpolator(oldidx, series.values, extrapolate=True)
     else:
         f = interpolate.interp1d(
-            oldidx, series.values, kind=method, fill_value="extrapolate",
+            oldidx,
+            series.values,
+            kind=method,
+            fill_value="extrapolate",
         )
     step = 1e9 / newsamplerate  # 1e9 to convert Hz to ns
     newidx = np.arange(oldidx[0], oldidx[-1], step, dtype=np.int64)

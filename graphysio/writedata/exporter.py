@@ -26,7 +26,10 @@ class TsExporter:
 
     def curves(self) -> None:
         filepath, ext = askSaveFilePath(
-            "Export to", f"{self.name}.csv", self.outdir, filter=file_filters,
+            "Export to",
+            f"{self.name}.csv",
+            self.outdir,
+            filter=file_filters,
         )
         if filepath is None:
             return
@@ -38,7 +41,10 @@ class TsExporter:
     def periods(self) -> None:
         xmin, xmax = self.parent.vbrange
         dlg = DlgPeriodExport(
-            begin=xmin, end=xmax, patient=self.name, directory=self.outdir,
+            begin=xmin,
+            end=xmax,
+            patient=self.name,
+            directory=self.outdir,
         )
 
         def cb(result) -> None:
@@ -48,7 +54,9 @@ class TsExporter:
 
             with open(filepath, "a", newline="") as csvfile:
                 writer = csv.DictWriter(
-                    csvfile, fieldnames=self.periodfields, quoting=csv.QUOTE_MINIMAL,
+                    csvfile,
+                    fieldnames=self.periodfields,
+                    quoting=csv.QUOTE_MINIMAL,
                 )
                 if not os.path.exists(filepath):
                     writer.writeheader()
@@ -98,7 +106,9 @@ class TsExporter:
             filename = sanitize_filename(f"{self.name}-{n+1}.csv")
             filepath = os.path.join(self.outdir, filename)
             df.to_csv(
-                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label="timens",
+                filepath,
+                date_format="%Y-%m-%d %H:%M:%S.%f",
+                index_label="timens",
             )
 
     def cyclepoints(self) -> None:
@@ -154,7 +164,9 @@ class PuExporter:
             filepath = os.path.join(self.outdir, filename)
             df["datetime"] = pd.to_datetime(df.index, unit="ns")
             df.to_csv(
-                filepath, date_format="%Y-%m-%d %H:%M:%S.%f", index_label="timens",
+                filepath,
+                date_format="%Y-%m-%d %H:%M:%S.%f",
+                index_label="timens",
             )
 
 

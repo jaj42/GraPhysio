@@ -134,7 +134,9 @@ class POIItem(pg.ScatterPlotItem):
             return
         feet = pd.concat(data)
         self.setData(
-            x=feet.index.values, y=feet["points"].values, symbol=feet["sym"].values,
+            x=feet.index.values,
+            y=feet["points"].values,
+            symbol=feet["sym"].values,
         )
 
     def isPointSelected(self, point):

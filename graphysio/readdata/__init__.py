@@ -1,4 +1,3 @@
-
 from typing import TYPE_CHECKING
 
 from graphysio.dialogs import askOpenFilePath
@@ -27,7 +26,9 @@ class FileReader:
 
     def askFile(self, folder="") -> "pathlib.PurePath":
         filepath, ext = askOpenFilePath(
-            "Open File", folder=folder, filter=self.file_filters,
+            "Open File",
+            folder=folder,
+            filter=self.file_filters,
         )
         if not filepath:
             return folder

@@ -6,7 +6,9 @@ from graphysio.plotwidgets.curves import CurveItem
 
 
 def curves_to_csv(
-    curves: List[CurveItem], filepath: str, index_label: str = "timens",
+    curves: List[CurveItem],
+    filepath: str,
+    index_label: str = "timens",
 ) -> None:
     sers = [c.series for c in curves]
     data = pd.concat(sers, axis=1).sort_index()

@@ -414,7 +414,9 @@ class DlgListChoice(QtWidgets.QDialog):
 def askUserValue(param):  # noqa: C901
     if param.request == "time":
         value, isok = QtWidgets.QInputDialog.getText(
-            None, "Enter time", param.description,
+            None,
+            "Enter time",
+            param.description,
         )
         try:
             value = ureg.Quantity(value)
@@ -426,20 +428,31 @@ def askUserValue(param):  # noqa: C901
             return None
     elif param.request is str:
         value, isok = QtWidgets.QInputDialog.getText(
-            None, "Enter value", param.description,
+            None,
+            "Enter value",
+            param.description,
         )
     elif param.request is int:
         value, isok = QtWidgets.QInputDialog.getInt(
-            None, "Enter value", param.description,
+            None,
+            "Enter value",
+            param.description,
         )
     elif param.request is float:
         value, isok = QtWidgets.QInputDialog.getDouble(
-            None, "Enter value", param.description, decimals=3,
+            None,
+            "Enter value",
+            param.description,
+            decimals=3,
         )
     elif param.request is bool:
         request = ["Yes", "No"]
         tmpvalue, isok = QtWidgets.QInputDialog.getItem(
-            None, "Enter value", param.description, request, editable=False,
+            None,
+            "Enter value",
+            param.description,
+            request,
+            editable=False,
         )
         value = tmpvalue == "Yes"
     elif param.request is datetime:
@@ -468,7 +481,11 @@ def userConfirm(question: str, title: str = "") -> bool:
     if not title:
         title = question
     reply = QtWidgets.QMessageBox.question(
-        None, title, question, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No,
+        None,
+        title,
+        question,
+        QtWidgets.QMessageBox.Yes,
+        QtWidgets.QMessageBox.No,
     )
     return reply == QtWidgets.QMessageBox.Yes
 
@@ -504,7 +521,8 @@ def askDirPath(caption: str, folder: str = "") -> Optional[pathlib.Path]:
         folder = str(pathlib.Path.home())
 
     outdirtmp = QtWidgets.QFileDialog.getExistingDirectory(
-        caption=caption, directory=str(folder),
+        caption=caption,
+        directory=str(folder),
     )
     if not outdirtmp:
         # Cancel pressed

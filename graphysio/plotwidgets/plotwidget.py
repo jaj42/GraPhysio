@@ -70,7 +70,9 @@ class PlotWidget(pg.PlotWidget):
 
         mouseMoved = partial(self.mouseMoved, self)
         self.sigproxy = pg.SignalProxy(
-            self.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved,
+            self.scene().sigMouseMoved,
+            rateLimit=60,
+            slot=mouseMoved,
         )
 
     def appendData(self, newplotdata, dorealign=False) -> None:
@@ -89,7 +91,11 @@ class PlotWidget(pg.PlotWidget):
         return next(self.colors)
 
     def addSeriesAsCurve(
-        self, series, pen=None, dorealign=False, withfeet=True,
+        self,
+        series,
+        pen=None,
+        dorealign=False,
+        withfeet=True,
     ) -> Optional[CurveItem]:
         if dorealign and self.curves:
             # Timeshift new curves to make the beginnings coincide
@@ -135,7 +141,9 @@ class PlotWidget(pg.PlotWidget):
                 self.legend.addItem(curve, curve.name())
 
     def validateNewCurveName(
-        self, proposedname: str, alwaysShow: bool = False,
+        self,
+        proposedname: str,
+        alwaysShow: bool = False,
     ) -> Optional[str]:
         if proposedname not in self.curves and not alwaysShow:
             return proposedname

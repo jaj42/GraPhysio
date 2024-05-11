@@ -27,7 +27,9 @@ class TSWidget(PlotWidget):
 
     def filterCurve(self, oldcurve, filtername, asnew=False) -> None:
         newseries, newsamplerate = filters.filter(
-            oldcurve, filtername, dialogs.askUserValue,
+            oldcurve,
+            filtername,
+            dialogs.askUserValue,
         )
         if asnew:
             newname = self.validateNewCurveName(newseries.name)
@@ -112,7 +114,8 @@ class TSWidget(PlotWidget):
         if len(self.curves) < 1:
             return
         sortedcurves = sorted(
-            self.curves.values(), key=lambda curve: curve.series.index[0],
+            self.curves.values(),
+            key=lambda curve: curve.series.index[0],
         )
         fstcurve = sortedcurves[0]
         curtimestamp = fstcurve.series.index[0]
@@ -148,7 +151,9 @@ class TSWidget(PlotWidget):
             return
         curve = self.curves[curvename]
         poiselector = POISelectorWidget(
-            curve.series, parent=self.parent, properties=self.properties,
+            curve.series,
+            parent=self.parent,
+            properties=self.properties,
         )
         self.parent.addTab(poiselector, curve.name())
 
@@ -162,7 +167,10 @@ class TSWidget(PlotWidget):
             return
         curve = self.curves[curvename]
         spectro = SpectrogramWidget(
-            curve.series, curve.samplerate, window, parent=self.parent,
+            curve.series,
+            curve.samplerate,
+            window,
+            parent=self.parent,
         )
         self.parent.addTab(spectro, curve.name())
 
@@ -184,7 +192,10 @@ class TSWidget(PlotWidget):
             newvals = ne.evaluate(formula, local_dict=args)
             newname = self.validateNewCurveName(formula, True)
             newseries = pd.Series(
-                newvals, index=argsdf.index, name=newname, dtype="float64",
+                newvals,
+                index=argsdf.index,
+                name=newname,
+                dtype="float64",
             )
             self.addSeriesAsCurve(newseries)
 

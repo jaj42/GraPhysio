@@ -40,7 +40,9 @@ def estimateSampleRate(series):
 def loadmodule() -> None:
     defaultdir = os.path.expanduser("~")
     filepath = QtWidgets.QFileDialog.getOpenFileName(
-        caption="Import module", filter="Python files (*.py)", directory=defaultdir,
+        caption="Import module",
+        filter="Python files (*.py)",
+        directory=defaultdir,
     )
     if not isinstance(filepath, str):
         # PyQt5 API change

@@ -131,7 +131,8 @@ class SpectrogramPlotWidget(pg.PlotWidget):
         nwindows = self.psd.shape[0]
         winsize = self.chunksize
         windows = np.lib.stride_tricks.as_strided(
-            self.origidx, shape=(nwindows, winsize),
+            self.origidx,
+            shape=(nwindows, winsize),
         )
         result = np.apply_along_axis(np.mean, 1, windows)
         return result.astype(int)

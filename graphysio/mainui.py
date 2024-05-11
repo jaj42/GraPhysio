@@ -136,7 +136,10 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.lblStatus.setText("Loading... done")
 
     def appendToPlotWithData(
-        self, plotdata, destidx=None, do_timeshift: Optional[bool] = None,
+        self,
+        plotdata,
+        destidx=None,
+        do_timeshift: Optional[bool] = None,
     ) -> None:
         if destidx is None:
             plotwidget = self.tabWidget.currentWidget()

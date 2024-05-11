@@ -36,6 +36,5 @@ safety = "^2"
 graphysio = "graphysio.main:main"
 
 [tool.ruff]
-select = ["ALL"]
 extend-exclude = ["ui"]
 line-length = 88
