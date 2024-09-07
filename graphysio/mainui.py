@@ -58,17 +58,15 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.lblCoords.setText(f"Time: {timestr}, Value: {y}")
 
     def read_plot_data(self) -> None:
-        try:
-            data = self.dataq.get(block=False)
-        except Empty:
-            return
-        # Plotdata can be an object or a list of objects
-        try:
-            iter(data)
-        except TypeError:
-            data = [data]
-        for plotdata in data:
-            self.datahandler(plotdata)
+        while not self.dataq.empty():
+            data = self.dataq.get()
+            # Plotdata can be an object or a list of objects
+            try:
+                iter(data)
+            except TypeError:
+                data = [data]
+            for plotdata in data:
+                self.datahandler(plotdata)
 
     def print_exception(self, e) -> None:
         traceback.print_exc(file=sys.stdout)
@@ -122,12 +120,11 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         reader.askUserInput()
         self.lblStatus.setText("Loading DWC...")
         future = self.executor.submit(reader.get_plotdata)
-
         def cb(future) -> None:
+            self.lblStatus.setText("Loading... done")
             plotdata = future.result()
             if plotdata:
                 self.dataq.put(plotdata)
-
         self.datahandler = datahandler
         future.add_done_callback(cb)
 
@@ -138,6 +135,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         future = self.executor.submit(reader.get_plotdata)
 
         def cb(future) -> None:
+            self.lblStatus.setText("Loading... done")
             plotdata = future.result()
             if plotdata:
                 self.dataq.put(plotdata)
@@ -149,7 +147,6 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         properties = {"dircache": self.dircache}
         plotwidget = TSWidget(plotdata, parent=self, properties=properties)
         self.addTab(plotwidget, plotdata.name)
-        self.lblStatus.setText("Loading... done")
 
     def appendToPlotWithData(
         self,
@@ -179,4 +176,3 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
         plotwidget.appendData(plotdata, do_timeshift)
         plotwidget.properties["dircache"] = self.dircache
-        self.lblStatus.setText("Loading... done")

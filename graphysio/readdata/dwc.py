@@ -2,6 +2,7 @@ from graphysio.dialogs import DlgDWCOpen
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
 from pandas.api.types import is_datetime64_any_dtype
+from typing import List
 
 try:
     import dwclib
@@ -14,21 +15,17 @@ else:
 class DwcReader(BaseReader):
     is_available = is_available
 
-    def dwc_search_patient(self, patientid):
-        return dwclib.read_patient(patientid=patientid)
-
     def askUserInput(self) -> None:
         def cb(reqdata) -> None:
             self.userdata = reqdata
 
-        dlgchoice = DlgDWCOpen(self.dwc_search_patient)
+        dlgchoice = DlgDWCOpen(dwclib.read_patient)
         dlgchoice.dlgdata.connect(cb)
         dlgchoice.exec_()
-        return None
 
-    def get_plotdata(self) -> PlotData:
+    def get_plotdata(self) -> PlotData | List[PlotData]:
         if not self.userdata:
-            raise ValueError("no request data")
+            return []
         if self.userdata["type"] == "numerics":
             df = dwclib.read_numerics(
                 patientids=self.userdata["patientid"],

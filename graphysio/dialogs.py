@@ -36,7 +36,7 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
         elif type_of_data.lower() == "waves":
             data_req = "wavelabels"
         else:
-            raise ValueError
+            raise ValueError('Wrong data type: {data_req}')
         patientid = self.txtPatientId.text()
         try:
             res = self.dwc_search_function(patientid)
