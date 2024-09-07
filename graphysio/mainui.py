@@ -120,11 +120,13 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         reader.askUserInput()
         self.lblStatus.setText("Loading DWC...")
         future = self.executor.submit(reader.get_plotdata)
+
         def cb(future) -> None:
             self.lblStatus.setText("Loading... done")
             plotdata = future.result()
             if plotdata:
                 self.dataq.put(plotdata)
+
         self.datahandler = datahandler
         future.add_done_callback(cb)
 

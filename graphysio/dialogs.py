@@ -11,8 +11,45 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 from graphysio import ui
 from graphysio.algorithms import filters
 from graphysio.utils import sanitize_filepath
+from graphysio.structures import CycleId
 
 ureg = UnitRegistry()
+
+
+class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
+    dlgdata = QtCore.pyqtSignal(object)
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent=parent)
+        self.setupUi(self)
+
+        self.okButton.clicked.connect(self.accept)
+        self.cancelButton.clicked.connect(self.reject)
+
+        self.choices = {}
+
+        plotframe = self.parent().tabWidget.currentWidget()
+        if plotframe is None:
+            return
+
+        for n, curvename in enumerate(plotframe.curves.keys()):
+            combo = QtWidgets.QComboBox()
+            combo.addItems([ft.value for ft in CycleId])
+            curveitem = QtWidgets.QTableWidgetItem(curvename)
+
+            self.table.insertRow(n)
+            self.table.setItem(n, 0, curveitem)
+            self.table.setCellWidget(n, 1, combo)
+            self.choices[curvename] = combo
+
+        self.table.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeToContents,
+        )
+
+    def accept(self) -> None:
+        result = {curve: combo.currentText() for (curve, combo) in self.choices.items()}
+        self.dlgdata.emit(result)
+        super().accept()
 
 
 class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
@@ -36,7 +73,7 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
         elif type_of_data.lower() == "waves":
             data_req = "wavelabels"
         else:
-            raise ValueError('Wrong data type: {data_req}')
+            raise ValueError("Wrong data type: {data_req}")
         patientid = self.txtPatientId.text()
         try:
             res = self.dwc_search_function(patientid)
