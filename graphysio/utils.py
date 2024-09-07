@@ -76,12 +76,6 @@ def truncatevecs(vecs):
     return [vec[0:maxidx] for vec in vecs]
 
 
-def getshell(ui=None) -> None:
-    import IPython
-
-    IPython.embed(ui=ui)
-
-
 def displayError(errmsg) -> None:
     msgbox = QtWidgets.QMessageBox()
     msgbox.setWindowTitle("Error")

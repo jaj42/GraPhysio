@@ -10,45 +10,57 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 from graphysio import ui
 from graphysio.algorithms import filters
-from graphysio.structures import CycleId
 from graphysio.utils import sanitize_filepath
 
 ureg = UnitRegistry()
 
 
-class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
+class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
     dlgdata = QtCore.pyqtSignal(object)
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, search_function, parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
+        self.dwc_search_function = search_function
+        self.patient = None
 
+        self.searchButton.clicked.connect(self.search_patient)
         self.okButton.clicked.connect(self.accept)
         self.cancelButton.clicked.connect(self.reject)
 
-        self.choices = {}
-
-        plotframe = self.parent().tabWidget.currentWidget()
-        if plotframe is None:
+    def search_patient(self):
+        self.lstLabels.clear()
+        type_of_data = self.cmbTypeofData.currentText()
+        if type_of_data.lower() == "numerics":
+            data_req = "numericsublabels"
+        elif type_of_data.lower() == "waves":
+            data_req = "wavelabels"
+        else:
+            raise ValueError
+        patientid = self.txtPatientId.text()
+        try:
+            res = self.dwc_search_function(patientid)
+        except:
+            # TODO should be managed in dwclib
+            res = None
+        self.patient = res
+        if res is None:
+            self.lblFound.setText(f"Not found")
             return
-
-        for n, curvename in enumerate(plotframe.curves.keys()):
-            combo = QtWidgets.QComboBox()
-            combo.addItems([ft.value for ft in CycleId])
-            curveitem = QtWidgets.QTableWidgetItem(curvename)
-
-            self.table.insertRow(n)
-            self.table.setItem(n, 0, curveitem)
-            self.table.setCellWidget(n, 1, combo)
-            self.choices[curvename] = combo
-
-        self.table.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.ResizeToContents,
-        )
+        self.lblFound.setText(f'Found: {res['lastname']}, {res['firstname']}')
+        self.dtFrom.setDateTime(res["data_begin"])
+        self.dtTo.setDateTime(res["data_end"])
+        for lbl in res[data_req]:
+            self.lstLabels.addItem(lbl)
 
     def accept(self) -> None:
-        result = {curve: combo.currentText() for (curve, combo) in self.choices.items()}
-        self.dlgdata.emit(result)
+        data = {}
+        data["patientid"] = self.patient.name
+        data["from"] = self.dtFrom.dateTime().toPyDateTime()
+        data["to"] = self.dtTo.dateTime().toPyDateTime()
+        data["items"] = [item.text() for item in self.lstLabels.selectedItems()]
+        data["type"] = self.cmbTypeofData.currentText().lower()
+        self.dlgdata.emit(data)
         super().accept()
 
 

@@ -40,7 +40,7 @@ class CurveItem(pg.PlotDataItem):
         self.render()
 
     def extend(self, newseries) -> None:
-        merged = self.series.append(newseries)
+        merged = pd.concat([self.series, newseries])
         newdata = self.sanitize_data(merged)
         if newdata is None:
             # XXX report error

@@ -28,16 +28,17 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
         self.tabWidget.currentChanged.connect(self.tabChanged)
 
-        getCLIShell = partial(utils.getshell, ui=self)
-
         launchNewPlot = partial(self.launchOpenFile, self.createNewPlotWithData)
         launchAppendPlot = partial(self.launchOpenFile, self.appendToPlotWithData)
         self.menuFile.addAction("New Plot", launchNewPlot)
         self.menuFile.addAction("Append to Plot", launchAppendPlot)
 
+        if readdata.DwcReader.is_available:
+            launchNewDwcPlot = partial(self.launchOpenDwc, self.createNewPlotWithData)
+            self.menuFile.addAction("New Plot from DWC", launchNewDwcPlot)
+
         self.menuFile.addSeparator()
         self.menuFile.addAction("&Load plugin", self.errguard(utils.loadmodule))
-        self.menuFile.addAction("Get CLI shell", self.errguard(getCLIShell))
         self.menuFile.addSeparator()
         self.menuFile.addAction("&Quit", self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
 
@@ -116,9 +117,24 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             for title, item in submenu.items():
                 menu.addAction(title, item)
 
+    def launchOpenDwc(self, datahandler) -> None:
+        reader = readdata.DwcReader()
+        reader.askUserInput()
+        self.lblStatus.setText("Loading DWC...")
+        future = self.executor.submit(reader.get_plotdata)
+
+        def cb(future) -> None:
+            plotdata = future.result()
+            if plotdata:
+                self.dataq.put(plotdata)
+
+        self.datahandler = datahandler
+        future.add_done_callback(cb)
+
     def launchOpenFile(self, datahandler) -> None:
         reader = readdata.FileReader()
         self.dircache = reader.askFile(self.dircache)
+        self.lblStatus.setText("Loading File...")
         future = self.executor.submit(reader.get_plotdata)
 
         def cb(future) -> None:

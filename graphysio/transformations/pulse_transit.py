@@ -31,9 +31,7 @@ def get_tt(plotwidget: PlotWidget) -> List[CurveItemWithPOI]:
     tt /= 1e6  # milliseconds
 
     out_series = pd.Series(tt, index=idxbeg)
-    sname = (
-        f"TT [{beg_curve.name()}_{beg_feetname} - {end_curve.name()}_{end_feetname}] (ms)"
-    )
+    sname = f"TT [{beg_curve.name()}_{beg_feetname} - {end_curve.name()}_{end_feetname}] (ms)"
     plotdata = PlotData(data=out_series, name=sname)
 
     return [plotdata]

@@ -5,6 +5,7 @@ from graphysio.dialogs import askOpenFilePath
 from .csv import CsvReader
 from .edf import EdfReader
 from .parquet import ParquetReader
+from .dwc import DwcReader
 
 if TYPE_CHECKING:
     import pathlib
