@@ -2,9 +2,9 @@ import itertools
 import os
 import sys
 import traceback
-from concurrent.futures import ThreadPoolExecutor
+from pebble import ProcessPool
 from functools import partial
-from queue import Empty, Queue
+from queue import Queue
 from typing import Optional
 
 from pyqtgraph import QtCore, QtWidgets
@@ -22,7 +22,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.dircache = os.path.expanduser("~")
 
         self.dataq = Queue()
-        self.executor = ThreadPoolExecutor()
+        self.pool = ProcessPool()
         self.datahandler = self.createNewPlotWithData
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
@@ -49,6 +49,11 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.data_timer.timeout.connect(self.read_plot_data)
         self.data_timer.setInterval(1000)  # Milliseconds
         self.data_timer.start()
+
+    def closeEvent(self, event) -> None:
+        self.pool.stop()
+        self.pool.join()
+        super().closeEvent(event)
 
     def setCoords(self, x, y) -> None:
         if TimeAxisItem.is_relative_time(x):
@@ -90,7 +95,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             tmptabname = tabname
             # Duplicate tab name. Add a number to the end
             for i in itertools.count():
-                tmptabname = f"{tabname}{i+1}"
+                tmptabname = f"{tabname}_{i+1}"
                 if tmptabname not in tabnames:
                     break
             tabname = tmptabname
@@ -119,7 +124,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         reader = readdata.DwcReader()
         reader.askUserInput()
         self.lblStatus.setText("Loading DWC...")
-        future = self.executor.submit(reader.get_plotdata)
+        future = self.pool.schedule(reader.get_plotdata)
 
         def cb(future) -> None:
             self.lblStatus.setText("Loading... done")
@@ -134,7 +139,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         reader = readdata.FileReader()
         self.dircache = reader.askFile(self.dircache)
         self.lblStatus.setText("Loading File...")
-        future = self.executor.submit(reader.get_plotdata)
+        future = self.pool.schedule(reader.get_plotdata)
 
         def cb(future) -> None:
             self.lblStatus.setText("Loading... done")

@@ -1226,6 +1226,17 @@ files = [
 ]
 
 [[package]]
+name = "pebble"
+version = "5.0.7"
+description = "Threading and multiprocessing eye-candy."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "Pebble-5.0.7-py3-none-any.whl", hash = "sha256:f1742f2a62e8544e722c7b387211fb1a06038ca8cda322e5d55c84c793fd8d7d"},
+    {file = "Pebble-5.0.7.tar.gz", hash = "sha256:2784c147766f06388cea784084b14bec93fdbaa793830f1983155aa330a2a6e4"},
+]
+
+[[package]]
 name = "physiocurve"
 version = "2024.5.7"
 description = "Analyse biometric time series"
@@ -2166,4 +2177,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "43fb2e37c779da91e39339befb40fd146c387580bd4429a2f1abca0948f79f64"
+content-hash = "774bd60ec1e9840000170bc90be0100f81bb8cf5efd11b13b6704f1398c473ad"
