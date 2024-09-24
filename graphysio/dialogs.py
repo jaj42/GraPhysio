@@ -80,7 +80,7 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
         if res is None:
             self.lblFound.setText(f"Not found")
             return
-        self.lblFound.setText(f'Found: {res['lastname']}, {res['firstname']}')
+        self.lblFound.setText(f"Found: {res['lastname']}, {res['firstname']}")
         self.dtFrom.setDateTime(res["data_begin"])
         self.dtTo.setDateTime(res["data_end"])
         for lbl in res[data_req]:
