@@ -2,7 +2,7 @@ import argparse
 
 from pyshortcuts import make_shortcut
 
-from .main import main as graphysio_main
+from graphysio.main import main as graphysio_main
 
 
 def mk_shortscuts() -> None:
