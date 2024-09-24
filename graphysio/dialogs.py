@@ -75,11 +75,7 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
         else:
             raise ValueError("Wrong data type: {data_req}")
         patientid = self.txtPatientId.text()
-        try:
-            res = self.dwc_search_function(patientid)
-        except:
-            # TODO should be managed in dwclib
-            res = None
+        res = self.dwc_search_function(patientid)
         self.patient = res
         if res is None:
             self.lblFound.setText(f"Not found")
