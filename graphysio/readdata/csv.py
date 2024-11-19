@@ -84,14 +84,14 @@ class CsvReader(BaseReader):
         fp = request.filepath
         if request.clusterid:
             g = data.groupby(request.clusterid)
-            plotdata = (
+            plotdata = [
                 PlotData(
                     data=df.drop(columns=request.clusterid),
                     filepath=fp,
                     name=f"{fp.stem}-{i}",
                 )
                 for i, df in g
-            )
+            ]
         else:
             plotdata = [PlotData(data=data, filepath=fp)]
 
