@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "graphysio"
-version = "2024.11.21"
+version = "2024.11.22"
 description = "Visualizer and analyser for biometric signals"
 authors = ["Jona Joachim <jona@joachim.cc>"]
 license = "ISC"
@@ -21,7 +21,7 @@ scipy = "^1.13"
 numexpr = "^2.9"
 physiocurve = "^2024"
 pebble = "^5.0.7"
-pyqt5 = "^5.15.11"
+pyqt5 = "^5.15"
 pyshortcuts = {version = "^1.9", optional = true}
 pyarrow = {version = ">=14", optional = true}
 pyEDFlib = {version = "^0.1.37", optional = true}
