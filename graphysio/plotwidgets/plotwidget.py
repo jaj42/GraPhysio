@@ -19,7 +19,7 @@ class TimeAxisItem(pg.AxisItem):
         if mainwindow:
             timestr = date.toString("dd/MM/yyyy hh:mm:ss.zzz")
         else:
-            timestr = date.toString("dd/MM/yyyy\nhh:mm:ss.zzz")
+            timestr = date.toString("dd/MM hh:mm:ss")
         return timestr
 
     @staticmethod
