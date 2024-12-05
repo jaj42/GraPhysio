@@ -1,7 +1,7 @@
 import sys
 
 # Make sure pyqtgraph uses this instead of another installed version
-import PySide6
+import PySide6  # noqa
 
 from pyqtgraph.Qt import QtWidgets
 

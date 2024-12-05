@@ -78,7 +78,7 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
         res = self.dwc_search_function(patientid)
         self.patient = res
         if res is None:
-            self.lblFound.setText(f"Not found")
+            self.lblFound.setText("Not found")
             return
         self.lblFound.setText(f"Found: {res['lastname']}, {res['firstname']}")
         self.dtFrom.setDateTime(res["data_begin"])

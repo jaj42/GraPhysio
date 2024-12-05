@@ -7,6 +7,7 @@ from .edf import EdfReader
 from .parquet import ParquetReader
 from .dwc import DwcReader
 
+
 if TYPE_CHECKING:
     import pathlib
 
@@ -45,3 +46,6 @@ class FileReader:
             return self.reader()
         else:
             return None
+
+
+__all__ = [CsvReader, EdfReader, ParquetReader, DwcReader, FileReader]
