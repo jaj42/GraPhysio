@@ -1,5 +1,8 @@
 import sys
 
+# Make sure pyqtgraph uses this instead of another installed version
+import PySide6
+
 from pyqtgraph.Qt import QtWidgets
 
 from graphysio.mainui import MainUi

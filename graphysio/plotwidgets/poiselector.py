@@ -24,7 +24,7 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
     @staticmethod
     def buttonClicked(self, qbutton) -> None:
         fixval = FixIndex(qbutton.text())
-        self.poiselectorwidget.fixvalue = fixval
+        self.poiselectorplot.fixvalue = fixval
 
     def __init__(self, series, parent, properties=None) -> None:
         super().__init__(parent=parent)

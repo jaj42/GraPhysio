@@ -14,7 +14,7 @@ from graphysio.plotwidgets import TimeAxisItem, TSWidget
 
 
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
-    setcoords = QtCore.pyqtSignal(float, float)
+    setcoords = QtCore.Signal(float, float)
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent=parent)
@@ -40,7 +40,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.menuFile.addSeparator()
         self.menuFile.addAction("&Load plugin", self.errguard(utils.loadmodule))
         self.menuFile.addSeparator()
-        self.menuFile.addAction("&Quit", self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
+        self.menuFile.addAction("&Quit", self.close, QtCore.Qt.CTRL | QtCore.Qt.Key_Q)
 
         self.setcoords.connect(self.setCoords)
 

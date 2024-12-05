@@ -1,11 +1,10 @@
 #!/bin/sh
 
-CONV=pyuic6
+CONV=pyside6-uic
 
 for f in `ls *.ui`
 do
 	bn=$(basename "${f}" .ui)
 	of="${bn}.py"
 	${CONV} -o "${of}" "${f}"
-	sed -i 's/from PyQt6 import/from pyqtgraph import/' "${of}"
 done

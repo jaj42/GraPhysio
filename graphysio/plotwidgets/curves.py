@@ -14,8 +14,8 @@ from graphysio.utils import estimateSampleRate
 
 
 class CurveItem(pg.PlotDataItem):
-    visible = QtCore.pyqtSignal()
-    invisible = QtCore.pyqtSignal()
+    visible = QtCore.Signal()
+    invisible = QtCore.Signal()
 
     def __init__(self, series, parent, pen=None) -> None:
         self.parent = parent
@@ -163,8 +163,8 @@ class POIItem(pg.ScatterPlotItem):
 
 
 class CurveItemWithPOI(CurveItem):
-    visible = QtCore.pyqtSignal()
-    invisible = QtCore.pyqtSignal()
+    visible = QtCore.Signal()
+    invisible = QtCore.Signal()
 
     @staticmethod
     def sigPointClicked(feetitem, points) -> None:

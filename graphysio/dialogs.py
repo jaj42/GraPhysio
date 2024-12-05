@@ -17,7 +17,7 @@ ureg = UnitRegistry()
 
 
 class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
+    dlgdata = QtCore.Signal(object)
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent=parent)
@@ -53,7 +53,7 @@ class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
 
 
 class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
+    dlgdata = QtCore.Signal(object)
 
     def __init__(self, search_function, parent=None) -> None:
         super().__init__(parent=parent)
@@ -98,7 +98,7 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
 
 
 class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
+    dlgdata = QtCore.Signal(object)
 
     def __init__(self, parent=None, filterfeet=False) -> None:
         super().__init__(parent=parent)
@@ -146,14 +146,13 @@ class DlgFilter(ui.Ui_Filter, QtWidgets.QDialog):
         for itemname, value in self.choices.items():
             combo, itemtype = value
             curvefilters[itemname] = combo.currentText()
-        createnew = self.chkNewcurve.checkState() > QtCore.Qt.Unchecked
-        result = (createnew, curvefilters)
+        result = (self.chkNewcurve.isChecked(), curvefilters)
         self.dlgdata.emit(result)
         super().accept()
 
 
 class DlgSetupPULoop(ui.Ui_SetupPULoop, QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
+    dlgdata = QtCore.Signal(object)
 
     def __init__(self, sourcewidget, parent=None) -> None:
         super().__init__(parent=parent)
@@ -179,7 +178,7 @@ class DlgSetupPULoop(ui.Ui_SetupPULoop, QtWidgets.QDialog):
 
 
 class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
+    dlgdata = QtCore.Signal(object)
 
     def __init__(self, begin, end, patient="", directory="", parent=None) -> None:
         super().__init__(parent=parent)
@@ -200,7 +199,7 @@ class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
             caption="Export to",
             filter="CSV files (*.csv *.dat)",
             options=QtWidgets.QFileDialog.DontConfirmOverwrite,
-            directory=self.dircache,
+            dir=self.dircache,
         )
         # PyQt5 API change
         if not isinstance(filepath, str):
@@ -221,7 +220,7 @@ class DlgPeriodExport(ui.Ui_PeriodExport, QtWidgets.QDialog):
 
 
 class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
+    dlgdata = QtCore.Signal(object)
 
     def __init__(self, visible=None, hidden=None, parent=None) -> None:
         super().__init__(parent=parent)
@@ -273,16 +272,15 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
 
     def accept(self) -> None:
         items = self.lstCurves.findItems("", QtCore.Qt.MatchContains)
-        ischecked = lambda item: item.checkState() != QtCore.Qt.Unchecked  # noqa: E731
-        checked = list(filter(ischecked, items))
-        visible = {self.curvehash[item.text()] for item in checked}
-        result = (visible, self.curveproperties)
+        checked_items = [i for i in items if i.checkState() != QtCore.Qt.Unchecked]
+        visible_items = {self.curvehash[item.text()] for item in checked_items}
+        result = (visible_items, self.curveproperties)
         self.dlgdata.emit(result)
         super().accept()
 
 
 class DlgCurveProperties(ui.Ui_CurveProperties, QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
+    dlgdata = QtCore.Signal(object)
 
     def __init__(self, curve, parent=None) -> None:
         super().__init__(parent=parent)
@@ -375,7 +373,7 @@ class DlgSetDateTime(ui.Ui_SetDateTime, QtWidgets.QDialog):
 
 
 class DlgCurveAlgebra(QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
+    dlgdata = QtCore.Signal(object)
 
     def __init__(self, parent=None, curvecorr=None) -> None:
         super().__init__(parent=parent)
@@ -413,7 +411,7 @@ class DlgCurveAlgebra(QtWidgets.QDialog):
 
 
 class DlgListChoice(QtWidgets.QDialog):
-    dlgdata = QtCore.pyqtSignal(object)
+    dlgdata = QtCore.Signal(object)
 
     def __init__(self, items, title="", message="", parent=None) -> None:
         super().__init__(parent=parent)
@@ -445,7 +443,7 @@ class DlgListChoice(QtWidgets.QDialog):
         model = self.listView.model()
         i = 0
         while model.item(i):
-            if model.item(i).checkState():
+            if model.item(i).checkState() != QtCore.Qt.Unchecked:
                 selected.append(model.item(i).text())
             i += 1
         return selected
@@ -546,7 +544,7 @@ def askFilePath(
     if filename:
         default = pathlib.Path(default, filename)
 
-    fileinfo = func(caption=caption, filter=filter, directory=str(default))
+    fileinfo = func(caption=caption, filter=filter, dir=str(default))
     filepath = fileinfo[0]
     if not filepath:
         # Cancel pressed
@@ -567,7 +565,7 @@ def askDirPath(caption: str, folder: str = "") -> Optional[pathlib.Path]:
 
     outdirtmp = QtWidgets.QFileDialog.getExistingDirectory(
         caption=caption,
-        directory=str(folder),
+        dir=str(folder),
     )
     if not outdirtmp:
         # Cancel pressed

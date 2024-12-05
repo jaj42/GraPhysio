@@ -23,7 +23,7 @@ def findPressureFeet(curve):
         sndderivsq = sndderiv**2
         integral = sndderivsq.rolling(window=winsum, center=True).sum()
         thres = integral.rolling(window=winquant).quantile(0.7)
-        thres = thres.fillna(method="backfill")
+        thres = thres.bfill()
         risings = (integral > thres).astype(int)
         risingvar = risings.diff()
         (risingStarts,) = (risingvar > 0).to_numpy().nonzero()

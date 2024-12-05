@@ -260,7 +260,6 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         seperator = self.txtSep.currentText()
         seperator = "\t" if seperator == "<tab>" else seperator
 
-        generatex = self.chkGenX.checkState() > QtCore.Qt.Unchecked
         try:
             dtfield = xRows[0]
         except IndexError:
@@ -279,7 +278,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             yfields=yRows,
             datetime_format=self.txtDateTime.currentText(),
             droplines=self.spnLinedrop.value(),
-            generatex=generatex,
+            generatex=self.chkGenX.isChecked(),
             clusterid=cid,
             timezone=self.txtTimezone.currentText(),
             encoding=self.txtEncoding.currentText(),

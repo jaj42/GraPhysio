@@ -286,8 +286,11 @@ def filter(curve, filtname, paramgetter):
 
 # -- Feet Filters --
 def shortcycles(feetdict, samplerate, parameters):
-    starts = feetdict["start"]
-    stops = feetdict["stop"]
+    try:
+        starts = feetdict["start"]
+        stops = feetdict["stop"]
+    except KeyError:
+        return feetdict
     if len(stops) < 1:
         # No stop information
         msg = "No stop feet"
