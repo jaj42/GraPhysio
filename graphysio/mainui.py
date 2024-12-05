@@ -16,7 +16,7 @@ from graphysio.plotwidgets import TimeAxisItem, TSWidget
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
     setcoords = QtCore.Signal(float, float)
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, input_file=None, parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
         self.dircache = os.path.expanduser("~")
@@ -49,6 +49,10 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.data_timer.timeout.connect(self.read_plot_data)
         self.data_timer.setInterval(1000)  # Milliseconds
         self.data_timer.start()
+
+        # If file was provided on command line, load it
+        if input_file:
+            self.launchOpenFile(self.createNewPlotWithData, input_file)
 
     def closeEvent(self, event) -> None:
         self.pool.stop()
@@ -135,9 +139,12 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.datahandler = datahandler
         future.add_done_callback(cb)
 
-    def launchOpenFile(self, datahandler) -> None:
+    def launchOpenFile(self, datahandler, filepath=None) -> None:
         reader = readdata.FileReader()
-        self.dircache = reader.askFile(self.dircache)
+        if filepath:
+            self.dircache = reader.load_file(filepath)
+        else:
+            self.dircache = reader.user_choose_file(self.dircache)
         self.lblStatus.setText("Loading File...")
         future = self.pool.schedule(reader.get_plotdata)
 

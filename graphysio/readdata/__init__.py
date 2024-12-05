@@ -16,7 +16,7 @@ file_readers = {k: mod for k, mod in file_readers.items() if mod.is_available}
 
 
 class FileReader:
-    def __init__(self) -> None:
+    def __init__(self, filepath=None) -> None:
         super().__init__()
         self.reader = None
 
@@ -25,8 +25,10 @@ class FileReader:
         )
         supported = " ".join(f"*.{ext}" for ext in file_readers)
         self.file_filters = f"All supported ({supported});;{filters}"
+        if filepath:
+            self.load_file(filepath)
 
-    def askFile(self, folder="") -> "pathlib.PurePath":
+    def user_choose_file(self, folder="") -> "pathlib.PurePath":
         filepath, ext = askOpenFilePath(
             "Open File",
             folder=folder,
@@ -34,6 +36,12 @@ class FileReader:
         )
         if not filepath:
             return folder
+        return self.load_file(filepath)
+
+    def load_file(self, filepath: "pathlib.PurePath") -> None:
+        ext = filepath.suffix.lstrip(".")
+        if ext not in file_readers:
+            raise ValueError(f"Unsupported file type: {ext}")
         self.reader = file_readers[ext]()
         self.reader.set_data({"filepath": filepath})
         self.reader.askUserInput()
