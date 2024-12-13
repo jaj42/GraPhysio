@@ -89,8 +89,8 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
     def accept(self) -> None:
         data = {}
         data["patientid"] = self.patient.name
-        data["from"] = self.dtFrom.dateTime().toPyDateTime()
-        data["to"] = self.dtTo.dateTime().toPyDateTime()
+        data["from"] = self.dtFrom.dateTime().toPython()
+        data["to"] = self.dtTo.dateTime().toPython()
         data["items"] = [item.text() for item in self.lstLabels.selectedItems()]
         data["type"] = self.cmbTypeofData.currentText().lower()
         self.dlgdata.emit(data)
