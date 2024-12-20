@@ -8,14 +8,14 @@ periods. GraPhysio can read data from CSV, Parquet and EDF files and can write
 CSV, Parquet, EDF and Matlab files.
 
 ## Install instructions
-For the best experience, conda is recommended:
-
-conda install -c conda-forge graphysio
-
-Alternatively you can then install the latest version of GraPhysio from PyPi by
-tying the following command:
+You can then install the latest version of GraPhysio from PyPi by tying the
+following command:
 
 > python -m pip install graphysio
+
+or from conda-forge by typing the following command:
+
+> conda install -c conda-forge graphysio
 
 You can launch GraPhysio by typing:
 

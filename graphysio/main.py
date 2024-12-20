@@ -5,16 +5,39 @@ from pathlib import Path
 import PySide6  # noqa
 
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QCommandLineParser
+from PySide6.QtCore import QCommandLineParser, QCommandLineOption
 from graphysio.mainui import MainUi
+
+try:
+    from pyshortcuts import make_shortcut
+
+    shorcuts_avail = True
+except ImportError:
+    shorcuts_avail = False
+
+
+def mk_shortscuts() -> None:
+    if shorcuts_avail:
+        pycmd = "_ -m graphysio"
+        make_shortcut(pycmd, name="GraPhysio", terminal=False)
 
 
 def parse(app):
     parser = QCommandLineParser()
     parser.addHelpOption()
     # parser.addVersionOption()
+
     parser.addPositionalArgument("file", "File to open.", "[file]")
+
+    shortcuts_option = QCommandLineOption(
+        ["S", "shortcuts"], "Generate desktop shortcuts."
+    )
+    if shorcuts_avail:
+        parser.addOption(shortcuts_option)
+
     parser.process(app)
+    if parser.isSet(shortcuts_option):
+        mk_shortscuts()
     arguments = parser.positionalArguments()
     if len(arguments) > 0:
         return Path(arguments[0])
