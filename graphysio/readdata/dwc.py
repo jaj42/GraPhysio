@@ -21,7 +21,7 @@ class DwcReader(BaseReader):
 
         dlgchoice = DlgDWCOpen(dwclib)
         dlgchoice.dlgdata.connect(cb)
-        dlgchoice.exec_()
+        dlgchoice.exec()
 
     def get_plotdata(self) -> PlotData | List[PlotData]:
         if not self.userdata:

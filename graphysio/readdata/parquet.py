@@ -26,7 +26,7 @@ class ParquetReader(BaseReader):
 
         dlgchoice = DlgListChoice(colnames, "Open Parquet", "Choose curves to load")
         dlgchoice.dlgdata.connect(cb)
-        dlgchoice.exec_()
+        dlgchoice.exec()
 
     def __call__(self) -> PlotData:
         filepath = self.userdata["filepath"]

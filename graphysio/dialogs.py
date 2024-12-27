@@ -266,7 +266,7 @@ class DlgCurveSelection(ui.Ui_CurveSelection, QtWidgets.QDialog):
 
         dlg = DlgCurveProperties(curve)
         dlg.dlgdata.connect(cb)
-        dlg.exec_()
+        dlg.exec()
 
     def addCurve(self, name, checked) -> None:
         item = QtWidgets.QListWidgetItem()
@@ -508,7 +508,7 @@ def askUserValue(param):  # noqa: C901
         value = tmpvalue == "Yes"
     elif param.request is datetime:
         dlg = DlgSetDateTime()
-        isok = dlg.exec_()
+        isok = dlg.exec()
         value = dlg.dlgdata
     elif isinstance(param.request, list):
         value, isok = QtWidgets.QInputDialog.getItem(

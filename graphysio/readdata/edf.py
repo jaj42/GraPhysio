@@ -32,7 +32,7 @@ class EdfReader(BaseReader):
         colnames = list(signals.keys())
         dlgchoice = DlgListChoice(colnames, "Open EDF", "Choose curves to load")
         dlgchoice.dlgdata.connect(cb)
-        dlgchoice.exec_()
+        dlgchoice.exec()
 
     def __call__(self) -> PlotData:
         filepath = str(self.userdata["filepath"])

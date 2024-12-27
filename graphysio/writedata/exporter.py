@@ -71,7 +71,7 @@ class TsExporter:
                 )
 
         dlg.dlgdata.connect(cb)
-        dlg.exec_()
+        dlg.exec()
 
     def cycles(self) -> None:
         outdir = askDirPath("Export to", self.outdir)

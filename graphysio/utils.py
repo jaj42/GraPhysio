@@ -80,4 +80,4 @@ def displayError(errmsg) -> None:
     msgbox.setText(str(errmsg))
     msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok)
     msgbox.setIcon(QtWidgets.QMessageBox.Critical)
-    msgbox.exec_()
+    msgbox.exec()

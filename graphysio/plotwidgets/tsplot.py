@@ -82,7 +82,7 @@ class TSWidget(PlotWidget):
             self.rebuildLegend()
 
         dlgCurveSelection.dlgdata.connect(cb)
-        dlgCurveSelection.exec_()
+        dlgCurveSelection.exec()
 
     def launchCycleDetection(self) -> None:
         dlgCycles = dialogs.DlgCycleDetection(parent=self.parent)
@@ -93,7 +93,7 @@ class TSWidget(PlotWidget):
                 curve.addFeet(CycleId(choice))
 
         dlgCycles.dlgdata.connect(cb)
-        dlgCycles.exec_()
+        dlgCycles.exec()
 
     def launchFilter(self, filterfeet) -> None:
         dlgFilter = dialogs.DlgFilter(parent=self.parent, filterfeet=filterfeet)
@@ -108,7 +108,7 @@ class TSWidget(PlotWidget):
                 filterfunc(curve, choice, asnew=createnew)
 
         dlgFilter.dlgdata.connect(cb)
-        dlgFilter.exec_()
+        dlgFilter.exec()
 
     def setDateTime(self) -> None:
         if len(self.curves) < 1:
@@ -120,7 +120,7 @@ class TSWidget(PlotWidget):
         fstcurve = sortedcurves[0]
         curtimestamp = fstcurve.series.index[0]
         dlg = dialogs.DlgSetDateTime(prevdatetime=curtimestamp)
-        dlg.exec_()
+        dlg.exec()
         newtimestamp = dlg.dlgdata
         if not newtimestamp:
             return
@@ -200,7 +200,7 @@ class TSWidget(PlotWidget):
             self.addSeriesAsCurve(newseries)
 
         dlgCurveAlgebra.dlgdata.connect(cb)
-        dlgCurveAlgebra.exec_()
+        dlgCurveAlgebra.exec()
 
     # Menu Selection
     def launchNewPlotFromSelection(self) -> None:
@@ -249,7 +249,7 @@ class TSWidget(PlotWidget):
             self.parent.addTab(loopwidget, newname)
 
         dlgSetupPU.dlgdata.connect(cb)
-        dlgSetupPU.exec_()
+        dlgSetupPU.exec()
 
     @property
     def menu(self):

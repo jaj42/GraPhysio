@@ -18,7 +18,7 @@ class CsvReader(BaseReader):
     def askUserInput(self) -> None:
         filepath = self.userdata["filepath"]
         dlg = DlgNewPlotCsv(filepath)
-        dlg.exec_()
+        dlg.exec()
         csvrequest = dlg.csvrequest
         if csvrequest:
             self.userdata["csvrequest"] = dlg.csvrequest
