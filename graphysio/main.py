@@ -8,6 +8,8 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QCommandLineParser, QCommandLineOption
 from graphysio.mainui import MainUi
 
+import multiprocessing
+
 try:
     from pyshortcuts import make_shortcut
 
@@ -54,3 +56,8 @@ def main() -> None:
     winmain.show()
 
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    multiprocessing.freeze_support()
+    main()

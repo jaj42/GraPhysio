@@ -19,7 +19,7 @@ class DwcReader(BaseReader):
         def cb(reqdata) -> None:
             self.userdata = reqdata
 
-        dlgchoice = DlgDWCOpen(dwclib.read_patient)
+        dlgchoice = DlgDWCOpen(dwclib)
         dlgchoice.dlgdata.connect(cb)
         dlgchoice.exec_()
 

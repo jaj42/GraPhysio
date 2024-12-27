@@ -1,8 +1,16 @@
 import argparse
 
-from pyshortcuts import make_shortcut
+# Make sure pyqtgraph uses this instead of another installed version
+import PySide6  # noqa
 
 from graphysio.main import main as graphysio_main
+
+try:
+    from pyshortcuts import make_shortcut
+
+    shortcuts_avail = True
+except ImportError:
+    shortcuts_avail = False
 
 
 def mk_shortscuts() -> None:
@@ -20,7 +28,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.shortcuts:
+    if args.shortcuts and shorcuts_avail:
         mk_shortscuts()
     else:
         graphysio_main()

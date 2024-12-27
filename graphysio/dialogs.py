@@ -55,15 +55,17 @@ class DlgCycleDetection(ui.Ui_CycleDetection, QtWidgets.QDialog):
 class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
     dlgdata = QtCore.Signal(object)
 
-    def __init__(self, search_function, parent=None) -> None:
+    def __init__(self, dwclib, parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi(self)
-        self.dwc_search_function = search_function
+        self.dwc_search_function = dwclib.read_patient
+        self.dwc_update_config = dwclib.common.db.update_config
         self.patient = None
 
         self.searchButton.clicked.connect(self.search_patient)
         self.okButton.clicked.connect(self.accept)
         self.cancelButton.clicked.connect(self.reject)
+        self.loadConfigButton.clicked.connect(self.update_config)
 
     def search_patient(self):
         self.lstLabels.clear()
@@ -85,6 +87,12 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
         self.dtTo.setDateTime(res["data_end"])
         for lbl in res[data_req]:
             self.lstLabels.addItem(lbl)
+
+    def update_config(self) -> None:
+        configfile, _ = askOpenFilePath('Import dwclib config file')
+        with open(configfile,'r') as fd:
+            c = fd.read()
+        self.dwc_update_config(c)
 
     def accept(self) -> None:
         data = {}
@@ -538,7 +546,7 @@ def askFilePath(
     caption: str,
     filename: str = "",
     folder: str = "",
-    filter: str = "CSV files (*.csv *.dat)",
+    filter: str = "",
 ) -> Optional[pathlib.Path]:
     default = pathlib.Path(folder) if folder else pathlib.Path.home()
     if filename:

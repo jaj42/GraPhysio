@@ -29,20 +29,20 @@ class Ui_DWCOpen(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
-        self.txtPatientId = QLineEdit(DWCOpen)
-        self.txtPatientId.setObjectName(u"txtPatientId")
+        self.searchButton = QPushButton(DWCOpen)
+        self.searchButton.setObjectName(u"searchButton")
 
-        self.gridLayout.addWidget(self.txtPatientId, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.searchButton, 0, 3, 1, 1)
 
         self.label = QLabel(DWCOpen)
         self.label.setObjectName(u"label")
 
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.label, 0, 1, 1, 1)
 
-        self.searchButton = QPushButton(DWCOpen)
-        self.searchButton.setObjectName(u"searchButton")
+        self.txtPatientId = QLineEdit(DWCOpen)
+        self.txtPatientId.setObjectName(u"txtPatientId")
 
-        self.gridLayout.addWidget(self.searchButton, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.txtPatientId, 0, 2, 1, 1)
 
 
         self.verticalLayout_2.addLayout(self.gridLayout)
@@ -99,6 +99,13 @@ class Ui_DWCOpen(object):
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.loadConfigButton = QPushButton(DWCOpen)
+        self.loadConfigButton.setObjectName(u"loadConfigButton")
+        icon = QIcon(QIcon.fromTheme(u"preferences-system"))
+        self.loadConfigButton.setIcon(icon)
+
+        self.horizontalLayout.addWidget(self.loadConfigButton)
+
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_2)
@@ -135,14 +142,15 @@ class Ui_DWCOpen(object):
 
     def retranslateUi(self, DWCOpen):
         DWCOpen.setWindowTitle(QCoreApplication.translate("DWCOpen", u"Load DWC data", None))
-        self.label.setText(QCoreApplication.translate("DWCOpen", u"Patient ID", None))
         self.searchButton.setText(QCoreApplication.translate("DWCOpen", u"Search", None))
+        self.label.setText(QCoreApplication.translate("DWCOpen", u"Patient ID", None))
         self.lblFound.setText("")
         self.cmbTypeofData.setItemText(0, QCoreApplication.translate("DWCOpen", u"Numerics", None))
         self.cmbTypeofData.setItemText(1, QCoreApplication.translate("DWCOpen", u"Waves", None))
 
         self.label_2.setText(QCoreApplication.translate("DWCOpen", u"From", None))
         self.label_3.setText(QCoreApplication.translate("DWCOpen", u"To", None))
+        self.loadConfigButton.setText("")
         self.okButton.setText(QCoreApplication.translate("DWCOpen", u"Ok", None))
         self.cancelButton.setText(QCoreApplication.translate("DWCOpen", u"Cancel", None))
     # retranslateUi
