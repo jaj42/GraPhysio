@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "graphysio"
-version = "2024.12.27"
+version = "2025.3.12"
 description = "Visualizer and analyser for biometric signals"
 authors = ["Jona Joachim <jona@joachim.cc>"]
 license = "ISC"
@@ -18,15 +18,15 @@ pandas = "^2"
 pathvalidate = "^3"
 Pint = "^0.24"
 pyqtgraph = "^0.13"
-scipy = "^1.13"
-numexpr = "^2.9"
+scipy = "^1.15"
+numexpr = "^2.10"
 pebble = "^5.0.7"
 physiocurve = ">=2024.12.16"
 python-calamine = {version = "^0.3.1", optional = true}
 pyshortcuts = {version = "^1.9", optional = true}
 pyarrow = {version = ">=14", optional = true}
 pyEDFlib = {version = "^0.1.37", optional = true}
-dwclib = {version = ">=2024.12.27", extras = ["dwcmeta"], optional = true}
+dwclib = {version = ">=2025.3.12", extras = ["dwcmeta"], optional = true}
 ecg-plot = "^0.2.8"
 matplotlib = "^3.10.0"
 
