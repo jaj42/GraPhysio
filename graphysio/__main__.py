@@ -28,7 +28,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.shortcuts and shorcuts_avail:
+    if args.shortcuts and shortcuts_avail:
         mk_shortscuts()
     else:
         graphysio_main()
