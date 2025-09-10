@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 from functools import partial
 from typing import Optional
 
@@ -13,13 +13,16 @@ from graphysio.utils import Colors
 class TimeAxisItem(pg.AxisItem):
     @staticmethod
     def conv_absolute(value, mainwindow=False):
-        value = int(value * 1e-6)  # convert from ns to ms
-        date = QtCore.QDateTime.fromMSecsSinceEpoch(value)
-        date = date.toLocalTime()
+        # Convert from nanoseconds to seconds
+        timestamp_seconds = value * 1e-9
+        date = datetime.fromtimestamp(timestamp_seconds, tz=timezone.utc)
+        # Convert to local time
+        date = date.astimezone()
         if mainwindow:
-            timestr = date.toString("dd/MM/yyyy hh:mm:ss.zzz")
+            milliseconds = int((timestamp_seconds % 1) * 1000)
+            timestr = date.strftime(f"%d/%m/%Y %H:%M:%S.{milliseconds:03d}")
         else:
-            timestr = date.toString("dd/MM hh:mm:ss")
+            timestr = date.strftime("%d/%m %H:%M:%S")
         return timestr
 
     @staticmethod

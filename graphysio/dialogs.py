@@ -89,8 +89,8 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
             self.lstLabels.addItem(lbl)
 
     def update_config(self) -> None:
-        configfile, _ = askOpenFilePath('Import dwclib config file')
-        with open(configfile,'r') as fd:
+        configfile, _ = askOpenFilePath("Import dwclib config file")
+        with open(configfile, "r") as fd:
             c = fd.read()
         self.dwc_update_config(c)
 

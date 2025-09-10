@@ -103,7 +103,7 @@ class TsExporter:
             df = pd.concat(cycle, axis=1)
             df["datetime"] = pd.to_datetime(df.index, unit="ns")
 
-            filename = sanitize_filename(f"{self.name}-{n+1}.csv")
+            filename = sanitize_filename(f"{self.name}-{n + 1}.csv")
             filepath = os.path.join(self.outdir, filename)
             df.to_csv(
                 filepath,
@@ -160,7 +160,7 @@ class PuExporter:
     def writeloops(self) -> None:
         for n, loop in enumerate(self.parent.loops):
             df = loop.df
-            filename = sanitize_filename(f"{self.name}-{n+1}.csv")
+            filename = sanitize_filename(f"{self.name}-{n + 1}.csv")
             filepath = os.path.join(self.outdir, filename)
             df["datetime"] = pd.to_datetime(df.index, unit="ns")
             df.to_csv(

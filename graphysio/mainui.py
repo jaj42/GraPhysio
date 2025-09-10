@@ -99,7 +99,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             tmptabname = tabname
             # Duplicate tab name. Add a number to the end
             for i in itertools.count():
-                tmptabname = f"{tabname}_{i+1}"
+                tmptabname = f"{tabname}_{i + 1}"
                 if tmptabname not in tabnames:
                     break
             tabname = tmptabname
