@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'curveproperties.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -34,27 +34,27 @@ class Ui_CurveProperties(object):
         self.txtName = QLineEdit(self.grpName)
         self.txtName.setObjectName(u"txtName")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.txtName)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.txtName)
 
         self.label_3 = QLabel(self.grpName)
         self.label_3.setObjectName(u"label_3")
 
-        self.formLayout.setWidget(6, QFormLayout.LabelRole, self.label_3)
+        self.formLayout.setWidget(6, QFormLayout.ItemRole.LabelRole, self.label_3)
 
         self.btnColor = QPushButton(self.grpName)
         self.btnColor.setObjectName(u"btnColor")
 
-        self.formLayout.setWidget(6, QFormLayout.FieldRole, self.btnColor)
+        self.formLayout.setWidget(6, QFormLayout.ItemRole.FieldRole, self.btnColor)
 
         self.label_4 = QLabel(self.grpName)
         self.label_4.setObjectName(u"label_4")
 
-        self.formLayout.setWidget(7, QFormLayout.LabelRole, self.label_4)
+        self.formLayout.setWidget(7, QFormLayout.ItemRole.LabelRole, self.label_4)
 
         self.lblSamplerate = QLabel(self.grpName)
         self.lblSamplerate.setObjectName(u"lblSamplerate")
 
-        self.formLayout.setWidget(7, QFormLayout.FieldRole, self.lblSamplerate)
+        self.formLayout.setWidget(7, QFormLayout.ItemRole.FieldRole, self.lblSamplerate)
 
         self.cmbSymbol = QComboBox(self.grpName)
         self.cmbSymbol.addItem("")
@@ -65,32 +65,32 @@ class Ui_CurveProperties(object):
         self.cmbSymbol.addItem("")
         self.cmbSymbol.setObjectName(u"cmbSymbol")
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.cmbSymbol)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.cmbSymbol)
 
         self.label_6 = QLabel(self.grpName)
         self.label_6.setObjectName(u"label_6")
 
-        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.label_6)
+        self.formLayout.setWidget(4, QFormLayout.ItemRole.LabelRole, self.label_6)
 
         self.label_2 = QLabel(self.grpName)
         self.label_2.setObjectName(u"label_2")
 
-        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.label_2)
+        self.formLayout.setWidget(5, QFormLayout.ItemRole.LabelRole, self.label_2)
 
         self.spnWidth = QSpinBox(self.grpName)
         self.spnWidth.setObjectName(u"spnWidth")
 
-        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.spnWidth)
+        self.formLayout.setWidget(5, QFormLayout.ItemRole.FieldRole, self.spnWidth)
 
         self.label_5 = QLabel(self.grpName)
         self.label_5.setObjectName(u"label_5")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.label_5)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.label_5)
 
         self.label = QLabel(self.grpName)
         self.label.setObjectName(u"label")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.label)
 
         self.cmbConnect = QComboBox(self.grpName)
         self.cmbConnect.addItem("")
@@ -99,7 +99,7 @@ class Ui_CurveProperties(object):
         self.cmbConnect.addItem("")
         self.cmbConnect.setObjectName(u"cmbConnect")
 
-        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.cmbConnect)
+        self.formLayout.setWidget(4, QFormLayout.ItemRole.FieldRole, self.cmbConnect)
 
 
         self.verticalLayout.addWidget(self.grpName)

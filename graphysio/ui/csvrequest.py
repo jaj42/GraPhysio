@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'csvrequest.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -40,7 +40,7 @@ class Ui_NewPlot(object):
         self.label.setFrameShape(QFrame.NoFrame)
         self.label.setFrameShadow(QFrame.Plain)
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.label)
 
         self.txtSep = QComboBox(NewPlot)
         self.txtSep.addItem("")
@@ -49,12 +49,12 @@ class Ui_NewPlot(object):
         self.txtSep.setObjectName(u"txtSep")
         self.txtSep.setEditable(True)
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.txtSep)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.txtSep)
 
         self.label_2 = QLabel(NewPlot)
         self.label_2.setObjectName(u"label_2")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.label_2)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.label_2)
 
         self.txtDecimal = QComboBox(NewPlot)
         self.txtDecimal.addItem("")
@@ -62,22 +62,22 @@ class Ui_NewPlot(object):
         self.txtDecimal.setObjectName(u"txtDecimal")
         self.txtDecimal.setEditable(True)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.txtDecimal)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.txtDecimal)
 
         self.label_3 = QLabel(NewPlot)
         self.label_3.setObjectName(u"label_3")
 
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.label_3)
+        self.formLayout.setWidget(3, QFormLayout.ItemRole.LabelRole, self.label_3)
 
         self.spnLinedrop = QSpinBox(NewPlot)
         self.spnLinedrop.setObjectName(u"spnLinedrop")
 
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.spnLinedrop)
+        self.formLayout.setWidget(3, QFormLayout.ItemRole.FieldRole, self.spnLinedrop)
 
         self.label_4 = QLabel(NewPlot)
         self.label_4.setObjectName(u"label_4")
 
-        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.label_4)
+        self.formLayout.setWidget(4, QFormLayout.ItemRole.LabelRole, self.label_4)
 
         self.txtEncoding = QComboBox(NewPlot)
         self.txtEncoding.addItem("")
@@ -85,12 +85,12 @@ class Ui_NewPlot(object):
         self.txtEncoding.setObjectName(u"txtEncoding")
         self.txtEncoding.setEditable(True)
 
-        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.txtEncoding)
+        self.formLayout.setWidget(4, QFormLayout.ItemRole.FieldRole, self.txtEncoding)
 
         self.label_5 = QLabel(NewPlot)
         self.label_5.setObjectName(u"label_5")
 
-        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.label_5)
+        self.formLayout.setWidget(5, QFormLayout.ItemRole.LabelRole, self.label_5)
 
         self.txtTimezone = QComboBox(NewPlot)
         self.txtTimezone.addItem("")
@@ -98,7 +98,7 @@ class Ui_NewPlot(object):
         self.txtTimezone.setObjectName(u"txtTimezone")
         self.txtTimezone.setEditable(True)
 
-        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.txtTimezone)
+        self.formLayout.setWidget(5, QFormLayout.ItemRole.FieldRole, self.txtTimezone)
 
 
         self.verticalLayout_3.addLayout(self.formLayout)
@@ -179,9 +179,12 @@ class Ui_NewPlot(object):
         self.label_7 = QLabel(self.groupBox_6)
         self.label_7.setObjectName(u"label_7")
 
-        self.formLayout_2.setWidget(2, QFormLayout.LabelRole, self.label_7)
+        self.formLayout_2.setWidget(2, QFormLayout.ItemRole.LabelRole, self.label_7)
 
         self.txtDateTime = QComboBox(self.groupBox_6)
+        self.txtDateTime.addItem("")
+        self.txtDateTime.addItem("")
+        self.txtDateTime.addItem("")
         self.txtDateTime.addItem("")
         self.txtDateTime.addItem("")
         self.txtDateTime.addItem("")
@@ -192,7 +195,7 @@ class Ui_NewPlot(object):
         self.txtDateTime.setObjectName(u"txtDateTime")
         self.txtDateTime.setEditable(True)
 
-        self.formLayout_2.setWidget(2, QFormLayout.FieldRole, self.txtDateTime)
+        self.formLayout_2.setWidget(2, QFormLayout.ItemRole.FieldRole, self.txtDateTime)
 
         self.lstVX = QComboBox(self.groupBox_6)
         self.lstVX.setObjectName(u"lstVX")
@@ -203,7 +206,7 @@ class Ui_NewPlot(object):
         self.lstVX.setSizePolicy(sizePolicy2)
         self.lstVX.setMaxCount(4)
 
-        self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.lstVX)
+        self.formLayout_2.setWidget(1, QFormLayout.ItemRole.FieldRole, self.lstVX)
 
         self.btnRemoveX = QPushButton(self.groupBox_6)
         self.btnRemoveX.setObjectName(u"btnRemoveX")
@@ -213,7 +216,7 @@ class Ui_NewPlot(object):
         sizePolicy3.setHeightForWidth(self.btnRemoveX.sizePolicy().hasHeightForWidth())
         self.btnRemoveX.setSizePolicy(sizePolicy3)
 
-        self.formLayout_2.setWidget(1, QFormLayout.LabelRole, self.btnRemoveX)
+        self.formLayout_2.setWidget(1, QFormLayout.ItemRole.LabelRole, self.btnRemoveX)
 
 
         self.verticalLayout_2.addLayout(self.formLayout_2)
@@ -368,10 +371,13 @@ class Ui_NewPlot(object):
         self.txtDateTime.setItemText(0, QCoreApplication.translate("NewPlot", u"%Y-%m-%d %H:%M:%S,%f", None))
         self.txtDateTime.setItemText(1, QCoreApplication.translate("NewPlot", u"%Y-%m-%d %H:%M:%S.%f", None))
         self.txtDateTime.setItemText(2, QCoreApplication.translate("NewPlot", u"%H:%M", None))
-        self.txtDateTime.setItemText(3, QCoreApplication.translate("NewPlot", u"<seconds>", None))
-        self.txtDateTime.setItemText(4, QCoreApplication.translate("NewPlot", u"<milliseconds>", None))
-        self.txtDateTime.setItemText(5, QCoreApplication.translate("NewPlot", u"<nanoseconds>", None))
-        self.txtDateTime.setItemText(6, QCoreApplication.translate("NewPlot", u"<infer>", None))
+        self.txtDateTime.setItemText(3, QCoreApplication.translate("NewPlot", u"<hours>", None))
+        self.txtDateTime.setItemText(4, QCoreApplication.translate("NewPlot", u"<minutes>", None))
+        self.txtDateTime.setItemText(5, QCoreApplication.translate("NewPlot", u"<seconds>", None))
+        self.txtDateTime.setItemText(6, QCoreApplication.translate("NewPlot", u"<milliseconds>", None))
+        self.txtDateTime.setItemText(7, QCoreApplication.translate("NewPlot", u"<microseconds>", None))
+        self.txtDateTime.setItemText(8, QCoreApplication.translate("NewPlot", u"<nanoseconds>", None))
+        self.txtDateTime.setItemText(9, QCoreApplication.translate("NewPlot", u"<infer>", None))
 
         self.btnRemoveX.setText(QCoreApplication.translate("NewPlot", u"Remove", None))
         self.chkGenX.setText(QCoreApplication.translate("NewPlot", u"Manual sample rate (Hz):", None))

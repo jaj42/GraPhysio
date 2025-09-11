@@ -256,12 +256,27 @@
                 </item>
                 <item>
                  <property name="text">
+                  <string>&lt;hours&gt;</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>&lt;minutes&gt;</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>&lt;seconds&gt;</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
                   <string>&lt;milliseconds&gt;</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>&lt;microseconds&gt;</string>
                  </property>
                 </item>
                 <item>

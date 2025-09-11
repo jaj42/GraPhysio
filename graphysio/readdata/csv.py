@@ -54,7 +54,13 @@ class CsvReader(BaseReader):
             data = data[~nanrows]
             timestamp = timestamp[~nanrows]
 
-            if dtformat == "<seconds>":
+            if dtformat == "<hours>":
+                timestamp = pdtonum(timestamp)
+                timestamp = pd.to_datetime(timestamp * 3.6e12, unit="ns")
+            elif dtformat == "<minutes>":
+                timestamp = pdtonum(timestamp)
+                timestamp = pd.to_datetime(timestamp * 6e10, unit="ns")
+            elif dtformat == "<seconds>":
                 timestamp = pdtonum(timestamp)
                 timestamp = pd.to_datetime(timestamp * 1e9, unit="ns")
             elif dtformat == "<milliseconds>":
@@ -66,10 +72,12 @@ class CsvReader(BaseReader):
             elif dtformat == "<nanoseconds>":
                 timestamp = pdtonum(timestamp)
                 timestamp = pd.to_datetime(timestamp, unit="ns")
-            elif dtformat == "<infer>":
-                timestamp = pd.to_datetime(timestamp, infer_datetime_format=True)
             else:
-                timestamp = pd.to_datetime(timestamp, format=dtformat)
+                if dtformat == "<infer>":
+                    opts={'infer_datetime_format': True}
+                else:
+                    opts={'format': dtformat}
+                timestamp = pd.to_datetime(timestamp, **opts)
                 timestamp = pd.Index(timestamp)
                 if timestamp.tz is None:
                     timestamp = timestamp.tz_localize(request.timezone)

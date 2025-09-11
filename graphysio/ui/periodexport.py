@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'periodexport.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -33,12 +33,12 @@ class Ui_PeriodExport(object):
         self.btnBrowse = QPushButton(self.groupBox)
         self.btnBrowse.setObjectName(u"btnBrowse")
 
-        self.formLayout_3.setWidget(0, QFormLayout.FieldRole, self.btnBrowse)
+        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.FieldRole, self.btnBrowse)
 
         self.txtFile = QLineEdit(self.groupBox)
         self.txtFile.setObjectName(u"txtFile")
 
-        self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.txtFile)
+        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.LabelRole, self.txtFile)
 
 
         self.verticalLayout.addWidget(self.groupBox)
@@ -84,19 +84,19 @@ class Ui_PeriodExport(object):
         self.label = QLabel(PeriodExport)
         self.label.setObjectName(u"label")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.label)
 
         self.txtPatient = QLineEdit(PeriodExport)
         self.txtPatient.setObjectName(u"txtPatient")
         sizePolicy.setHeightForWidth(self.txtPatient.sizePolicy().hasHeightForWidth())
         self.txtPatient.setSizePolicy(sizePolicy)
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.txtPatient)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.txtPatient)
 
         self.label_7 = QLabel(PeriodExport)
         self.label_7.setObjectName(u"label_7")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.label_7)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.label_7)
 
         self.txtPeriod = QComboBox(PeriodExport)
         self.txtPeriod.addItem("")
@@ -108,17 +108,17 @@ class Ui_PeriodExport(object):
         self.txtPeriod.setObjectName(u"txtPeriod")
         self.txtPeriod.setEditable(True)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.txtPeriod)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.txtPeriod)
 
         self.label_2 = QLabel(PeriodExport)
         self.label_2.setObjectName(u"label_2")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.label_2)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.label_2)
 
         self.txtComment = QLineEdit(PeriodExport)
         self.txtComment.setObjectName(u"txtComment")
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.txtComment)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.txtComment)
 
 
         self.verticalLayout.addLayout(self.formLayout)

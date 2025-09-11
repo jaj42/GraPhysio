@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'setuppuloop.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -33,22 +33,22 @@ class Ui_SetupPULoop(object):
         self.label = QLabel(SetupPULoop)
         self.label.setObjectName(u"label")
 
-        self.formLayout_2.setWidget(0, QFormLayout.LabelRole, self.label)
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.LabelRole, self.label)
 
         self.comboU = QComboBox(SetupPULoop)
         self.comboU.setObjectName(u"comboU")
 
-        self.formLayout_2.setWidget(0, QFormLayout.FieldRole, self.comboU)
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.FieldRole, self.comboU)
 
         self.label_2 = QLabel(SetupPULoop)
         self.label_2.setObjectName(u"label_2")
 
-        self.formLayout_2.setWidget(1, QFormLayout.LabelRole, self.label_2)
+        self.formLayout_2.setWidget(1, QFormLayout.ItemRole.LabelRole, self.label_2)
 
         self.comboP = QComboBox(SetupPULoop)
         self.comboP.setObjectName(u"comboP")
 
-        self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.comboP)
+        self.formLayout_2.setWidget(1, QFormLayout.ItemRole.FieldRole, self.comboP)
 
 
         self.verticalLayout.addLayout(self.formLayout_2)

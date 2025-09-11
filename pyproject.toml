@@ -7,14 +7,14 @@ name = "graphysio"
 version = "2025.3.28"
 description = "Visualizer and analyser for biometric signals"
 authors = [{ name = "Jona Joachim", email = "jona@joachim.cc" }]
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<=3.14"
 readme = "README.md"
 license = "ISC"
 dependencies = [
     "pyside6~=6.8",
     "pandas>=2,<3",
     "pathvalidate>=3,<4",
-    "Pint>=0.24,<0.25",
+    "Pint>=0.24,<0.26",
     "pyqtgraph>=0.13,<0.14",
     "scipy~=1.15",
     "numexpr~=2.10",
@@ -32,7 +32,7 @@ shortcuts = ["pyshortcuts~=1.9"]
 excel = ["python-calamine>=0.3.1,<0.4"]
 all = [
     "dwclib[dwcmeta]>=2025.3.12",
-    "pyEDFlib==0.1.38",
+    "pyEDFlib>=0.1.38",
     "pyarrow>=14",
     "pyshortcuts~=1.9",
 ]
