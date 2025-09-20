@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "graphysio"
-version = "2025.9.20"
+version = "2025.9.21"
 description = "Visualizer and analyser for biometric signals"
 authors = [{ name = "Jona Joachim", email = "jona@joachim.cc" }]
 requires-python = ">=3.10,<=3.14"
