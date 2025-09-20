@@ -1,14 +1,13 @@
+import multiprocessing
 import sys
 from pathlib import Path
 
 # Make sure pyqtgraph uses this instead of another installed version
 import PySide6  # noqa
-
+from PySide6.QtCore import QCommandLineOption, QCommandLineParser
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QCommandLineParser, QCommandLineOption
-from graphysio.mainui import MainUi
 
-import multiprocessing
+from graphysio.mainui import MainUi
 
 try:
     from pyshortcuts import make_shortcut

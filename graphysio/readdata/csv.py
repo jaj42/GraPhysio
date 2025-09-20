@@ -74,9 +74,9 @@ class CsvReader(BaseReader):
                 timestamp = pd.to_datetime(timestamp, unit="ns")
             else:
                 if dtformat == "<infer>":
-                    opts={'infer_datetime_format': True}
+                    opts = {"infer_datetime_format": True}
                 else:
-                    opts={'format': dtformat}
+                    opts = {"format": dtformat}
                 timestamp = pd.to_datetime(timestamp, **opts)
                 timestamp = pd.Index(timestamp)
                 if timestamp.tz is None:

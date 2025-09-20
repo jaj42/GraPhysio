@@ -2,14 +2,15 @@ import itertools
 import os
 import sys
 import traceback
-from pebble import ProcessPool
 from functools import partial
 from queue import Queue
 from typing import Optional
 
+from pebble import ProcessPool
 from pyqtgraph import QtCore, QtWidgets
 
 from graphysio import dialogs, readdata, ui, utils
+from graphysio.dialogs import loadmodule
 from graphysio.plotwidgets import TimeAxisItem, TSWidget
 
 
@@ -38,7 +39,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             self.menuFile.addAction("New Plot from DWC", launchNewDwcPlot)
 
         self.menuFile.addSeparator()
-        self.menuFile.addAction("&Load plugin", self.errguard(utils.loadmodule))
+        self.menuFile.addAction("&Load plugin", self.errguard(loadmodule))
         self.menuFile.addSeparator()
         self.menuFile.addAction("&Quit", self.close, QtCore.Qt.CTRL | QtCore.Qt.Key_Q)
 

@@ -1,10 +1,10 @@
 from typing import List
 
-from graphysio.plotwidgets.curves import CurveItem
+import ecg_plot
 import numpy as np
 from scipy import interpolate
 
-import ecg_plot
+from graphysio.plotwidgets.curves import CurveItem
 
 
 def interp_series(s, start, stop, npoints):

@@ -1,5 +1,7 @@
+import importlib
 import os
 import pathlib
+import sys
 from datetime import datetime
 from functools import partial
 from typing import Optional
@@ -10,8 +12,8 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 from graphysio import ui
 from graphysio.algorithms import filters
-from graphysio.utils import sanitize_filepath
 from graphysio.structures import CycleId
+from graphysio.utils import sanitize_filepath
 
 ureg = UnitRegistry()
 
@@ -579,3 +581,24 @@ def askDirPath(caption: str, folder: str = "") -> Optional[pathlib.Path]:
         # Cancel pressed
         return None
     return pathlib.Path(outdirtmp).resolve()
+
+
+def loadmodule() -> None:
+    defaultdir = os.path.expanduser("~")
+    filepath, _ = askOpenFilePath(
+        "Import module",
+        folder=defaultdir,
+        filter="Python files (*.py)",
+    )
+    if not filepath:
+        return
+
+    bcbak = sys.dont_write_bytecode
+    try:
+        sys.dont_write_bytecode = True
+        spec = importlib.util.spec_from_file_location("graphysio.plugin", filepath)
+        foo = importlib.util.module_from_spec(spec)
+        sys.modules["graphysio.plugin"] = foo
+        spec.loader.exec_module(foo)
+    finally:
+        sys.dont_write_bytecode = bcbak

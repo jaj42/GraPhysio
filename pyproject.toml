@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "graphysio"
-version = "2025.3.28"
+version = "2025.9.20"
 description = "Visualizer and analyser for biometric signals"
 authors = [{ name = "Jona Joachim", email = "jona@joachim.cc" }]
 requires-python = ">=3.10,<=3.14"
@@ -26,7 +26,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dwc = ["dwclib[dwcmeta]>=2025.3.12"]
-edf = ["pyEDFlib==0.1.38"]
+edf = ["pyEDFlib>=0.1.38"]
 parquet = ["pyarrow>=14"]
 shortcuts = ["pyshortcuts~=1.9"]
 excel = ["python-calamine>=0.3.1,<0.4"]

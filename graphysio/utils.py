@@ -1,8 +1,9 @@
+import importlib.util
 import os
 import sys
 from functools import partial
 from itertools import cycle
-import importlib.util
+
 import numpy as np
 import pathvalidate
 from pyqtgraph.Qt import QtGui, QtWidgets

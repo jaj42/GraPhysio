@@ -1,8 +1,10 @@
+from typing import List
+
+from pandas.api.types import is_datetime64_any_dtype
+
 from graphysio.dialogs import DlgDWCOpen
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
-from pandas.api.types import is_datetime64_any_dtype
-from typing import List
 
 try:
     import dwclib
