@@ -1,9 +1,0 @@
-[flake8]
-#with documentation tests
-#select = C,E,F,W,S,B,B9,D,DAR
-select = C,E,F,W,S,B,B9
-max-complexity = 10
-ignore = E203,E501,W503,B905
-max-line-length = 88
-docstring-convention = google
-exclude = ui
