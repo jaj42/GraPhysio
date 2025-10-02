@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'csvrequest.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.1
+## Created by: Qt User Interface Compiler version 6.9.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -43,6 +43,7 @@ class Ui_NewPlot(object):
         self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.label)
 
         self.txtSep = QComboBox(NewPlot)
+        self.txtSep.addItem("")
         self.txtSep.addItem("")
         self.txtSep.addItem("")
         self.txtSep.addItem("")
@@ -347,6 +348,7 @@ class Ui_NewPlot(object):
         self.txtSep.setItemText(0, QCoreApplication.translate("NewPlot", u";", None))
         self.txtSep.setItemText(1, QCoreApplication.translate("NewPlot", u",", None))
         self.txtSep.setItemText(2, QCoreApplication.translate("NewPlot", u"<tab>", None))
+        self.txtSep.setItemText(3, QCoreApplication.translate("NewPlot", u"<whitespace>", None))
 
         self.label_2.setText(QCoreApplication.translate("NewPlot", u"Decimal Seperator", None))
         self.txtDecimal.setItemText(0, QCoreApplication.translate("NewPlot", u",", None))
