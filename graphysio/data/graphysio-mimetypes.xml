@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+
+  <mime-type type="application/vnd.apache.parquet">
+    <comment>Apache Parquet file</comment>
+    <magic priority="80">
+      <match type="string" offset="0" value="PAR1"/>
+    </magic>
+    <glob pattern="*.parquet"/>
+  </mime-type>
+
+  <mime-type type="application/x-edf">
+    <comment>European Data Format biosignal file</comment>
+    <glob pattern="*.edf"/>
+  </mime-type>
+
+  <mime-type type="application/x-fiff-data">
+    <comment>FIFF MEG/EEG data file</comment>
+    <glob pattern="*.fif"/>
+  </mime-type>
+
+  <mime-type type="application/x-biosemi-bdf">
+    <comment>BioSemi Data Format file</comment>
+    <glob pattern="*.bdf"/>
+  </mime-type>
+
+  <mime-type type="application/x-gdf">
+    <comment>General Data Format for Biosignals</comment>
+    <glob pattern="*.gdf"/>
+  </mime-type>
+
+  <mime-type type="application/x-brainvision-vhdr">
+    <comment>BrainVision header file</comment>
+    <glob pattern="*.vhdr"/>
+  </mime-type>
+
+  <mime-type type="application/x-neuroscan-cnt">
+    <comment>Neuroscan CNT EEG file</comment>
+    <glob pattern="*.cnt"/>
+  </mime-type>
+
+  <mime-type type="application/x-eeglab-set">
+    <comment>EEGLAB dataset file</comment>
+    <glob pattern="*.set"/>
+  </mime-type>
+
+</mime-info>

@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 # Make sure pyqtgraph uses this instead of another installed version
-import PySide6  # noqa
+import PySide6  # noqa  # pyright: ignore[reportUnusedImport]
 from PySide6.QtCore import QCommandLineOption, QCommandLineParser
 from PySide6.QtWidgets import QApplication
 

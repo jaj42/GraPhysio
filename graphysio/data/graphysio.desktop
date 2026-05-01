@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=GraPhysio
+GenericName=Biosignal Viewer
+Comment=Visualizer and analyser for biometric signals
+Exec=graphysio %f
+Terminal=false
+Categories=Science;MedicalSoftware;
+MimeType=text/csv;application/vnd.apache.parquet;application/x-edf;application/x-fiff-data;application/x-biosemi-bdf;application/x-gdf;application/x-brainvision-vhdr;application/x-neuroscan-cnt;application/x-eeglab-set;
+StartupNotify=true
+StartupWMClass=graphysio
