@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'csvrequest.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.2
+## Created by: Qt User Interface Compiler version 6.10.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -17,9 +17,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
     QDialog, QFormLayout, QFrame, QGroupBox,
-    QHBoxLayout, QHeaderView, QLabel, QListView,
-    QPushButton, QSizePolicy, QSpinBox, QTableView,
-    QVBoxLayout, QWidget)
+    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QListView, QPushButton, QSizePolicy, QSpinBox,
+    QTableView, QVBoxLayout, QWidget)
 
 class Ui_NewPlot(object):
     def setupUi(self, NewPlot):
@@ -37,8 +37,8 @@ class Ui_NewPlot(object):
         self.formLayout.setObjectName(u"formLayout")
         self.label = QLabel(NewPlot)
         self.label.setObjectName(u"label")
-        self.label.setFrameShape(QFrame.NoFrame)
-        self.label.setFrameShadow(QFrame.Plain)
+        self.label.setFrameShape(QFrame.Shape.NoFrame)
+        self.label.setFrameShadow(QFrame.Shadow.Plain)
 
         self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.label)
 
@@ -135,7 +135,7 @@ class Ui_NewPlot(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.lstVAll.sizePolicy().hasHeightForWidth())
         self.lstVAll.setSizePolicy(sizePolicy1)
-        self.lstVAll.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.lstVAll.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 
         self.verticalLayout.addWidget(self.lstVAll)
 
@@ -260,7 +260,7 @@ class Ui_NewPlot(object):
         sizePolicy4.setVerticalStretch(0)
         sizePolicy4.setHeightForWidth(self.lstVY.sizePolicy().hasHeightForWidth())
         self.lstVY.setSizePolicy(sizePolicy4)
-        self.lstVY.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.lstVY.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 
         self.verticalLayout_6.addWidget(self.lstVY)
 
@@ -302,6 +302,18 @@ class Ui_NewPlot(object):
 
 
         self.verticalLayout_5.addWidget(self.groupBox)
+
+        self.groupBox_3 = QGroupBox(NewPlot)
+        self.groupBox_3.setObjectName(u"groupBox_3")
+        self.verticalLayout_12 = QVBoxLayout(self.groupBox_3)
+        self.verticalLayout_12.setObjectName(u"verticalLayout_12")
+        self.txtFilter = QLineEdit(self.groupBox_3)
+        self.txtFilter.setObjectName(u"txtFilter")
+
+        self.verticalLayout_12.addWidget(self.txtFilter)
+
+
+        self.verticalLayout_5.addWidget(self.groupBox_3)
 
 
         self.horizontalLayout_4.addLayout(self.verticalLayout_5)
@@ -387,6 +399,7 @@ class Ui_NewPlot(object):
         self.btnRemoveY.setText(QCoreApplication.translate("NewPlot", u"Remove", None))
         self.groupBox.setTitle(QCoreApplication.translate("NewPlot", u"Cluster Id", None))
         self.btnRemoveCluster.setText(QCoreApplication.translate("NewPlot", u"Remove", None))
+        self.groupBox_3.setTitle(QCoreApplication.translate("NewPlot", u"Filter Expression", None))
         self.btnOk.setText(QCoreApplication.translate("NewPlot", u"OK", None))
         self.btnCancel.setText(QCoreApplication.translate("NewPlot", u"Cancel", None))
     # retranslateUi
