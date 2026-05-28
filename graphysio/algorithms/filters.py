@@ -2,11 +2,11 @@ from copy import copy
 from datetime import datetime
 from functools import reduce
 from math import floor
-from typing import Dict
 
 import numexpr as ne
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_scalar
 from pint import UnitRegistry
 from scipy import interpolate, signal
 
@@ -77,6 +77,10 @@ Filters = {
         name="sma",
         parameters=[Parameter("Window duration", "time")],
     ),
+    "Reduction": Filter(
+        name="reduction",
+        parameters=[Parameter("Reduction function", str)],
+    ),
 }
 
 FeetFilters = {
@@ -87,7 +91,7 @@ FeetFilters = {
     "Extra feet": Filter(name="extrafeet", parameters=[]),
 }
 
-TFs: Dict[str, TF] = {}
+TFs: dict[str, TF] = {}
 
 
 def updateTFs() -> None:
@@ -117,8 +121,11 @@ def norm2(series, samplerate, parameters):
 
 def expression(series, samplerate, parameters):
     (express,) = parameters
+    constants = {"nan": np.nan, "inf": np.inf, "pi": np.pi, "e": np.e}
     try:
-        filtered = ne.evaluate(express, local_dict={"x": series.to_numpy()})
+        filtered = ne.evaluate(
+            express, local_dict={**constants, "x": series.to_numpy()}
+        )
     except Exception:
         filtered = None
     newname = f"{series.name}-filtered"
@@ -151,6 +158,22 @@ def sma(series, samplerate, parameters):
     newseries = pd.Series(result, index=series.index[locidx], name=newname)
     newsamplerate = samplerate / winsize
     return (newseries, newsamplerate)
+
+
+def reduction(series, samplerate, parameters):
+    (reduct_type,) = parameters
+    try:
+        f = getattr(series, reduct_type)
+    except AttributeError:
+        return (pd.Series(), None)
+    result = f()
+    if not is_scalar(result):
+        return (pd.Series(), None)
+    newname = f"{series.name}-{reduct_type}"
+    newseries = pd.Series(
+        np.full_like(series.to_numpy(), result), index=series.index, name=newname
+    )
+    return (newseries, None)
 
 
 def savgol(series, samplerate, parameters):
@@ -263,6 +286,7 @@ filtfuncs = {
     "lag": lag,
     "tf": tf,
     "sma": sma,
+    "reduction": reduction,
     "lowpass": lowpass,
     "ventilation": ventilation,
     "interp": interp,

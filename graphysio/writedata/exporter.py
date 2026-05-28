@@ -5,8 +5,9 @@ from itertools import zip_longest
 import pandas as pd
 
 from graphysio import writedata
-from graphysio.dialogs import DlgPeriodExport, askDirPath, askSaveFilePath
+from graphysio.dialogs import DlgPeriodExport, askDirPath, askSaveFilePath, askUserValue
 from graphysio.utils import sanitize_filename
+from graphysio.structures import Parameter
 
 file_filters = ";;".join(
     [f"{ext.upper()} files (*.{ext})" for ext in writedata.curve_writers],
@@ -16,13 +17,30 @@ file_filters = ";;".join(
 class TsExporter:
     periodfields = ["patient", "begin", "end", "periodid", "comment"]
 
-    def __init__(self, parent, name) -> None:
+    def __init__(self, parent: object, name: str, tabs: object | None = None) -> None:
         self.parent = parent
         self.name = name
+        self.tabs = tabs
         try:
             self.outdir = parent.properties["dircache"]
-        except KeyError:
+        except (KeyError, AttributeError):
             self.outdir = os.path.expanduser("~")
+
+    def curves_all_plots(self) -> None:
+        if self.tabs is None:
+            return
+        outdir = askDirPath("Destination Folder")
+        if outdir is None:
+            return
+        file_extension = askUserValue(
+            Parameter("File extension", list(writedata.curve_writers.keys()))
+        )
+        export_func = writedata.curve_writers[file_extension]
+        for i in range(self.tabs.count()):
+            plot = self.tabs.widget(i)
+            filepath = outdir / f"{plot.name}.{file_extension}"
+            curves = list(plot.curves.values())
+            export_func(curves, filepath)
 
     def curves(self) -> None:
         filepath, ext = askSaveFilePath(
@@ -35,7 +53,7 @@ class TsExporter:
             return
         self.outdir = os.path.dirname(filepath)
         curves = list(self.parent.curves.values())
-        export_func = writedata.curve_writers[ext]
+        export_func = writedata.curve_writers[ext]  # pyright: ignore[reportArgumentType]
         export_func(curves, filepath)
 
     def periods(self) -> None:

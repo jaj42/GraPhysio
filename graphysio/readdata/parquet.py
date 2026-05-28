@@ -1,12 +1,12 @@
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype
 
-from graphysio.dialogs import DlgListChoice
+from graphysio.dialogs import DlgListChoice, askUserValue
 from graphysio.readdata.baseclass import BaseReader
-from graphysio.structures import PlotData
+from graphysio.structures import Parameter, PlotData
 
 try:
-    import pyarrow.parquet as pa
+    import pyarrow.parquet as pa  # pyright: ignore[reportMissingTypeStubs]
 except ImportError:
     is_available = False
 else:
@@ -23,6 +23,10 @@ class ParquetReader(BaseReader):
 
         def cb(columns) -> None:
             self.userdata["columns"] = columns
+            param = Parameter("Choose Index", columns)
+            qresult = askUserValue(param)
+            if qresult is not None:
+                self.userdata["index"] = qresult
 
         dlgchoice = DlgListChoice(colnames, "Open Parquet", "Choose curves to load")
         dlgchoice.dlgdata.connect(cb)
@@ -31,6 +35,8 @@ class ParquetReader(BaseReader):
     def __call__(self) -> PlotData:
         filepath = self.userdata["filepath"]
         data = pd.read_parquet(filepath, columns=self.userdata["columns"])
+        if self.userdata["index"] in data.columns:
+            data = data.set_index(self.userdata["index"])
 
         data = data.dropna(axis="columns", how="all")
         data = data.sort_index()

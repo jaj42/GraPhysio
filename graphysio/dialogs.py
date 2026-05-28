@@ -4,7 +4,6 @@ import pathlib
 import sys
 from datetime import datetime
 from functools import partial
-from typing import Optional
 
 from pint import UnitRegistry
 from pint.errors import DimensionalityError, UndefinedUnitError
@@ -12,7 +11,7 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 from graphysio import ui
 from graphysio.algorithms import filters
-from graphysio.structures import CycleId
+from graphysio.structures import CycleId, Parameter
 from graphysio.utils import sanitize_filepath
 
 ureg = UnitRegistry()
@@ -98,7 +97,7 @@ class DlgDWCOpen(ui.Ui_DWCOpen, QtWidgets.QDialog):
 
     def accept(self) -> None:
         data = {}
-        data["patientid"] = self.patient.name
+        data["patientid"] = self.txtPatientId.text()
         data["from"] = self.dtFrom.dateTime().toPython()
         data["to"] = self.dtTo.dateTime().toPython()
         data["items"] = [item.text() for item in self.lstLabels.selectedItems()]
@@ -464,7 +463,7 @@ class DlgListChoice(QtWidgets.QDialog):
         super().accept()
 
 
-def askUserValue(param):  # noqa: C901
+def askUserValue(param: Parameter):  # noqa: C901
     if param.request == "time":
         value, isok = QtWidgets.QInputDialog.getText(
             None,
@@ -549,7 +548,7 @@ def askFilePath(
     filename: str = "",
     folder: str = "",
     filter: str = "",
-) -> Optional[pathlib.Path]:
+) -> tuple[pathlib.Path | None, str | None]:
     default = pathlib.Path(folder) if folder else pathlib.Path.home()
     if filename:
         default = pathlib.Path(default, filename)
@@ -569,7 +568,7 @@ askOpenFilePath = partial(askFilePath, QtWidgets.QFileDialog.getOpenFileName)
 askSaveFilePath = partial(askFilePath, QtWidgets.QFileDialog.getSaveFileName)
 
 
-def askDirPath(caption: str, folder: str = "") -> Optional[pathlib.Path]:
+def askDirPath(caption: str, folder: str = "") -> pathlib.Path | None:
     if not folder:
         folder = str(pathlib.Path.home())
 

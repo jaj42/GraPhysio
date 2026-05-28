@@ -1,8 +1,8 @@
 import csv
+import re
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import List
 
 import pandas as pd
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
@@ -23,8 +23,11 @@ class CsvReader(BaseReader):
         if csvrequest:
             self.userdata["csvrequest"] = dlg.csvrequest
 
-    def __call__(self) -> List[PlotData]:
-        request = self.userdata["csvrequest"]
+    def __call__(self) -> list[PlotData]:
+        try:
+            request = self.userdata["csvrequest"]
+        except KeyError:
+            return []
         data = pd.read_csv(
             request.filepath,
             sep=request.seperator,
@@ -33,7 +36,6 @@ class CsvReader(BaseReader):
             skiprows=request.droplines,
             encoding=request.encoding,
             index_col=False,
-            engine="c",
         )
         pdtonum = partial(pd.to_numeric, errors="coerce")
         dtformat = request.datetime_format
@@ -89,6 +91,10 @@ class CsvReader(BaseReader):
         data = data.dropna(axis="columns", how="all")
         data = data.sort_index()
 
+        # Apply user filter on data
+        if request.filterexpr is not None:
+            data = data.query(request.filterexpr)
+
         fp = request.filepath
         if request.clusterid:
             g = data.groupby(request.clusterid)
@@ -114,7 +120,7 @@ class CsvRequest:
     seperator: str
     decimal: str
     dtfield: str
-    yfields: List[str]
+    yfields: list[str]
     datetime_format: str
     droplines: int
     generatex: bool
@@ -122,9 +128,10 @@ class CsvRequest:
     timezone: str
     encoding: str
     samplerate: int
+    filterexpr: str | None
 
     @property
-    def fields(self) -> List[str]:
+    def fields(self) -> list[str]:
         dtfields = [] if self.dtfield is None else [self.dtfield]
         clusterfields = [] if self.clusterid is None else [self.clusterid]
         return dtfields + clusterfields + self.yfields
@@ -163,7 +170,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         self.btnCancel.clicked.connect(self.reject)
         self.btnToX.clicked.connect(self.moveToX)
         self.btnToY.clicked.connect(self.moveToY)
-        self.btnToCluster.clicked.connect(self.moveToCluster)
+        self.btnToCluster.clicked.connect(self.move_to_cluster)
         self.btnRemoveX.clicked.connect(self.delFromX)
         self.btnRemoveY.clicked.connect(self.delFromY)
         self.btnRemoveCluster.clicked.connect(self.delFromCluster)
@@ -184,9 +191,17 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         return (seperator, decimal)
 
     def loadCsvFields(self) -> None:
+        filterfunc = lambda f: f
         sep = self.txtSep.currentText()
         if sep == "<tab>":
             sep = "\t"
+        elif sep == "<whitespace>":
+            sep = " "
+            whitespace_pattern = re.compile(r"\s+")
+            filterfunc = lambda file: (
+                whitespace_pattern.sub(" ", line) for line in file
+            )
+
         # Use the csv module to retrieve csv fields
         for lst in [self.lstAll, self.lstX, self.lstY]:
             lst.clear()
@@ -196,7 +211,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             # Artificially drop n first lines as requested
             for _ in range(self.spnLinedrop.value()):
                 next(csvfile)
-            csvreader = csv.DictReader(csvfile, delimiter=sep)
+            csvreader = csv.DictReader(filterfunc(csvfile), delimiter=sep)
             row = next(csvreader)
             for key, value in row.items():
                 if key is None:
@@ -212,7 +227,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         else:
             self.chkGenX.setCheckState(QtCore.Qt.Checked)
 
-    def moveToCluster(self) -> None:
+    def move_to_cluster(self) -> None:
         if self.lstCluster.rowCount() > 0:
             # Only allow one element for Cluster Id.
             return
@@ -266,7 +281,10 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
         ]
 
         seperator = self.txtSep.currentText()
-        seperator = "\t" if seperator == "<tab>" else seperator
+        if seperator == "<tab>":
+            seperator = "\t"
+        elif seperator == "<whitespace>":
+            seperator = r"\s+"
 
         try:
             dtfield = xRows[0]
@@ -277,6 +295,10 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             cid = cRows[0]
         except IndexError:
             cid = None
+
+        filterexpr= self.txtFilter.text().strip()
+        if not filterexpr:
+            filterexpr = None
 
         req = CsvRequest(
             filepath=self.filepath,
@@ -291,6 +313,7 @@ class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
             timezone=self.txtTimezone.currentText(),
             encoding=self.txtEncoding.currentText(),
             samplerate=self.spnFs.value(),
+            filterexpr=filterexpr,
         )
 
         self.csvrequest = req

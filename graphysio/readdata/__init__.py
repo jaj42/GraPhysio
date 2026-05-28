@@ -5,12 +5,19 @@ from graphysio.dialogs import askOpenFilePath
 from .csv import CsvReader
 from .dwc import DwcReader
 from .edf import EdfReader
+from .mne import MneReader
 from .parquet import ParquetReader
+from .parquet_dir import ParquetDirReader
 
 if TYPE_CHECKING:
     import pathlib
 
-file_readers = {"csv": CsvReader, "parquet": ParquetReader, "edf": EdfReader}
+file_readers = {
+    **{fext: CsvReader for fext in ["csv", "dat", "txt"]},
+    "parquet": ParquetReader,
+    "edf": EdfReader,
+    **{fext: MneReader for fext in ["fif", "bdf", "gdf", "vhdr", "cnt", "set"]},
+}
 file_readers = {k: mod for k, mod in file_readers.items() if mod.is_available}
 
 
@@ -20,7 +27,7 @@ class FileReader:
         self.reader = None
 
         filters = ";;".join(
-            [f"{ext.upper()} files (*.{ext})(*.{ext})" for ext in file_readers],
+            [f"{ext.upper()} files (*.{ext})" for ext in file_readers],
         )
         supported = " ".join(f"*.{ext}" for ext in file_readers)
         self.file_filters = f"All supported ({supported});;{filters}"
@@ -55,4 +62,4 @@ class FileReader:
             return None
 
 
-__all__ = [CsvReader, EdfReader, ParquetReader, DwcReader, FileReader]
+__all__ = [CsvReader, EdfReader, MneReader, ParquetReader, DwcReader, FileReader, ParquetDirReader]

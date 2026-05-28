@@ -1,5 +1,3 @@
-from typing import List
-
 from pandas.api.types import is_datetime64_any_dtype
 
 from graphysio.dialogs import DlgDWCOpen
@@ -25,7 +23,7 @@ class DwcReader(BaseReader):
         dlgchoice.dlgdata.connect(cb)
         dlgchoice.exec()
 
-    def get_plotdata(self) -> PlotData | List[PlotData]:
+    def get_plotdata(self) -> list[PlotData]:
         if not self.userdata:
             return []
         if self.userdata["type"] == "numerics":
@@ -49,4 +47,4 @@ class DwcReader(BaseReader):
             df.index = df.index.tz_localize(None)
         df.index = df.index.astype("datetime64[ns]").astype("int")
 
-        return PlotData(data=df, name=str(self.userdata["patientid"]))
+        return [PlotData(data=df, name=str(self.userdata["patientid"]))]

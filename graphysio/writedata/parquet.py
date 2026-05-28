@@ -1,5 +1,3 @@
-from typing import List
-
 import pandas as pd
 
 from graphysio.plotwidgets.curves import CurveItem
@@ -13,7 +11,7 @@ else:
 
 
 def export_curves(
-    curves: List[CurveItem],
+    curves: list[CurveItem],
     filepath: str,
     index_label: str = "timens",
 ) -> None:

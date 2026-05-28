@@ -12,6 +12,7 @@ from pyqtgraph import QtCore, QtWidgets
 from graphysio import dialogs, readdata, ui, utils
 from graphysio.dialogs import loadmodule
 from graphysio.plotwidgets import TimeAxisItem, TSWidget
+from graphysio.writedata.exporter import TsExporter
 
 
 class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
@@ -25,6 +26,7 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         self.dataq = Queue()
         self.pool = ProcessPool()
         self.datahandler = self.createNewPlotWithData
+        self.exporter = TsExporter(self, "mainui", self.tabWidget)
 
         self.tabWidget.tabCloseRequested.connect(self.closeTab)
         self.tabWidget.currentChanged.connect(self.tabChanged)
@@ -38,6 +40,18 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             launchNewDwcPlot = partial(self.launchOpenDwc, self.createNewPlotWithData)
             self.menuFile.addAction("New Plot from DWC", launchNewDwcPlot)
 
+        if readdata.ParquetDirReader.is_available:
+            launchNewParquetDirPlot = partial(
+                self.launchOpenParquetDir, self.createNewPlotWithData
+            )
+            self.menuFile.addAction(
+                "New Plots from Parquet Directory", launchNewParquetDirPlot
+            )
+
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(
+            "Export all plots", self.errguard(self.exporter.curves_all_plots)
+        )
         self.menuFile.addSeparator()
         self.menuFile.addAction("&Load plugin", self.errguard(loadmodule))
         self.menuFile.addSeparator()
@@ -132,10 +146,25 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         future = self.pool.schedule(reader.get_plotdata)
 
         def cb(future) -> None:
+            plotdata = future.result()
+            for iplotdata in plotdata:
+                self.dataq.put(iplotdata)
+            self.lblStatus.setText("Loading... done")
+
+        self.datahandler = datahandler
+        future.add_done_callback(cb)
+
+    def launchOpenParquetDir(self, datahandler) -> None:
+        reader = readdata.ParquetDirReader()
+        reader.askUserInput()
+        self.lblStatus.setText("Loading Parquet Files...")
+        future = self.pool.schedule(reader.get_plotdata)
+
+        def cb(future) -> None:
             self.lblStatus.setText("Loading... done")
             plotdata = future.result()
-            if plotdata:
-                self.dataq.put(plotdata)
+            for iplotdata in plotdata:
+                self.dataq.put(iplotdata)
 
         self.datahandler = datahandler
         future.add_done_callback(cb)

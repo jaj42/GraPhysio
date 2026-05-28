@@ -1,6 +1,7 @@
 import string
 from functools import partial
 
+import numpy as np
 import numexpr as ne
 import pandas as pd
 from pyqtgraph.Qt import QtCore, QtWidgets
@@ -180,7 +181,11 @@ class TSWidget(PlotWidget):
 
         def cb(formula) -> None:
             symbols = list(ne.NumExpr(formula).input_names)
-            curvenames = [curvecorr[x] for x in symbols]
+            for s in symbols:
+                if s not in curvecorr and s not in symbols:
+                    raise ValueError(f"Unknown symbol: {s}")
+            constants = {"nan": np.nan, "inf": np.inf, "pi": np.pi, "e": np.e}
+            curvenames = [curvecorr[x] for x in symbols if x in curvecorr]
             sers = [self.curves[c].series for c in curvenames]
             if not len(sers):
                 return
@@ -189,7 +194,7 @@ class TSWidget(PlotWidget):
             argsdf = argsdf.interpolate()
             args = argsdf.to_dict(orient="series")
 
-            newvals = ne.evaluate(formula, local_dict=args)
+            newvals = ne.evaluate(formula, local_dict=constants | args)
             newname = self.validateNewCurveName(formula, True)
             newseries = pd.Series(
                 newvals,
