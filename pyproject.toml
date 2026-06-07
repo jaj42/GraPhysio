@@ -25,6 +25,7 @@ dependencies = [
     "matplotlib>=3.10.0,<4",
     "dask[dataframe]>=2026.1.1",
     "mne>=1.11.0",
+    "tsdownsample>=0.1.5.1",
 ]
 
 [project.optional-dependencies]
@@ -51,6 +52,7 @@ graphysio = "graphysio.main:main"
 [dependency-groups]
 dev = [
     "poethepoet>=0.36.0",
+    "pytest>=9.0.3",
 ]
 
 [tool.poe.tasks]
