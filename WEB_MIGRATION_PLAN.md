@@ -218,9 +218,22 @@ the rest is wiring; if not, we learn it on day one.
 - Decouple readers from `dialogs` (the `get_param_schema()` / `set_data()` refactor).
 - Keep the desktop app running on the new core.
 
-### Phase 2 — FastAPI skeleton
+### Phase 2 — FastAPI skeleton  ✅ DONE
 
-- File load → curve list → the windowed Arrow endpoint. Prove the data path.
+- File load → curve list → the windowed Arrow endpoint. Data path proven.
+- `graphysio/server/`: `app.py` (FastAPI), `session.py` (in-memory `SessionStore`
+  + `CurveMeta`), `loaders.py` (Qt-free parquet/CSV loaders), `arrow.py` (Arrow IPC).
+- Endpoints: `GET /health`, `POST /session/load`, `GET /curves`,
+  `GET /curves/{name}/window?t0&t1&px&method`, `DELETE /session`.
+- Window endpoint returns Arrow IPC (`t` int64-ns, `v` float64), decimated via
+  `core.downsample`. Verified Qt-free; 8 server tests in `tests/test_server.py`.
+- Added `graphysio/core/timeseries.py` (`estimate_samplerate`, Qt-free clone of the
+  one stuck in the Qt-importing `utils.py`).
+- Deps: `server` optional extra (fastapi, uvicorn[standard], pyarrow); httpx (dev).
+- Run: `uvicorn graphysio.server.app:app --reload`.
+- NOTE: loaders are minimal (parquet + best-effort CSV, no per-file options yet).
+  Phase 1 reader-decoupling will unify them with the desktop readers via the
+  param-schema mechanism and bring back all formats/options.
 
 ### Phase 3 — React + uPlot read-only viewer
 
