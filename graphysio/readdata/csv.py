@@ -31,6 +31,18 @@ class CsvReader(BaseReader):
             decimal = "." if "." in next(f) else ","
         return seperator, decimal
 
+    def _safe_guess(self) -> tuple[str, str]:
+        """Best-effort delimiter guess that never raises.
+
+        Used only to pre-fill the stage-1 defaults; the file may be in a non-UTF-8
+        encoding the user hasn't told us about yet, so a decode failure here just
+        falls back to the common comma/dot.
+        """
+        try:
+            return self._guess_delimiters("utf-8")
+        except (UnicodeDecodeError, OSError, StopIteration):
+            return ",", "."
+
     def _header(self, sep: str, droplines: int, encoding: str) -> list[str]:
         real_sep = SEP_TOKENS.get(sep, sep)
         with open(self.userdata["filepath"], encoding=encoding) as f:
@@ -41,20 +53,42 @@ class CsvReader(BaseReader):
         return [c for c in row if c]
 
     def get_params(self) -> list[ParamSpec]:
-        """Flat schema for headless/web loading.
+        """Staged schema for headless/web loading.
+
+        Two stages, because reading the header to list the columns needs the
+        encoding/separator -- which we must ask for *first* (a non-UTF-8 file would
+        otherwise blow up before the user can choose ``latin1``):
+
+        1. encoding + separator + decimal + header lines to skip;
+        2. once those are known, read the header and offer the columns / time setup.
 
         The desktop uses the richer ``DlgNewPlotCsv`` (which sets ``csvrequest``
         directly); when that is present we need nothing more.
         """
-        if "csvrequest" in self.userdata or "yfields" in self.userdata:
+        u = self.userdata
+        if "csvrequest" in u or "yfields" in u:
             return []
-        sep, decimal = self._guess_delimiters()
-        columns = self._header(sep, 0, "utf-8")
+
+        # Stage 1: how to decode and split the raw rows. No file read with a
+        # user-supplied encoding yet, so this stage can never raise a decode error.
+        if "encoding" not in u:
+            sep, decimal = self._safe_guess()
+            return [
+                ParamSpec("encoding", "File encoding", "str", default="utf-8"),
+                ParamSpec("seperator", "Field separator", "choice",
+                          choices=list(SEP_TOKENS), default=sep),
+                ParamSpec("decimal", "Decimal separator", "choice",
+                          choices=[".", ","], default=decimal),
+                ParamSpec("droplines", "Header lines to skip", "int", default=0,
+                          required=False),
+            ]
+
+        # Stage 2: now we can read the header with the chosen encoding/separator.
+        encoding = u.get("encoding") or "utf-8"
+        sep = u.get("seperator", ",")
+        droplines = int(u.get("droplines") or 0)
+        columns = self._header(sep, droplines, encoding)
         return [
-            ParamSpec("seperator", "Field separator", "choice",
-                      choices=list(SEP_TOKENS), default=sep),
-            ParamSpec("decimal", "Decimal separator", "choice",
-                      choices=[".", ","], default=decimal),
             ParamSpec("yfields", "Curves to load", "multichoice",
                       choices=columns, default=columns),
             ParamSpec("dtfield", "Time column (leave empty to generate from rate)",
@@ -63,9 +97,6 @@ class CsvReader(BaseReader):
                       choices=DT_FORMAT_TOKENS, default="<infer>", required=False),
             ParamSpec("samplerate", "Sampling rate (Hz), if generating time", "int",
                       default=0, required=False),
-            ParamSpec("droplines", "Header lines to skip", "int", default=0,
-                      required=False),
-            ParamSpec("encoding", "Encoding", "str", default="utf-8", required=False),
             ParamSpec("timezone", "Timezone", "str", default="UTC", required=False),
             ParamSpec("filterexpr", "Row filter expression", "str", required=False),
         ]

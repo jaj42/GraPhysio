@@ -18,6 +18,7 @@ from graphysio.core.params import ParamSpec, default_answers, gather
 from graphysio.core.timeseries import estimate_samplerate
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.server.loaders import make_reader, plotdata_to_curves
+from graphysio.server.sources import make_source_reader
 
 __all__ = ["CurveMeta", "Session", "SessionStore", "STORE"]
 
@@ -69,7 +70,13 @@ class Session:
 
     def open_file(self, path: str | Path) -> tuple[str, list[ParamSpec]]:
         """Register a reader for ``path`` and return its first param schema."""
-        reader = make_reader(Path(path))
+        return self._register(make_reader(Path(path)))
+
+    def open_source(self, source_id: str, path: str | None = None) -> tuple[str, list[ParamSpec]]:
+        """Register a non-file source reader and return its first param schema."""
+        return self._register(make_source_reader(source_id, path))
+
+    def _register(self, reader: BaseReader) -> tuple[str, list[ParamSpec]]:
         file_id = uuid.uuid4().hex
         self._pending[file_id] = reader
         return file_id, reader.get_params()

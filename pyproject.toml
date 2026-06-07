@@ -63,3 +63,5 @@ dev = [
 
 [tool.poe.tasks]
 graphysio = "uv run --extra=all graphysio"
+web-back = "uv run --extra server uvicorn graphysio.server.app:app --reload"
+web-front = "sh -c 'cd web && npm run dev'"

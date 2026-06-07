@@ -11,6 +11,9 @@
  *
  *  - **Binary transfer.** The window endpoint returns Apache Arrow IPC, not JSON.
  *    We parse it into the `[x[], y[]]` typed-array pair uPlot consumes directly.
+ *
+ * Decimation is always M4 (provably pixel-accurate) -- deliberately not exposed
+ * as a user option.
  */
 import { tableFromIPC } from 'apache-arrow';
 
@@ -35,14 +38,54 @@ export interface Curve extends CurveMeta {
   t1sec: number;
 }
 
-export type Method = 'm4' | 'minmax';
-
 /** A decimated window: parallel x (epoch-seconds) / y arrays, uPlot-ready. */
 export interface Window {
   x: Float64Array;
   y: Float64Array;
   /** Points actually returned by the server (`X-Points` header). */
   points: number;
+}
+
+/** One declarative input a reader needs (mirrors `core.params.ParamSpec`). */
+export interface ParamSpec {
+  name: string;
+  label: string;
+  kind: 'int' | 'float' | 'str' | 'bool' | 'time' | 'datetime' | 'choice' | 'multichoice';
+  choices: string[] | null;
+  default: unknown;
+  required: boolean;
+}
+
+/** Result of a staged open/answer step. */
+export interface OpenResponse {
+  file_id: string;
+  ready: boolean;
+  params: ParamSpec[];
+  curves: CurveMeta[];
+}
+
+/** A selectable data source for the "New Plot" menu. */
+export interface Source {
+  id: string;
+  label: string;
+  /** 'file' & 'directory' need a path from the browser; 'params' goes to the form. */
+  kind: 'file' | 'directory' | 'params';
+}
+
+/** A directory entry from the server-side file browser. */
+export interface BrowseEntry {
+  name: string;
+  path: string;
+  is_dir: boolean;
+  size: number;
+  suffix: string;
+}
+
+export interface BrowseListing {
+  root: string;
+  path: string;
+  parent: string | null;
+  entries: BrowseEntry[];
 }
 
 async function failOn(res: Response): Promise<never> {
@@ -56,41 +99,68 @@ async function failOn(res: Response): Promise<never> {
   throw new Error(`${res.status} ${detail}`);
 }
 
-/** Load a server-side file into the session and return its curves. */
-export async function loadFile(path: string): Promise<Curve[]> {
-  const res = await fetch(`${API_BASE}/session/load`, {
+async function getJSON<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`);
+  if (!res.ok) await failOn(res);
+  return res.json() as Promise<T>;
+}
+
+async function postJSON<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) await failOn(res);
-  const body: { curves: CurveMeta[] } = await res.json();
-  return body.curves.map(withSeconds);
+  return res.json() as Promise<T>;
+}
+
+/** List server-side directory contents (sub-dirs + loadable files). */
+export function browse(path?: string | null): Promise<BrowseListing> {
+  const q = path ? `?path=${encodeURIComponent(path)}` : '';
+  return getJSON<BrowseListing>(`/browse${q}`);
+}
+
+/** The "New Plot" menu: file plus any installed live sources (DWC, Iceberg, …). */
+export function listSources(): Promise<Source[]> {
+  return getJSON<Source[]>('/sources');
+}
+
+/** Register a server-side file; returns its first param schema (or ready). */
+export function openFile(path: string): Promise<OpenResponse> {
+  return postJSON<OpenResponse>('/files', { path });
+}
+
+/** Start a non-file source (DWC/Iceberg/parquet dir); returns its first schema. */
+export function openSource(sourceId: string, path?: string | null): Promise<OpenResponse> {
+  return postJSON<OpenResponse>(`/sources/${encodeURIComponent(sourceId)}`, { path: path ?? null });
+}
+
+/** Feed answers to a pending file; returns the next stage or the loaded curves. */
+export function answerFile(fileId: string, answers: Record<string, unknown>): Promise<OpenResponse> {
+  return postJSON<OpenResponse>(`/files/${encodeURIComponent(fileId)}`, { answers });
 }
 
 /** List the curves currently loaded in the session. */
 export async function listCurves(): Promise<Curve[]> {
-  const res = await fetch(`${API_BASE}/curves`);
-  if (!res.ok) await failOn(res);
-  const metas: CurveMeta[] = await res.json();
+  const metas = await getJSON<CurveMeta[]>('/curves');
   return metas.map(withSeconds);
 }
 
 /**
- * Fetch a decimated window of a curve.
+ * Fetch a decimated (M4) window of a curve.
  *
  * @param t0sec,t1sec  Visible range in epoch-seconds (omit for the full curve).
- * @param px           Viewport width in pixels — the decimation target.
+ * @param px           Viewport width in pixels -- the decimation target.
  */
 export async function fetchWindow(
   name: string,
   t0sec: number | null,
   t1sec: number | null,
   px: number,
-  method: Method = 'm4',
   signal?: AbortSignal,
 ): Promise<Window> {
-  const q = new URLSearchParams({ px: String(Math.round(px)), method });
+  const q = new URLSearchParams({ px: String(Math.round(px)), method: 'm4' });
   if (t0sec != null) q.set('t0', String(secToNs(t0sec)));
   if (t1sec != null) q.set('t1', String(secToNs(t1sec)));
 
@@ -112,6 +182,6 @@ export async function fetchWindow(
   return { x, y, points };
 }
 
-function withSeconds(m: CurveMeta): Curve {
+export function withSeconds(m: CurveMeta): Curve {
   return { ...m, t0sec: nsToSec(m.t0), t1sec: nsToSec(m.t1) };
 }

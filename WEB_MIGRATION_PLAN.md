@@ -267,21 +267,69 @@ the rest is wiring; if not, we learn it on day one.
   the backend's **int64 epoch-ns ↔ epoch-seconds** (ns exceeds JS safe-int; uPlot's
   time axis wants seconds). Talks to the backend directly via CORS (configurable
   `VITE_API_BASE`, default `http://localhost:8000`; `/api` Vite proxy alternative).
-- `web/src/wheelZoom.ts`: wheel-zoom + drag-pan plugin (uPlot ships neither) so the
-  loop is exercised; shift-drag keeps uPlot's box-zoom, double-click resets.
-- `web/src/App.tsx`: server-side-path load form → curve picker → m4/minmax toggle →
-  live `points · ms` fetch stats. `web/README.md` documents running it.
-- **Validated end-to-end** on a 2 h × 125 Hz curve (900k samples): full range → 4800
-  pts / 77 KB, 10 s zoom → 1251 pts / 20 KB, systolic/diastolic peaks preserved at
-  every zoom level; payload bounded regardless of curve length. `npm run build`
-  (tsc + vite) green; CORS preflight verified for the dev origin.
-- NOTE: load is by **server-side file path** for now (the backend opens the file
-  directly); browser file *upload* and the staged `POST /files` param-form flow are
-  deferred to Phase 4's `<ParamForm>`.
+- `web/src/wheelZoom.ts`: the plugin **owns all gestures** (uPlot's built-in
+  `cursor.drag` is turned off so the two can't fight over the same mousedown — that
+  conflict made a plain drag both zoom and pan): plain-drag **pan**, shift-drag **2D
+  box-zoom** (sets x *and* y, with a live `setSelect` rectangle), wheel **zoom**,
+  double-click **reset to the full curve** (not the decimated-window extent).
+- **uPlot scale-range caveats (each cost a bug):** (1) a *constant* `scales.x.range`
+  fn *pins* the scale (uPlot calls it inside `setScale`) and reverts every zoom — but
+  (2) *no* range fn is also wrong, because uPlot's default range *pads/rounds* the
+  min/max you set, so the displayed range ends up wider than the window you fetched →
+  data fills only the middle ("xrange off"). FIX: an **identity** range fn
+  `(_u,min,max)=>[min,max]` on **both** axes — exact bounds, no pad, no pin. (3)
+  Blank-on-first-load: `setScale` on *empty* data doesn't take effect; seed scales
+  from the first real fetch via `setData(data)` (resetScales) then snap x.
+- Decimation is **always M4** — no user toggle (deliberately; fewer knobs).
+- **All curves shown overlaid** on one shared x-axis (no curve dropdown). Since each
+  curve is decimated independently, `Chart.tsx` merges the per-curve windows onto a
+  union-x axis with `spanGaps` so each line draws through its own real samples. The
+  y-scale auto-fits the visible data each fetch (`autoFitY` flag), *except* after a
+  box-zoom, which sets y explicitly and disables auto-fit until the next pan/wheel/
+  reset. (Trade-off the user accepted: very different units, e.g. ABP mmHg vs ECG mV,
+  share one y-axis.)
+- **Server-side file picker** (`web/src/FileBrowser.tsx` + backend `GET /browse`,
+  `graphysio/server/browse.py`): the native file dialog can't give the page a server
+  path and the data already lives on the box, so the user navigates the *server's*
+  filesystem (confined to `GRAPHYSIO_DATA_ROOT`, default `$HOME`; `..`-escape blocked
+  → 403; hidden dotfiles/dotdirs and unsupported extensions filtered out) and clicks a
+  file. No upload.
+- **`<ParamForm>` pulled forward from Phase 4** (`web/src/ParamForm.tsx`): generic
+  renderer for a reader's `ParamSpec` schema (choice/multichoice/int/float/bool/time/
+  datetime/str), driving the staged `POST /files` → `POST /files/{id}` load. So CSV
+  (which needs time-column/sample-rate choices) and parquet (column/index) now load
+  interactively, not just self-describing formats. This is the same component Phase 4
+  will use for filter/transform forms.
+- `web/src/App.tsx`: orchestrates browse → param form (staged, multi-stage capable) →
+  overlaid view; live `points · ms` fetch stats. `web/README.md` documents running it.
+- **Validated** (backend, via TestClient) on a 2 h × 125 Hz × 2-curve parquet (900k
+  samples each): browse → staged open (`columns` multichoice + `index` choice) → both
+  curves load → multi-curve windows decimate correctly (full → 4800 pts/curve, 10 s
+  zoom → 1251 pts), peaks preserved. `npm run build` (tsc + vite) green; **44 backend
+  tests pass** (browse, sources, CSV-staging tests in `tests/test_server.py`). The
+  uPlot interaction fixes above were reasoned + compiled, then confirmed by the user
+  in the live app (no headless browser available in this env to automate canvas
+  gestures).
+- **"New Plot" source menu** (`GET /sources`, `graphysio/server/sources.py`): loading
+  from a file is one source among several. The menu lists `file` plus any installed
+  live sources — `dwc`, `iceberg` (pure param-form sources, no path) and `parquet_dir`
+  (needs a *folder*, so `FileBrowser` has a directory-select mode). `POST /sources/{id}`
+  registers the non-file reader and rides the same staged `POST /files/{id}` answer
+  flow. The browser appears only for `file`/`directory` sources.
+- **CSV staged-load fix**: the CSV reader read its header with hard-coded UTF-8 inside
+  `get_params()` — *before* the encoding could be answered — so a latin1 file (e.g. a
+  `µ`/0xb5 byte) crashed on click. `readdata/csv.py` now stages: stage 1 asks
+  encoding/separator/decimal/skip-lines (no file read → can't decode-error); stage 2,
+  once the encoding is known, reads the header and offers the columns/time setup. The
+  desktop is unaffected (it uses the bespoke `DlgNewPlotCsv`, which `drive_reader_qt`
+  special-cases and which bypasses `get_params`).
+- DEFERRED: browser file *upload* (for ad-hoc local files not on the server); a
+  per-curve y-axis / stacked option if shared-y overlay proves unreadable in practice.
 
 ### Phase 4 — Filters / transforms / export
 
-- Drive menus and forms from the serialized registries via `<ParamForm>`.
+- `<ParamForm>` already exists (built in Phase 3); reuse it for filter/transform forms.
+- Add `GET /filters`, `GET /transforms` to serialize the registries → drive menus.
 - Wire filter/transform/export endpoints to the existing `algorithms` / `writedata`.
 
 ### Phase 5 — POI detection + manual editing

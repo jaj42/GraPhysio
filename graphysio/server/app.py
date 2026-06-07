@@ -27,8 +27,10 @@ from pydantic import BaseModel
 
 from graphysio.core.downsample import POINTS_PER_PIXEL, downsample_series
 from graphysio.server.arrow import ARROW_MEDIA_TYPE, series_to_arrow_ipc
+from graphysio.server.browse import list_dir
 from graphysio.server.loaders import SUPPORTED_SUFFIXES, UnsupportedFormatError
 from graphysio.server.session import STORE, CurveMeta
+from graphysio.server.sources import UnknownSourceError, available_sources
 
 app = FastAPI(title="GraPhysio", version="0.1.0")
 
@@ -62,9 +64,49 @@ class AnswerRequest(BaseModel):
     answers: dict
 
 
+class SourceRequest(BaseModel):
+    path: Optional[str] = None  # for directory sources (e.g. parquet_dir)
+
+
 @app.get("/health")
 def health() -> dict[str, object]:
     return {"status": "ok", "supported_formats": list(SUPPORTED_SUFFIXES)}
+
+
+@app.get("/sources")
+def sources() -> list[dict]:
+    """The "New Plot" source menu: file plus any installed live sources."""
+    return [vars(s) for s in available_sources()]
+
+
+@app.post("/sources/{source_id}", response_model=OpenResponse)
+def open_source(source_id: str, req: SourceRequest) -> OpenResponse:
+    """Start a non-file source (DWC/Iceberg/parquet dir); returns its param schema."""
+    session = STORE.get()
+    try:
+        file_id, params = session.open_source(source_id, req.path)
+    except UnknownSourceError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except ValueError as e:  # directory source missing its path
+        raise HTTPException(status_code=422, detail=str(e)) from e
+    return OpenResponse(file_id=file_id, ready=not params, params=[p.to_dict() for p in params])
+
+
+@app.get("/browse")
+def browse(path: Optional[str] = Query(None, description="directory to list; default root")) -> dict:
+    """List sub-directories and loadable files for the server-side file picker."""
+    try:
+        listing = list_dir(path)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e)) from e
+    except (FileNotFoundError, NotADirectoryError) as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    return {
+        "root": listing.root,
+        "path": listing.path,
+        "parent": listing.parent,
+        "entries": [vars(entry) for entry in listing.entries],
+    }
 
 
 @app.post("/session/load", response_model=LoadResponse)
