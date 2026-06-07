@@ -145,7 +145,8 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def launchOpenDwc(self, datahandler) -> None:
         reader = readdata.DwcReader()
-        reader.askUserInput()
+        if not dialogs.drive_reader_qt(reader):
+            return
         self.lblStatus.setText("Loading DWC...")
         future = self.pool.schedule(reader.get_plotdata)
 
@@ -160,7 +161,12 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def launchOpenParquetDir(self, datahandler) -> None:
         reader = readdata.ParquetDirReader()
-        reader.askUserInput()
+        folder = dialogs.askDirPath("Open Parquet Directory")
+        if folder is None:
+            return
+        reader.set_data({"path": folder})
+        if not dialogs.drive_reader_qt(reader):
+            return
         self.lblStatus.setText("Loading Parquet Files...")
         future = self.pool.schedule(reader.get_plotdata)
 
@@ -175,7 +181,8 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def launchOpenIceberg(self, datahandler) -> None:
         reader = readdata.IcebergReader()
-        reader.askUserInput()
+        if not dialogs.drive_reader_qt(reader):
+            return
         self.lblStatus.setText("Loading Iceberg...")
         future = self.pool.schedule(reader.get_plotdata)
 
@@ -194,6 +201,11 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             self.dircache = reader.load_file(filepath)
         else:
             self.dircache = reader.user_choose_file(self.dircache)
+        if reader.reader is None:
+            # File selection was cancelled.
+            return
+        if not dialogs.drive_reader_qt(reader.reader):
+            return
         self.lblStatus.setText("Loading File...")
         future = self.pool.schedule(reader.get_plotdata)
 

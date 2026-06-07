@@ -49,6 +49,19 @@ class LoadResponse(BaseModel):
     curves: list[CurveMeta]
 
 
+class OpenResponse(BaseModel):
+    """Result of a staged open step: either more params are needed, or curves loaded."""
+
+    file_id: str
+    ready: bool
+    params: list[dict] = []
+    curves: list[CurveMeta] = []
+
+
+class AnswerRequest(BaseModel):
+    answers: dict
+
+
 @app.get("/health")
 def health() -> dict[str, object]:
     return {"status": "ok", "supported_formats": list(SUPPORTED_SUFFIXES)}
@@ -66,6 +79,41 @@ def load(req: LoadRequest) -> LoadResponse:
     except Exception as e:  # malformed file, parse error, ...
         raise HTTPException(status_code=422, detail=f"Could not load file: {e}") from e
     return LoadResponse(curves=session.metadata())
+
+
+@app.post("/files", response_model=OpenResponse)
+def open_file(req: LoadRequest) -> OpenResponse:
+    """Register a file and return the parameter schema its reader needs."""
+    session = STORE.get()
+    try:
+        file_id, params = session.open_file(req.path)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except UnsupportedFormatError as e:
+        raise HTTPException(status_code=415, detail=str(e)) from e
+    return OpenResponse(
+        file_id=file_id,
+        ready=not params,
+        params=[p.to_dict() for p in params],
+    )
+
+
+@app.post("/files/{file_id}", response_model=OpenResponse)
+def answer_file(file_id: str, req: AnswerRequest) -> OpenResponse:
+    """Supply answers for a pending file; returns the next stage or the loaded curves."""
+    session = STORE.get()
+    try:
+        params, curves = session.answer(file_id, req.answers)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except Exception as e:  # parse/load failure with the given answers
+        raise HTTPException(status_code=422, detail=f"Could not load file: {e}") from e
+    return OpenResponse(
+        file_id=file_id,
+        ready=not params,
+        params=[p.to_dict() for p in params],
+        curves=curves,
+    )
 
 
 @app.get("/curves", response_model=list[CurveMeta])

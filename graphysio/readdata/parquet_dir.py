@@ -1,9 +1,9 @@
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype
 
-from graphysio.dialogs import DlgListChoice, askUserValue, askDirPath
+from graphysio.core.params import ParamSpec
 from graphysio.readdata.baseclass import BaseReader
-from graphysio.structures import Parameter, PlotData
+from graphysio.structures import PlotData
 
 try:
     import pyarrow.parquet as pa
@@ -16,40 +16,44 @@ else:
 class ParquetDirReader(BaseReader):
     is_available = is_available
 
-    def askUserInput(self) -> None:
-        parquet_folder = askDirPath("Open Parquet Directory")
-        if parquet_folder is None:
-            return
-        self.userdata["path"] = parquet_folder
+    def _all_columns(self) -> list[str]:
         columns: set[str] = set()
-        for fp in parquet_folder.glob("*.parquet"):
-            parquet_file = pa.ParquetFile(fp)  # pyright: ignore[reportPossiblyUnboundVariable]
-            file_columns = parquet_file.schema.names
-            columns |= set(file_columns)
+        for fp in self.userdata["path"].glob("*.parquet"):
+            columns |= set(pa.ParquetFile(fp).schema.names)
+        return sorted(columns)
 
-        def cb(columns: list[str]) -> None:
-            self.userdata["all_columns"] = set(columns)
-            param = Parameter("Choose Index", columns)
-            qresult = askUserValue(param)
-            if qresult is not None:
-                self.userdata["index"] = qresult
+    def get_params(self) -> list[ParamSpec]:
+        # The directory path is supplied externally (folder picker / API), like the
+        # file path for single-file readers.
+        if "all_columns" in self.userdata:
+            return []
+        columns = self._all_columns()
+        return [
+            ParamSpec(
+                "all_columns",
+                "Choose curves to load",
+                "multichoice",
+                choices=columns,
+                default=columns,
+            ),
+            ParamSpec("index", "Choose index", "choice", choices=columns, required=False),
+        ]
 
-        dlgchoice = DlgListChoice(
-            columns, "Open Parquet Directory", "Choose curves to load"
-        )
-        dlgchoice.dlgdata.connect(cb)
-        dlgchoice.exec()
-
-    def get_plotdata(self) -> list[PlotData]:
+    def __call__(self) -> list[PlotData]:
+        wanted = set(self.userdata["all_columns"])
+        index = self.userdata.get("index")
         plotdatas = []
         for filepath in self.userdata["path"].glob("*.parquet"):
-            parquet_file = pa.ParquetFile(filepath)  # pyright: ignore[reportPossiblyUnboundVariable]
-            column_names = parquet_file.schema.names
-            user_columns = self.userdata["all_columns"] & set(column_names)
+            column_names = pa.ParquetFile(filepath).schema.names
+            user_columns = wanted & set(column_names)
+            if index is not None and index in column_names:
+                user_columns.add(index)
+            if not user_columns:
+                continue
 
             data = pd.read_parquet(filepath, columns=list(user_columns))
-            if self.userdata["index"] in data.columns:
-                data = data.set_index(self.userdata["index"])
+            if index in data.columns:
+                data = data.set_index(index)
             data = data.dropna(axis="columns", how="all")
             data = data.sort_index()
 

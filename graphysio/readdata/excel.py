@@ -14,9 +14,6 @@ else:
 class ExcelReader(BaseReader):
     is_available = is_available
 
-    def askUserInput(self) -> None:
-        return None
-
     def __call__(self) -> PlotData:
         filepath = str(self.userdata["filepath"])
         df = pd.read_excel(filepath, engine="calamine")

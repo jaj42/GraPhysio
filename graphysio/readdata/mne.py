@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from graphysio.dialogs import DlgListChoice
+from graphysio.core.params import ParamSpec
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
 
@@ -16,19 +16,22 @@ else:
 class MneReader(BaseReader):
     is_available = is_available
 
-    def askUserInput(self) -> None:
+    def get_params(self) -> list[ParamSpec]:
+        if "columns" in self.userdata:
+            return []
         filepath = str(self.userdata["filepath"])
         raw = mne.io.read_raw(filepath, preload=False, verbose=False)
-
         ch_names = raw.ch_names
         raw.close()
-
-        def cb(colnames) -> None:
-            self.userdata["columns"] = colnames
-
-        dlgchoice = DlgListChoice(ch_names, "Open EEG (MNE)", "Choose curves to load")
-        dlgchoice.dlgdata.connect(cb)
-        dlgchoice.exec()
+        return [
+            ParamSpec(
+                "columns",
+                "Choose curves to load",
+                "multichoice",
+                choices=ch_names,
+                default=ch_names,
+            ),
+        ]
 
     def __call__(self) -> PlotData:
         filepath = str(self.userdata["filepath"])

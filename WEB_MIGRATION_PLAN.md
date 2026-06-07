@@ -212,11 +212,30 @@ pyqtgraph on real data. Build a thin end-to-end slice before anything else:
 Built alongside the existing app without touching desktop code. If it's fast,
 the rest is wiring; if not, we learn it on day one.
 
-### Phase 1 — Extract the Qt-free core
+### Phase 1 — Extract the Qt-free core  ✅ DONE (reader decoupling)
 
-- Move reusable modules into `graphysio/core/`.
-- Decouple readers from `dialogs` (the `get_param_schema()` / `set_data()` refactor).
-- Keep the desktop app running on the new core.
+- Reader decoupling complete: all readers (`csv, parquet, parquet_dir, edf, mne,
+  iceberg, dwc, excel`) import **Qt-free** and expose a declarative
+  `get_params() -> list[ParamSpec]` schema instead of opening Qt dialogs.
+- `graphysio/core/params.py`: `ParamSpec` (name/label/kind/choices/default/required,
+  `to_dict` for JSON) + `default_answers()` + `gather()` staged driver.
+- `readdata/baseclass.py`: Qt-free `BaseReader` (`set_data`/`get_params`/`__call__`,
+  `get_plotdata` alias). `readdata/__init__.py` Qt-free (file dialog imported lazily).
+- Desktop adapter in `dialogs.py`: `ask_params_qt()` renders a `ParamSpec` list with
+  Qt dialogs; `drive_reader_qt()` drives any reader (CSV/DWC keep their bespoke rich
+  dialogs; `DlgNewPlotCsv` moved here from `csv.py`). `mainui.py` wired to it; desktop
+  still works.
+- Server now uses the **real readers** (`server/loaders.py`: `make_reader` +
+  `plotdata_to_curves`), so all four file formats (parquet/edf/mne/csv) are supported.
+  New staged endpoints `POST /files` (schema) + `POST /files/{id}` (answers→curves);
+  `POST /session/load` kept as default-answer one-shot.
+- Tests: `tests/test_readers.py` (5) + staged-flow tests in `test_server.py`. Full
+  suite 35 passing. Whole server import chain re-verified Qt-free.
+- Multi-step prompting supported (iceberg: connection → columns) via repeated
+  `get_params()`.
+- DEFERRED: moving the rest of the analytical modules (`transformations/`,
+  `algorithms/`, `writedata/`) physically under `graphysio/core/` — they are already
+  Qt-free in place; the move is cosmetic and can happen later.
 
 ### Phase 2 — FastAPI skeleton  ✅ DONE
 
@@ -231,9 +250,9 @@ the rest is wiring; if not, we learn it on day one.
   one stuck in the Qt-importing `utils.py`).
 - Deps: `server` optional extra (fastapi, uvicorn[standard], pyarrow); httpx (dev).
 - Run: `uvicorn graphysio.server.app:app --reload`.
-- NOTE: loaders are minimal (parquet + best-effort CSV, no per-file options yet).
-  Phase 1 reader-decoupling will unify them with the desktop readers via the
-  param-schema mechanism and bring back all formats/options.
+- NOTE: the original bespoke minimal loaders were REPLACED in Phase 1 — the server
+  now uses the real `graphysio.readdata` readers (parquet/edf/mne/csv) via the
+  param-schema flow.
 
 ### Phase 3 — React + uPlot read-only viewer
 

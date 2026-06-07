@@ -1,7 +1,8 @@
 from pandas.api.types import is_datetime64_any_dtype
 
+from graphysio.core.params import ParamSpec
 from graphysio.readdata.baseclass import BaseReader
-from graphysio.structures import Parameter, PlotData
+from graphysio.structures import PlotData
 
 try:
     from pyiceberg.catalog.sql import SqlCatalog
@@ -23,52 +24,49 @@ def _credentials_from_config() -> dict:
         "s3.secret-access-key": section.get("secretkey", ""),
     }
 
-
 class IcebergReader(BaseReader):
     is_available = is_available
 
-    def askUserInput(self) -> None:
-        from graphysio.dialogs import DlgIcebergOpen, DlgListChoice, askUserValue
+    def _load_table(self):
+        catalog = SqlCatalog(
+            name=self.userdata["catalog_name"], **_credentials_from_config()
+        )
+        return catalog.load_table(
+            f"{self.userdata['namespace']}.{self.userdata['table']}"
+        )
 
-        def cb(conndata) -> None:
-            self.userdata.update(conndata)
-            credentials = _credentials_from_config()
-            catalog = SqlCatalog(name=conndata["catalog_name"], **credentials)
-            table = catalog.load_table(f"{conndata['namespace']}.{conndata['table']}")
-            colnames = [field.name for field in table.schema().fields]
+    def get_params(self) -> list[ParamSpec]:
+        # Stage 1: connection details needed to reach a table.
+        if "table" not in self.userdata:
+            return [
+                ParamSpec("catalog_name", "Catalog name", "str"),
+                ParamSpec("namespace", "Namespace", "str"),
+                ParamSpec("table", "Table", "str"),
+                ParamSpec("row_filter", "Row filter", "str", required=False),
+            ]
+        # Stage 2: columns of the (now reachable) table.
+        if "columns" not in self.userdata:
+            colnames = [f.name for f in self._load_table().schema().fields]
+            return [
+                ParamSpec("columns", "Choose columns to load", "multichoice",
+                          choices=colnames, default=colnames),
+                ParamSpec("index", "Choose index", "choice", choices=colnames,
+                          required=False),
+            ]
+        return []
 
-            def cb2(columns) -> None:
-                self.userdata["columns"] = columns
-                param = Parameter("Choose Index", columns)
-                idx = askUserValue(param)
-                if idx is not None:
-                    self.userdata["index"] = idx
-
-            dlg = DlgListChoice(colnames, "Iceberg Table", "Choose columns to load")
-            dlg.dlgdata.connect(cb2)
-            dlg.exec()
-
-        dlg = DlgIcebergOpen()
-        dlg.dlgdata.connect(cb)
-        dlg.exec()
-
-    def get_plotdata(self) -> list[PlotData]:
+    def __call__(self) -> list[PlotData]:
         if not self.userdata.get("columns"):
             return []
-        credentials = _credentials_from_config()
-        catalog = SqlCatalog(name=self.userdata["catalog_name"], **credentials)
-        table = catalog.load_table(f"{self.userdata['namespace']}.{self.userdata['table']}")
+        table = self._load_table()
 
         scan_kwargs: dict = {"selected_fields": tuple(self.userdata["columns"])}
-        row_filter = self.userdata.get("row_filter", "").strip()
+        row_filter = (self.userdata.get("row_filter") or "").strip()
         if row_filter:
             scan_kwargs["row_filter"] = row_filter
-
         scan_kwargs["limit"] = 100
 
         df = table.scan(**scan_kwargs).to_pandas()
-
-        print(df)
 
         if self.userdata.get("index") in df.columns:
             df = df.set_index(self.userdata["index"])

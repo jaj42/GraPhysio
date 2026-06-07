@@ -127,6 +127,52 @@ def test_unsupported_format_415(client, tmp_path):
     assert r.status_code == 415
 
 
+def _answers_from_params(params):
+    """Echo back each param's default (full list for multichoice)."""
+    out = {}
+    for p in params:
+        if p["default"] is not None:
+            out[p["name"]] = p["default"]
+        elif p["kind"] == "multichoice":
+            out[p["name"]] = p["choices"]
+        else:
+            out[p["name"]] = None
+    return out
+
+
+def test_staged_open_flow(client, parquet_file):
+    # Step 1: register the file, get its param schema.
+    r = client.post("/files", json={"path": str(parquet_file)})
+    assert r.status_code == 200
+    data = r.json()
+    file_id = data["file_id"]
+    names = {p["name"] for p in data["params"]}
+    assert {"columns", "index"} <= names
+
+    # Step 2: answer with defaults -> curves loaded.
+    answers = _answers_from_params(data["params"])
+    r2 = client.post(f"/files/{file_id}", json={"answers": answers})
+    assert r2.status_code == 200
+    body = r2.json()
+    assert body["ready"] is True
+    loaded = {c["name"] for c in body["curves"]}
+    assert {"abp", "ecg"} <= loaded
+    # And the curves are now queryable.
+    assert {"abp", "ecg"} <= {c["name"] for c in client.get("/curves").json()}
+
+
+def test_open_unsupported_415(client, tmp_path):
+    bad = tmp_path / "data.xyz"
+    bad.write_text("nope")
+    r = client.post("/files", json={"path": str(bad)})
+    assert r.status_code == 415
+
+
+def test_answer_unknown_file_404(client):
+    r = client.post("/files/deadbeef", json={"answers": {}})
+    assert r.status_code == 404
+
+
 def test_clear_session(client, parquet_file):
     client.post("/session/load", json={"path": str(parquet_file)})
     assert client.get("/curves").json()

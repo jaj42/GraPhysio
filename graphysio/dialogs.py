@@ -1,6 +1,8 @@
+import csv
 import importlib
 import os
 import pathlib
+import re
 import sys
 from datetime import datetime
 from functools import partial
@@ -11,6 +13,7 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 from graphysio import ui
 from graphysio.algorithms import filters
+from graphysio.core.params import ParamSpec, gather
 from graphysio.structures import CycleId, Parameter
 from graphysio.utils import sanitize_filepath
 
@@ -632,6 +635,264 @@ class DlgIcebergOpen(QtWidgets.QDialog):
         }
         self.dlgdata.emit(result)
         super().accept()
+
+
+class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
+    def __init__(self, filepath, parent=None) -> None:
+        super().__init__(parent=parent)
+        self.setupUi(self)
+        self.setWindowTitle(f"Open {filepath.name}")
+
+        self.filepath = filepath
+        self.csvrequest = None
+
+        # Attach models to ListViews
+        self.lstX = QtGui.QStandardItemModel()
+        self.lstY = QtGui.QStandardItemModel()
+        self.lstCluster = QtGui.QStandardItemModel()
+        self.lstAll = QtGui.QStandardItemModel()
+
+        self.lstVX.setModel(self.lstX)
+        self.lstVY.setModel(self.lstY)
+        self.lstVCluster.setModel(self.lstCluster)
+        self.lstVAll.setModel(self.lstAll)
+
+        # Setup Field Table
+        self.lstVAll.verticalHeader().hide()
+        self.lstVAll.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch,
+        )
+        self.lstVAll.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+
+        # Connect callbacks
+        self.btnLoad.clicked.connect(self.loadCsvFields)
+        self.btnOk.clicked.connect(self.loadPlot)
+        self.btnCancel.clicked.connect(self.reject)
+        self.btnToX.clicked.connect(self.moveToX)
+        self.btnToY.clicked.connect(self.moveToY)
+        self.btnToCluster.clicked.connect(self.move_to_cluster)
+        self.btnRemoveX.clicked.connect(self.delFromX)
+        self.btnRemoveY.clicked.connect(self.delFromY)
+        self.btnRemoveCluster.clicked.connect(self.delFromCluster)
+        self.lstVX.currentIndexChanged.connect(self.xChanged)
+
+        # Guesstimate CSV field and decimal seperators
+        delims = self.estimateDelimiters(filepath)
+        self.txtSep.setEditText(delims[0])
+        self.txtDecimal.setEditText(delims[1])
+        self.txtDateTime.setEditText(f"%Y-%m-%d %H:%M:%S{delims[1]}%f")
+
+    # Methods / Callbacks
+    def estimateDelimiters(self, filepath):
+        encoding = self.txtEncoding.currentText()
+        with open(filepath, encoding=encoding) as csvfile:
+            seperator = ";" if ";" in next(csvfile) else ","
+            decimal = "." if "." in next(csvfile) else ","
+        return (seperator, decimal)
+
+    def loadCsvFields(self) -> None:
+        filterfunc = lambda f: f
+        sep = self.txtSep.currentText()
+        if sep == "<tab>":
+            sep = "\t"
+        elif sep == "<whitespace>":
+            sep = " "
+            whitespace_pattern = re.compile(r"\s+")
+            filterfunc = lambda file: (
+                whitespace_pattern.sub(" ", line) for line in file
+            )
+
+        # Use the csv module to retrieve csv fields
+        for lst in [self.lstAll, self.lstX, self.lstY]:
+            lst.clear()
+        self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
+        encoding = self.txtEncoding.currentText()
+        with open(self.filepath, encoding=encoding) as csvfile:
+            # Artificially drop n first lines as requested
+            for _ in range(self.spnLinedrop.value()):
+                next(csvfile)
+            csvreader = csv.DictReader(filterfunc(csvfile), delimiter=sep)
+            row = next(csvreader)
+            for key, value in row.items():
+                if key is None:
+                    continue
+                keyitem = QtGui.QStandardItem(key)
+                valueitem = QtGui.QStandardItem(value)
+                self.lstAll.appendRow([keyitem, valueitem])
+        self.lstAll.sort(0)
+
+    def xChanged(self, _newtext) -> None:
+        if self.lstX.rowCount() > 0:
+            self.chkGenX.setCheckState(QtCore.Qt.Unchecked)
+        else:
+            self.chkGenX.setCheckState(QtCore.Qt.Checked)
+
+    def move_to_cluster(self) -> None:
+        if self.lstCluster.rowCount() > 0:
+            # Only allow one element for Cluster Id.
+            return
+        selection = self.lstVAll.selectedIndexes()
+        rowindex = selection[0].row()
+        row = self.lstAll.takeRow(rowindex)
+        self.lstCluster.appendRow(row)
+
+    def moveToX(self) -> None:
+        if self.lstX.rowCount() > 0:
+            # Only allow one element for X.
+            return
+        selection = self.lstVAll.selectedIndexes()
+        rowindex = selection[0].row()
+        row = self.lstAll.takeRow(rowindex)
+        self.lstX.appendRow(row)
+
+    def moveToY(self) -> None:
+        while True:
+            selection = self.lstVAll.selectedIndexes()
+            if len(selection) < 1:
+                break
+            rowindex = selection[0].row()
+            self.lstY.appendRow(self.lstAll.takeRow(rowindex))
+
+    def delFromCluster(self) -> None:
+        if not self.lstCluster.rowCount():
+            return
+        row = self.lstCluster.takeRow(0)
+        self.lstAll.appendRow(row)
+
+    def delFromX(self) -> None:
+        if not self.lstX.rowCount():
+            return
+        row = self.lstX.takeRow(0)
+        self.lstAll.appendRow(row)
+
+    def delFromY(self) -> None:
+        while True:
+            rowindexes = self.lstVY.selectedIndexes()
+            if len(rowindexes) < 1:
+                break
+            row = rowindexes[0].row()
+            self.lstAll.appendRow(self.lstY.takeRow(row))
+
+    def loadPlot(self) -> None:
+        from graphysio.readdata.csv import CsvRequest
+
+        yRows = [i.text() for i in self.lstY.findItems("", QtCore.Qt.MatchContains)]
+        xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
+        cRows = [
+            i.text() for i in self.lstCluster.findItems("", QtCore.Qt.MatchContains)
+        ]
+
+        seperator = self.txtSep.currentText()
+        if seperator == "<tab>":
+            seperator = "\t"
+        elif seperator == "<whitespace>":
+            seperator = r"\s+"
+
+        try:
+            dtfield = xRows[0]
+        except IndexError:
+            dtfield = None
+
+        try:
+            cid = cRows[0]
+        except IndexError:
+            cid = None
+
+        filterexpr = self.txtFilter.text().strip()
+        if not filterexpr:
+            filterexpr = None
+
+        req = CsvRequest(
+            filepath=self.filepath,
+            seperator=seperator,
+            decimal=self.txtDecimal.currentText(),
+            dtfield=dtfield,
+            yfields=yRows,
+            datetime_format=self.txtDateTime.currentText(),
+            droplines=self.spnLinedrop.value(),
+            generatex=self.chkGenX.isChecked(),
+            clusterid=cid,
+            timezone=self.txtTimezone.currentText(),
+            encoding=self.txtEncoding.currentText(),
+            samplerate=self.spnFs.value(),
+            filterexpr=filterexpr,
+        )
+
+        self.csvrequest = req
+        self.accept()
+
+
+# --- Desktop adapter: render a reader's Qt-free ParamSpec schema with Qt dialogs ---
+
+_KIND_TO_REQUEST = {
+    "int": int,
+    "float": float,
+    "str": str,
+    "bool": bool,
+    "time": "time",
+    "datetime": datetime,
+}
+
+
+def _multichoice_qt(spec: ParamSpec):
+    dlg = DlgListChoice(list(spec.choices or []), "Choose", spec.label)
+    if dlg.exec():
+        return dlg.itemsSelected()
+    return None
+
+
+def ask_params_qt(params: list[ParamSpec]):
+    """Render a list of ParamSpec with Qt dialogs; return answers or None if cancelled.
+
+    Cancelling a *required* param aborts the whole gather (returns None); optional
+    params left blank are stored as None.
+    """
+    answers: dict = {}
+    for p in params:
+        if p.kind == "multichoice":
+            value = _multichoice_qt(p)
+            if value is None:
+                return None
+        elif p.kind == "choice":
+            value = askUserValue(Parameter(p.label, list(p.choices or [])))
+            if value is None and p.required:
+                return None
+        else:
+            value = askUserValue(Parameter(p.label, _KIND_TO_REQUEST[p.kind]))
+            if value is None and p.required:
+                return None
+        answers[p.name] = value
+    return answers
+
+
+def drive_reader_qt(reader) -> bool:
+    """Configure a reader's userdata via Qt, returning True if ready, False if cancelled.
+
+    CSV and DWC keep their bespoke rich dialogs; every other reader is driven
+    generically through its ``get_params`` schema.
+    """
+    from graphysio.readdata.csv import CsvReader
+    from graphysio.readdata.dwc import DwcReader
+
+    if isinstance(reader, CsvReader):
+        dlg = DlgNewPlotCsv(pathlib.Path(reader.userdata["filepath"]))
+        if dlg.exec() and dlg.csvrequest is not None:
+            reader.set_data({"csvrequest": dlg.csvrequest})
+            return True
+        return False
+
+    if isinstance(reader, DwcReader):
+        import dwclib
+
+        captured: dict = {}
+        dlg = DlgDWCOpen(dwclib)
+        dlg.dlgdata.connect(captured.update)
+        if dlg.exec() and captured:
+            reader.set_data(captured)
+            return True
+        return False
+
+    return gather(reader, ask_params_qt)
 
 
 def loadmodule() -> None:

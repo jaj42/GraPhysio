@@ -1,9 +1,9 @@
 import pandas as pd
 from pandas.api.types import is_datetime64_any_dtype
 
-from graphysio.dialogs import DlgListChoice, askUserValue
+from graphysio.core.params import ParamSpec
 from graphysio.readdata.baseclass import BaseReader
-from graphysio.structures import Parameter, PlotData
+from graphysio.structures import PlotData
 
 try:
     import pyarrow.parquet as pa  # pyright: ignore[reportMissingTypeStubs]
@@ -16,27 +16,37 @@ else:
 class ParquetReader(BaseReader):
     is_available = is_available
 
-    def askUserInput(self) -> None:
-        filepath = self.userdata["filepath"]
-        s = pa.read_schema(filepath)
-        colnames = s.names
-
-        def cb(columns) -> None:
-            self.userdata["columns"] = columns
-            param = Parameter("Choose Index", columns)
-            qresult = askUserValue(param)
-            if qresult is not None:
-                self.userdata["index"] = qresult
-
-        dlgchoice = DlgListChoice(colnames, "Open Parquet", "Choose curves to load")
-        dlgchoice.dlgdata.connect(cb)
-        dlgchoice.exec()
+    def get_params(self) -> list[ParamSpec]:
+        if "columns" in self.userdata:
+            return []
+        colnames = pa.read_schema(self.userdata["filepath"]).names
+        return [
+            ParamSpec(
+                "columns",
+                "Choose curves to load",
+                "multichoice",
+                choices=colnames,
+                default=colnames,
+            ),
+            ParamSpec(
+                "index",
+                "Choose index",
+                "choice",
+                choices=colnames,
+                required=False,
+            ),
+        ]
 
     def __call__(self) -> PlotData:
         filepath = self.userdata["filepath"]
-        data = pd.read_parquet(filepath, columns=self.userdata["columns"])
-        if self.userdata["index"] in data.columns:
-            data = data.set_index(self.userdata["index"])
+        columns = list(self.userdata["columns"])
+        index = self.userdata.get("index")
+        # Make sure the index column is read even if it was not picked as a curve.
+        if index is not None and index not in columns:
+            columns = [*columns, index]
+        data = pd.read_parquet(filepath, columns=columns)
+        if index in data.columns:
+            data = data.set_index(index)
 
         data = data.dropna(axis="columns", how="all")
         data = data.sort_index()

@@ -1,20 +1,23 @@
 """In-memory session state for the (self-hosted, single/few-user) web backend.
 
-A ``Session`` holds the loaded curves at full resolution. Curves are kept in
-memory; this is fine for the single-user deployment target. The store is a thin
-keyed collection so a future multi-user setup can add per-user isolation and
-on-disk Arrow/Parquet spillover without changing call sites.
+A ``Session`` holds loaded curves at full resolution plus any readers waiting for
+parameters (the staged open flow). Curves are kept in memory; fine for the
+single-user target. The store is a thin keyed collection so a future multi-user
+setup can add per-user isolation and on-disk spillover without changing call sites.
 """
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import pandas as pd
 
+from graphysio.core.params import ParamSpec, default_answers, gather
 from graphysio.core.timeseries import estimate_samplerate
-from graphysio.server.loaders import load_file
+from graphysio.readdata.baseclass import BaseReader
+from graphysio.server.loaders import make_reader, plotdata_to_curves
 
 __all__ = ["CurveMeta", "Session", "SessionStore", "STORE"]
 
@@ -42,15 +45,55 @@ class CurveMeta:
 
 @dataclass
 class Session:
-    """A single user's loaded curves."""
+    """A single user's loaded curves and any readers awaiting parameters."""
 
     curves: dict[str, pd.Series] = field(default_factory=dict)
+    _pending: dict[str, BaseReader] = field(default_factory=dict)
 
-    def load(self, path: str | Path) -> list[CurveMeta]:
-        """Load a file and add its curves to the session (later names win on clash)."""
-        new = load_file(path)
+    def _add(self, reader: BaseReader) -> list[CurveMeta]:
+        new = plotdata_to_curves(reader())
         self.curves.update(new)
         return [CurveMeta.from_series(n, new[n]) for n in new]
+
+    def load(self, path: str | Path) -> list[CurveMeta]:
+        """One-shot load using default answers (select all curves, no index pick).
+
+        Convenience for files that carry their own time index (e.g. parquet/edf).
+        For files needing choices (CSV time column, etc.) use the staged flow.
+        """
+        reader = make_reader(Path(path))
+        gather(reader, default_answers)
+        return self._add(reader)
+
+    # --- Staged interactive flow (web form) ---
+
+    def open_file(self, path: str | Path) -> tuple[str, list[ParamSpec]]:
+        """Register a reader for ``path`` and return its first param schema."""
+        reader = make_reader(Path(path))
+        file_id = uuid.uuid4().hex
+        self._pending[file_id] = reader
+        return file_id, reader.get_params()
+
+    def answer(
+        self, file_id: str, answers: dict
+    ) -> tuple[list[ParamSpec], list[CurveMeta]]:
+        """Feed answers to a pending reader.
+
+        Returns ``(next_params, [])`` if more input is needed (staging), or
+        ``([], curves)`` once the reader runs and its curves are added.
+        """
+        try:
+            reader = self._pending[file_id]
+        except KeyError as e:
+            msg = f"No pending file: {file_id!r}"
+            raise KeyError(msg) from e
+        reader.set_data(answers)
+        params = reader.get_params()
+        if params:
+            return params, []
+        curves = self._add(reader)
+        del self._pending[file_id]
+        return [], curves
 
     def metadata(self) -> list[CurveMeta]:
         return [CurveMeta.from_series(n, s) for n, s in self.curves.items()]

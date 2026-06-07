@@ -1,33 +1,104 @@
 import csv
-import re
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
 import pandas as pd
-from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
-from graphysio import ui
+from graphysio.core.params import ParamSpec
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
+
+# Separator tokens presented to the user, mapped to what pandas expects.
+SEP_TOKENS = {",": ",", ";": ";", "<tab>": "\t", "<whitespace>": r"\s+"}
+DT_FORMAT_TOKENS = [
+    "<infer>",
+    "<seconds>",
+    "<milliseconds>",
+    "<microseconds>",
+    "<nanoseconds>",
+    "<minutes>",
+    "<hours>",
+]
 
 
 class CsvReader(BaseReader):
     is_available = True
 
-    def askUserInput(self) -> None:
-        filepath = self.userdata["filepath"]
-        dlg = DlgNewPlotCsv(filepath)
-        dlg.exec()
-        csvrequest = dlg.csvrequest
-        if csvrequest:
-            self.userdata["csvrequest"] = dlg.csvrequest
+    def _guess_delimiters(self, encoding: str = "utf-8") -> tuple[str, str]:
+        with open(self.userdata["filepath"], encoding=encoding) as f:
+            seperator = ";" if ";" in next(f) else ","
+            decimal = "." if "." in next(f) else ","
+        return seperator, decimal
+
+    def _header(self, sep: str, droplines: int, encoding: str) -> list[str]:
+        real_sep = SEP_TOKENS.get(sep, sep)
+        with open(self.userdata["filepath"], encoding=encoding) as f:
+            for _ in range(droplines):
+                next(f)
+            reader = csv.reader(f, delimiter="\t" if real_sep == r"\s+" else real_sep)
+            row = next(reader)
+        return [c for c in row if c]
+
+    def get_params(self) -> list[ParamSpec]:
+        """Flat schema for headless/web loading.
+
+        The desktop uses the richer ``DlgNewPlotCsv`` (which sets ``csvrequest``
+        directly); when that is present we need nothing more.
+        """
+        if "csvrequest" in self.userdata or "yfields" in self.userdata:
+            return []
+        sep, decimal = self._guess_delimiters()
+        columns = self._header(sep, 0, "utf-8")
+        return [
+            ParamSpec("seperator", "Field separator", "choice",
+                      choices=list(SEP_TOKENS), default=sep),
+            ParamSpec("decimal", "Decimal separator", "choice",
+                      choices=[".", ","], default=decimal),
+            ParamSpec("yfields", "Curves to load", "multichoice",
+                      choices=columns, default=columns),
+            ParamSpec("dtfield", "Time column (leave empty to generate from rate)",
+                      "choice", choices=columns, required=False),
+            ParamSpec("datetime_format", "Time column format", "choice",
+                      choices=DT_FORMAT_TOKENS, default="<infer>", required=False),
+            ParamSpec("samplerate", "Sampling rate (Hz), if generating time", "int",
+                      default=0, required=False),
+            ParamSpec("droplines", "Header lines to skip", "int", default=0,
+                      required=False),
+            ParamSpec("encoding", "Encoding", "str", default="utf-8", required=False),
+            ParamSpec("timezone", "Timezone", "str", default="UTC", required=False),
+            ParamSpec("filterexpr", "Row filter expression", "str", required=False),
+        ]
+
+    def _build_request(self) -> "CsvRequest":
+        u = self.userdata
+        dtfield = u.get("dtfield") or None
+        clusterid = u.get("clusterid") or None
+        exclude = {dtfield, clusterid}
+        yfields = [c for c in u["yfields"] if c not in exclude]
+        sep = SEP_TOKENS.get(u.get("seperator", ","), u.get("seperator", ","))
+        return CsvRequest(
+            filepath=Path(u["filepath"]),
+            seperator=sep,
+            decimal=u.get("decimal", "."),
+            dtfield=dtfield,
+            yfields=yfields,
+            datetime_format=u.get("datetime_format") or "<infer>",
+            droplines=int(u.get("droplines") or 0),
+            generatex=dtfield is None,
+            clusterid=clusterid,
+            timezone=u.get("timezone") or "UTC",
+            encoding=u.get("encoding") or "utf-8",
+            samplerate=int(u.get("samplerate") or 0),
+            filterexpr=(u.get("filterexpr") or None),
+        )
 
     def __call__(self) -> list[PlotData]:
-        try:
-            request = self.userdata["csvrequest"]
-        except KeyError:
-            return []
+        request = self.userdata.get("csvrequest")
+        if request is None:
+            if "yfields" not in self.userdata:
+                return []
+            request = self._build_request()
         data = pd.read_csv(
             request.filepath,
             sep=request.seperator,
@@ -76,7 +147,7 @@ class CsvReader(BaseReader):
                 timestamp = pd.to_datetime(timestamp, unit="ns")
             else:
                 if dtformat == "<infer>":
-                    opts = {"infer_datetime_format": True}
+                    opts = {}
                 else:
                     opts = {"format": dtformat}
                 timestamp = pd.to_datetime(timestamp, **opts)
@@ -135,186 +206,3 @@ class CsvRequest:
         dtfields = [] if self.dtfield is None else [self.dtfield]
         clusterfields = [] if self.clusterid is None else [self.clusterid]
         return dtfields + clusterfields + self.yfields
-
-
-class DlgNewPlotCsv(ui.Ui_NewPlot, QtWidgets.QDialog):
-    def __init__(self, filepath, parent=None) -> None:
-        super().__init__(parent=parent)
-        self.setupUi(self)
-        self.setWindowTitle(f"Open {filepath.name}")
-
-        self.filepath = filepath
-        self.csvrequest = None
-
-        # Attach models to ListViews
-        self.lstX = QtGui.QStandardItemModel()
-        self.lstY = QtGui.QStandardItemModel()
-        self.lstCluster = QtGui.QStandardItemModel()
-        self.lstAll = QtGui.QStandardItemModel()
-
-        self.lstVX.setModel(self.lstX)
-        self.lstVY.setModel(self.lstY)
-        self.lstVCluster.setModel(self.lstCluster)
-        self.lstVAll.setModel(self.lstAll)
-
-        # Setup Field Table
-        self.lstVAll.verticalHeader().hide()
-        self.lstVAll.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch,
-        )
-        self.lstVAll.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-
-        # Connect callbacks
-        self.btnLoad.clicked.connect(self.loadCsvFields)
-        self.btnOk.clicked.connect(self.loadPlot)
-        self.btnCancel.clicked.connect(self.reject)
-        self.btnToX.clicked.connect(self.moveToX)
-        self.btnToY.clicked.connect(self.moveToY)
-        self.btnToCluster.clicked.connect(self.move_to_cluster)
-        self.btnRemoveX.clicked.connect(self.delFromX)
-        self.btnRemoveY.clicked.connect(self.delFromY)
-        self.btnRemoveCluster.clicked.connect(self.delFromCluster)
-        self.lstVX.currentIndexChanged.connect(self.xChanged)
-
-        # Guesstimate CSV field and decimal seperators
-        delims = self.estimateDelimiters(filepath)
-        self.txtSep.setEditText(delims[0])
-        self.txtDecimal.setEditText(delims[1])
-        self.txtDateTime.setEditText(f"%Y-%m-%d %H:%M:%S{delims[1]}%f")
-
-    # Methods / Callbacks
-    def estimateDelimiters(self, filepath):
-        encoding = self.txtEncoding.currentText()
-        with open(filepath, encoding=encoding) as csvfile:
-            seperator = ";" if ";" in next(csvfile) else ","
-            decimal = "." if "." in next(csvfile) else ","
-        return (seperator, decimal)
-
-    def loadCsvFields(self) -> None:
-        filterfunc = lambda f: f
-        sep = self.txtSep.currentText()
-        if sep == "<tab>":
-            sep = "\t"
-        elif sep == "<whitespace>":
-            sep = " "
-            whitespace_pattern = re.compile(r"\s+")
-            filterfunc = lambda file: (
-                whitespace_pattern.sub(" ", line) for line in file
-            )
-
-        # Use the csv module to retrieve csv fields
-        for lst in [self.lstAll, self.lstX, self.lstY]:
-            lst.clear()
-        self.lstAll.setHorizontalHeaderLabels(["Field", "1st Line"])
-        encoding = self.txtEncoding.currentText()
-        with open(self.filepath, encoding=encoding) as csvfile:
-            # Artificially drop n first lines as requested
-            for _ in range(self.spnLinedrop.value()):
-                next(csvfile)
-            csvreader = csv.DictReader(filterfunc(csvfile), delimiter=sep)
-            row = next(csvreader)
-            for key, value in row.items():
-                if key is None:
-                    continue
-                keyitem = QtGui.QStandardItem(key)
-                valueitem = QtGui.QStandardItem(value)
-                self.lstAll.appendRow([keyitem, valueitem])
-        self.lstAll.sort(0)
-
-    def xChanged(self, _newtext) -> None:
-        if self.lstX.rowCount() > 0:
-            self.chkGenX.setCheckState(QtCore.Qt.Unchecked)
-        else:
-            self.chkGenX.setCheckState(QtCore.Qt.Checked)
-
-    def move_to_cluster(self) -> None:
-        if self.lstCluster.rowCount() > 0:
-            # Only allow one element for Cluster Id.
-            return
-        selection = self.lstVAll.selectedIndexes()
-        rowindex = selection[0].row()
-        row = self.lstAll.takeRow(rowindex)
-        self.lstCluster.appendRow(row)
-
-    def moveToX(self) -> None:
-        if self.lstX.rowCount() > 0:
-            # Only allow one element for X.
-            return
-        selection = self.lstVAll.selectedIndexes()
-        rowindex = selection[0].row()
-        row = self.lstAll.takeRow(rowindex)
-        self.lstX.appendRow(row)
-
-    def moveToY(self) -> None:
-        while True:
-            selection = self.lstVAll.selectedIndexes()
-            if len(selection) < 1:
-                break
-            rowindex = selection[0].row()
-            self.lstY.appendRow(self.lstAll.takeRow(rowindex))
-
-    def delFromCluster(self) -> None:
-        if not self.lstCluster.rowCount():
-            return
-        row = self.lstCluster.takeRow(0)
-        self.lstAll.appendRow(row)
-
-    def delFromX(self) -> None:
-        if not self.lstX.rowCount():
-            return
-        row = self.lstX.takeRow(0)
-        self.lstAll.appendRow(row)
-
-    def delFromY(self) -> None:
-        while True:
-            rowindexes = self.lstVY.selectedIndexes()
-            if len(rowindexes) < 1:
-                break
-            row = rowindexes[0].row()
-            self.lstAll.appendRow(self.lstY.takeRow(row))
-
-    def loadPlot(self) -> None:
-        yRows = [i.text() for i in self.lstY.findItems("", QtCore.Qt.MatchContains)]
-        xRows = [i.text() for i in self.lstX.findItems("", QtCore.Qt.MatchContains)]
-        cRows = [
-            i.text() for i in self.lstCluster.findItems("", QtCore.Qt.MatchContains)
-        ]
-
-        seperator = self.txtSep.currentText()
-        if seperator == "<tab>":
-            seperator = "\t"
-        elif seperator == "<whitespace>":
-            seperator = r"\s+"
-
-        try:
-            dtfield = xRows[0]
-        except IndexError:
-            dtfield = None
-
-        try:
-            cid = cRows[0]
-        except IndexError:
-            cid = None
-
-        filterexpr= self.txtFilter.text().strip()
-        if not filterexpr:
-            filterexpr = None
-
-        req = CsvRequest(
-            filepath=self.filepath,
-            seperator=seperator,
-            decimal=self.txtDecimal.currentText(),
-            dtfield=dtfield,
-            yfields=yRows,
-            datetime_format=self.txtDateTime.currentText(),
-            droplines=self.spnLinedrop.value(),
-            generatex=self.chkGenX.isChecked(),
-            clusterid=cid,
-            timezone=self.txtTimezone.currentText(),
-            encoding=self.txtEncoding.currentText(),
-            samplerate=self.spnFs.value(),
-            filterexpr=filterexpr,
-        )
-
-        self.csvrequest = req
-        self.accept()
