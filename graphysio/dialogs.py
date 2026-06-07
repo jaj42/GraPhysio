@@ -582,6 +582,58 @@ def askDirPath(caption: str, folder: str = "") -> pathlib.Path | None:
     return pathlib.Path(outdirtmp).resolve()
 
 
+class DlgIcebergOpen(QtWidgets.QDialog):
+    dlgdata = QtCore.Signal(object)
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent=parent)
+        self.setWindowTitle("Open Iceberg Table")
+        self._setup_ui()
+        self._load_config()
+
+    def _setup_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        form = QtWidgets.QFormLayout()
+
+        self.txtNamespace = QtWidgets.QLineEdit("default")
+        self.txtCatalogName = QtWidgets.QLineEdit("iceberg_catalog")
+        self.txtTable = QtWidgets.QLineEdit()
+        self.txtTable.setPlaceholderText("table_name")
+        self.txtRowFilter = QtWidgets.QLineEdit()
+        self.txtRowFilter.setPlaceholderText("column = 'value'  (optional)")
+
+        form.addRow("Namespace:", self.txtNamespace)
+        form.addRow("Catalog name:", self.txtCatalogName)
+        form.addRow("Table name:", self.txtTable)
+        form.addRow("Row filter:", self.txtRowFilter)
+        layout.addLayout(form)
+
+        buttons = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def _load_config(self) -> None:
+        from graphysio.config import load_config
+
+        config = load_config()
+        section = config["iceberg"] if "iceberg" in config else {}
+        self.txtNamespace.setText(section.get("namespace", "default"))
+        self.txtCatalogName.setText(section.get("catalog_name", "iceberg_catalog"))
+
+    def accept(self) -> None:
+        result = {
+            "catalog_name": self.txtCatalogName.text(),
+            "namespace": self.txtNamespace.text(),
+            "table": self.txtTable.text(),
+            "row_filter": self.txtRowFilter.text(),
+        }
+        self.dlgdata.emit(result)
+        super().accept()
+
+
 def loadmodule() -> None:
     defaultdir = os.path.expanduser("~")
     filepath, _ = askOpenFilePath(

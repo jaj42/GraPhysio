@@ -19,6 +19,7 @@ dependencies = [
     "scipy~=1.15",
     "numexpr~=2.10",
     "pebble>=5.0.7,<6",
+    "platformdirs>=3,<4",
     "physiocurve>=2024.12.16",
     "ecg-plot>=0.2.8,<0.3",
     "matplotlib>=3.10.0,<4",
@@ -32,11 +33,13 @@ edf = ["pyEDFlib>=0.1.38"]
 parquet = ["pyarrow>=14"]
 shortcuts = ["pyshortcuts~=1.9"]
 excel = ["python-calamine>=0.3.1,<0.4"]
+iceberg = ["pyiceberg[sql-postgres,s3fs]>=0.9.1"]
 all = [
     "dwclib[dwcmeta]>=2025.3.12",
     "pyEDFlib>=0.1.38",
     "pyarrow>=14",
     "pyshortcuts~=1.9",
+    "pyiceberg[sql-postgres,s3fs]>=0.9.1",
 ]
 
 [project.urls]

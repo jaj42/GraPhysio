@@ -48,6 +48,10 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
                 "New Plots from Parquet Directory", launchNewParquetDirPlot
             )
 
+        if readdata.IcebergReader.is_available:
+            launchNewIcebergPlot = partial(self.launchOpenIceberg, self.createNewPlotWithData)
+            self.menuFile.addAction("New Plot from Iceberg", launchNewIcebergPlot)
+
         self.menuFile.addSeparator()
         self.menuFile.addAction(
             "Export all plots", self.errguard(self.exporter.curves_all_plots)
@@ -158,6 +162,21 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
         reader = readdata.ParquetDirReader()
         reader.askUserInput()
         self.lblStatus.setText("Loading Parquet Files...")
+        future = self.pool.schedule(reader.get_plotdata)
+
+        def cb(future) -> None:
+            self.lblStatus.setText("Loading... done")
+            plotdata = future.result()
+            for iplotdata in plotdata:
+                self.dataq.put(iplotdata)
+
+        self.datahandler = datahandler
+        future.add_done_callback(cb)
+
+    def launchOpenIceberg(self, datahandler) -> None:
+        reader = readdata.IcebergReader()
+        reader.askUserInput()
+        self.lblStatus.setText("Loading Iceberg...")
         future = self.pool.schedule(reader.get_plotdata)
 
         def cb(future) -> None:

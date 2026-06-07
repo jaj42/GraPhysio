@@ -5,6 +5,7 @@ from graphysio.dialogs import askOpenFilePath
 from .csv import CsvReader
 from .dwc import DwcReader
 from .edf import EdfReader
+from .iceberg import IcebergReader
 from .mne import MneReader
 from .parquet import ParquetReader
 from .parquet_dir import ParquetDirReader
@@ -62,4 +63,4 @@ class FileReader:
             return None
 
 
-__all__ = [CsvReader, EdfReader, MneReader, ParquetReader, DwcReader, FileReader, ParquetDirReader]
+__all__ = [CsvReader, EdfReader, IcebergReader, MneReader, ParquetReader, DwcReader, FileReader, ParquetDirReader]
