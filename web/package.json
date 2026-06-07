@@ -1,0 +1,25 @@
+{
+  "name": "graphysio-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "GraPhysio web frontend (Phase 3: React + uPlot read-only viewer)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "apache-arrow": "^18.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "uplot": "^1.6.31"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.5"
+  }
+}

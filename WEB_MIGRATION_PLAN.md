@@ -254,10 +254,30 @@ the rest is wiring; if not, we learn it on day one.
   now uses the real `graphysio.readdata` readers (parquet/edf/mne/csv) via the
   param-schema flow.
 
-### Phase 3 — React + uPlot read-only viewer
+### Phase 3 — React + uPlot read-only viewer  ✅ DONE
 
-- Implement the viewport-fetch loop. Validate performance on real 125 Hz multi-hour
-  data.
+- New `web/` frontend: **Vite + React + TypeScript + uPlot** (read-only viewer).
+- **Viewport-fetch loop** implemented in `web/src/Chart.tsx`: on zoom/pan/resize it
+  reads uPlot's visible x-range + plot pixel width, debounces (120 ms), and fetches a
+  min/max-decimated window of that exact range. `setData(data, false)` swaps the typed
+  arrays without auto-ranging; a `{t0,t1,px}` dedupe guard + AbortController defeat the
+  `setScale`-hook feedback loop and cancel stale in-flight requests.
+- `web/src/api.ts` is the backend boundary: parses the Arrow IPC window
+  (`apache-arrow` JS) straight into `Float64Array` pairs uPlot renders, and converts
+  the backend's **int64 epoch-ns ↔ epoch-seconds** (ns exceeds JS safe-int; uPlot's
+  time axis wants seconds). Talks to the backend directly via CORS (configurable
+  `VITE_API_BASE`, default `http://localhost:8000`; `/api` Vite proxy alternative).
+- `web/src/wheelZoom.ts`: wheel-zoom + drag-pan plugin (uPlot ships neither) so the
+  loop is exercised; shift-drag keeps uPlot's box-zoom, double-click resets.
+- `web/src/App.tsx`: server-side-path load form → curve picker → m4/minmax toggle →
+  live `points · ms` fetch stats. `web/README.md` documents running it.
+- **Validated end-to-end** on a 2 h × 125 Hz curve (900k samples): full range → 4800
+  pts / 77 KB, 10 s zoom → 1251 pts / 20 KB, systolic/diastolic peaks preserved at
+  every zoom level; payload bounded regardless of curve length. `npm run build`
+  (tsc + vite) green; CORS preflight verified for the dev origin.
+- NOTE: load is by **server-side file path** for now (the backend opens the file
+  directly); browser file *upload* and the staged `POST /files` param-form flow are
+  deferred to Phase 4's `<ParamForm>`.
 
 ### Phase 4 — Filters / transforms / export
 
