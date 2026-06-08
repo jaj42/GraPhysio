@@ -154,8 +154,20 @@ function Field({
         />
       );
 
-    case 'time':
     case 'datetime':
+      // Local wall-clock picker; backend pre-fills/parses as local time (e.g. DWC
+      // shows the patient's available range and queries dwclib in the local zone).
+      return (
+        <input
+          type="datetime-local"
+          step="1"
+          style={styles.input}
+          value={(value as string) ?? ''}
+          onChange={(e) => onChange(e.target.value === '' ? null : e.target.value)}
+        />
+      );
+
+    case 'time':
     case 'str':
     default:
       return (
