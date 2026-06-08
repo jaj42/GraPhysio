@@ -199,7 +199,7 @@ export default function Chart({ curves, onStats }: ChartProps) {
           u.setData([x, ...ys], false); // keep the user's scales
         }
         u.setScale('x', { min: v.x0, max: v.x1 }); // exact x bounds, no uPlot pad
-        if (view.current.yMode === 'auto') refitY(u, v.x0, v.x1);
+        if (v.yMode === 'auto') refitY(u, v.x0, v.x1); // snapshot-consistent (see `v`)
         const points = windows.reduce((s, w) => s + w.points, 0);
         onStatsRef.current?.({ points, ms: Math.round(performance.now() - started) });
       } catch (err) {
