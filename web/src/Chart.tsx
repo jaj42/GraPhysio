@@ -22,7 +22,7 @@
  * loop and no per-gesture special-casing. This is what keeps pan / zoom / dbl-click
  * consistent (they were diverging when each mutated scales + autofit on its own).
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
@@ -124,6 +124,37 @@ export default function Chart({ curves, onStats }: ChartProps) {
   const namesKey = curves.map((c) => c.name).join('\n');
   const fullT0 = Math.min(...curves.map((c) => c.t0sec));
   const fullT1 = Math.max(...curves.map((c) => c.t1sec));
+
+  // Per-curve visibility, driven by the custom legend. Reset when the set of curves
+  // changes. Showing/hiding a curve must leave the current zoom exactly as it was.
+  const [visible, setVisible] = useState<boolean[]>(() => curves.map(() => true));
+  useEffect(() => {
+    setVisible(curves.map(() => true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [namesKey]);
+
+  function toggleCurve(i: number) {
+    const u = plotRef.current;
+    const next = !(visible[i] ?? true);
+    if (u) {
+      // uPlot's setSeries re-evaluates the scales and resets them (to the data
+      // range, or to non-finite -> our [0,1] fallback when it momentarily sees no
+      // data) even with auto:false — which jumps the zoom. Snapshot the scales and
+      // restore them right after; uPlot batches both into one frame, so no flicker.
+      const xMin = u.scales.x.min!;
+      const xMax = u.scales.x.max!;
+      const yMin = u.scales.y.min!;
+      const yMax = u.scales.y.max!;
+      u.setSeries(i + 1, { show: next }); // series 0 is the x-axis
+      u.setScale('x', { min: xMin, max: xMax });
+      u.setScale('y', { min: yMin, max: yMax });
+    }
+    setVisible((vis) => {
+      const copy = vis.slice();
+      copy[i] = next;
+      return copy;
+    });
+  }
 
   useEffect(() => {
     if (!curves.length) return;
@@ -243,18 +274,13 @@ export default function Chart({ curves, onStats }: ChartProps) {
         y: { auto: false, range: passthrough },
       },
       series,
+      // We render our own vertical legend to the right (see below). uPlot's built-in
+      // legend sits underneath, streams cursor values (constant flicker) and rescales
+      // the view when a series is toggled — all unwanted here.
+      legend: { show: false },
       // Disable uPlot's built-in drag-zoom: the plugin owns all gestures (plain-drag
       // pan, shift-drag box-zoom), so the two can't fight over the same mousedown.
       cursor: { drag: { x: false, y: false } },
-      hooks: {
-        // Toggling a curve in the legend should refit y in auto mode (so hidden
-        // curves stop stretching the axis). In manual mode we leave y as set.
-        setSeries: [
-          (u: uPlot) => {
-            if (view.current.yMode === 'auto') refitY(u, view.current.x0, view.current.x1);
-          },
-        ],
-      },
     };
 
     const u = new uPlot(opts, emptyData, host);
@@ -277,5 +303,40 @@ export default function Chart({ curves, onStats }: ChartProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [namesKey]);
 
-  return <div ref={hostRef} style={{ width: '100%', height: '70vh' }} />;
+  return (
+    <div style={styles.wrap}>
+      <div ref={hostRef} style={styles.plot} />
+      <ul style={styles.legend}>
+        {curves.map((c, i) => {
+          const on = visible[i] ?? true;
+          return (
+            <li key={c.name} style={styles.item} onClick={() => toggleCurve(i)} title={c.name}>
+              <span style={{ ...styles.swatch, background: PALETTE[i % PALETTE.length], opacity: on ? 1 : 0.3 }} />
+              <span style={{ ...styles.label, opacity: on ? 1 : 0.4, textDecoration: on ? 'none' : 'line-through' }}>
+                {c.name}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  wrap: { display: 'flex', gap: 12, width: '100%', height: '70vh' },
+  plot: { flex: 1, minWidth: 0, height: '100%' },
+  legend: {
+    width: 180,
+    flexShrink: 0,
+    overflowY: 'auto',
+    margin: 0,
+    padding: '0 0 0 10px',
+    listStyle: 'none',
+    borderLeft: '1px solid #e5e7eb',
+    fontSize: 13,
+  },
+  item: { display: 'flex', alignItems: 'center', gap: 8, padding: '3px 4px', cursor: 'pointer', userSelect: 'none', borderRadius: 4 },
+  swatch: { width: 16, height: 4, borderRadius: 1, flexShrink: 0 },
+  label: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+};

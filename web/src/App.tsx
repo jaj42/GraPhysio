@@ -175,10 +175,7 @@ export default function App() {
       {step === 'viewing' && curves.length > 0 && (
         <>
           <div style={styles.metabar}>
-            <span>
-              {curves.length} curve{curves.length > 1 ? 's' : ''}:{' '}
-              {curves.map((c) => c.name).join(', ')}
-            </span>
+            {/* Curve names live in the chart's own legend now (no duplication). */}
             {stats && (
               <span style={styles.stats}>
                 {stats.points.toLocaleString()} pts · {stats.ms} ms
