@@ -365,6 +365,59 @@ the rest is wiring; if not, we learn it on day one.
 
 - Spectrogram, PU-loops, multi-tab workspace, and remaining desktop features.
 
+### Phase 7 — Multi-tenancy + authentication  *(OPTIONAL — only if the "single
+user, self-hosted" assumption is dropped)*
+
+The whole app is built around one trusted local user; this phase is what it takes to
+safely expose it to several distinct users. It is deliberately last: skip it entirely
+for the self-hosted target.
+
+- **Auth backend: Keycloak (OIDC) or LDAP.** Prefer **Keycloak / OIDC** — the SPA does
+  the standard authorization-code-+-PKCE flow, the FastAPI side validates the bearer
+  token (signature + audience + expiry) in a single `Depends(current_user)`. **LDAP**
+  is the lighter alternative (bind against an existing directory, issue our own session
+  cookie). Either way auth is *one dependency* the routes share; no per-route logic.
+- **Identity → session is already wired for.** `SessionStore` is a keyed collection
+  (`session.py`); today every route uses the implicit `DEFAULT` key. Replace the bare
+  `STORE.get()` calls (9 of them in `app.py`) with a `get_session(user=Depends(...))`
+  dependency that keys on the authenticated user id. Mechanical; the data model
+  (per-`Session` curves / pending readers) needs no change.
+- **The server file browser GOES.** `FileBrowser` + `GET /browse` + `server/browse.py`
+  expose the *server's* filesystem (rooted at `GRAPHYSIO_DATA_ROOT`, default `$HOME`).
+  Safe for one trusted user, untenable multi-tenant. With it removed, the input sources
+  reduce to: **(a) browser upload** (already per-request, just needs per-user temp
+  namespacing in `uploads.py` and per-user — not global — `clear_uploads`), and **(b)
+  the network-fetch sources `dwc` / `iceberg`**, which pull over the network and never
+  touch the server FS. `parquet_dir` (needs a server folder) is dropped or becomes a
+  per-user mount.
+- **Per-user credentials for DWC / Iceberg.** These are backend *datasource* secrets
+  (SQL Server URI for DWC; catalog + S3 config for Iceberg). The server must hold them
+  in plaintext transiently to connect, so the only real question is where they live at
+  rest. Three options, in recommended order:
+  1. **Shared service credentials + per-user authorization (recommended default).** The
+     server keeps one DWC/Iceberg config (env / config file, as the desktop's
+     `dwclib update_config` does today); Keycloak/LDAP roles gate *who may query*. No
+     per-user secret storage at all. Right answer when it's one hospital DB / one
+     catalog.
+  2. **Server-side per-user secret store, encrypted at rest** (key from env/KMS),
+     entered once via `ParamForm`, never echoed back to the browser. Use when users
+     genuinely need distinct DB logins. Consistent with having invested in real auth.
+  3. **Browser `localStorage` (NOT recommended for this).** Tempting because it needs no
+     server-side secret store, but `localStorage` is readable by any JS on the origin,
+     so a single XSS leaks every stored DB credential; it is unencrypted, per-device,
+     and still sent to the server on each use (TLS mandatory regardless). Acceptable
+     only for a low-sensitivity, strictly-trusted deployment with a tight CSP — and
+     inconsistent with choosing Keycloak/LDAP in the first place. If used, scope it to
+     non-secret connection *hints*, not passwords.
+- **Resource model becomes load-bearing.** Curves are held full-resolution in process
+  RAM (`Session.curves`); N users multiply that. Needs (a) idle-eviction / LRU on
+  `SessionStore` (today there is none) and (b) a decision on workers: `STORE` is
+  process-global, so either pin to **one uvicorn worker** (fine for "few users") or move
+  sessions to a shared store (Redis / on-disk Arrow spillover, already flagged in §8).
+- **Close with a `/security-review` pass** over the auth dependency, the per-user
+  filesystem/upload isolation, and the credential store — this is the one phase where
+  "compiles and works" is not the bar.
+
 ---
 
 ## 8. Open Design Questions (to settle as we go)
@@ -372,5 +425,6 @@ the rest is wiring; if not, we learn it on day one.
 - Exact session lifecycle / cleanup policy for on-disk Arrow files.
 - Whether to keep the desktop app long-term or retire it once the web app reaches
   parity.
-- Auth/hardening if the "single user" assumption ever changes to multi-user.
+- Auth/hardening if the "single user" assumption ever changes to multi-user — scoped
+  out as the optional **Phase 7** above.
 - Concurrency model for heavy transforms (background workers vs. inline async).
