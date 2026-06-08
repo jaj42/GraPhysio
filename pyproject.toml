@@ -29,7 +29,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dwc = ["dwclib[dwcmeta]>=2025.3.12"]
+# sqlalchemy pinned <2.0.42: a reflection regression silently drops DWC
+# DATETIMEOFFSET columns (incl. TimeStamp) -- see sqlalchemy_mssql_reflection_bug.md
+dwc = ["dwclib[dwcmeta]>=2025.3.12", "sqlalchemy<2.0.42"]
 edf = ["pyEDFlib>=0.1.38"]
 parquet = ["pyarrow>=14"]
 shortcuts = ["pyshortcuts~=1.9"]

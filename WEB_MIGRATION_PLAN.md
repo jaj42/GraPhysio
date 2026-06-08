@@ -316,6 +316,17 @@ the rest is wiring; if not, we learn it on day one.
   (needs a *folder*, so `FileBrowser` has a directory-select mode). `POST /sources/{id}`
   registers the non-file reader and rides the same staged `POST /files/{id}` answer
   flow. The browser appears only for `file`/`directory` sources.
+- **DWC backend gotchas (two stacked bugs).** (1) *Reflection:* SQLAlchemy ≥ 2.0.42
+  silently drops `_Export.Wave_`/`WaveSample_` columns whose `user_type_id` is an
+  orphaned type alias — including `TimeStamp` (a `DATETIMEOFFSET`) — so the wave query
+  can't build. Pinned `sqlalchemy<2.0.42` in the `dwc` extra; root-caused in
+  `sqlalchemy_mssql_reflection_bug.md`. (2) *Datetime binding:* pymssql 2.3.2
+  mis-serialises a **tz-aware** datetime to `'…09:37:47.000000T'` (stray `T`, 6-digit
+  µs, offset dropped) → SQL Server "Conversion failed when converting date and/or time
+  from character string". Fix in `readdata/dwc.py`: hand dwclib **naive** datetimes
+  (`_to_naive`); SQL Server reads an offset-less literal against `DATETIMEOFFSET` as UTC
+  and compares on the instant, matching the naive-UTC axis dwclib returns. The whole
+  DWC From/To + plot pipeline is therefore naive-UTC (no local-tz display yet).
 - **CSV staged-load fix**: the CSV reader read its header with hard-coded UTF-8 inside
   `get_params()` — *before* the encoding could be answered — so a latin1 file (e.g. a
   `µ`/0xb5 byte) crashed on click. `readdata/csv.py` now stages: stage 1 asks

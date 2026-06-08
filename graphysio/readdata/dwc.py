@@ -15,35 +15,34 @@ else:
     is_available = True
 
 
-def _local_tz():
-    """The machine's local timezone -- what the user reads From/To in."""
-    return datetime.now().astimezone().tzinfo
-
-
 def _fmt_dt(value) -> str:
     """Format a timestamp for an ``<input type=datetime-local>`` default.
 
-    The widget is timezone-naive, so we show *local* wall-clock time: a tz-aware
-    value (dwclib returns UTC) is converted to the local zone first, then the tz is
-    dropped. The user sees local time and gets local-time data back.
+    The whole DWC pipeline works in naive UTC: dwclib reads the ``DATETIMEOFFSET``
+    ``TimeStamp`` back as UTC and ``__call__`` drops the tz, so the plot x-axis is
+    naive UTC. We display and round-trip From/To in that same frame -- a tz-aware
+    value is reduced to naive UTC without shifting the wall clock.
     """
     ts = pd.Timestamp(value)
     if ts.tz is not None:
-        ts = ts.tz_convert(_local_tz()).tz_localize(None)
+        ts = ts.tz_convert("UTC").tz_localize(None)
     return ts.strftime("%Y-%m-%dT%H:%M:%S")
 
 
-def _to_aware(value) -> datetime:
-    """Parse a From/To answer into a tz-aware datetime dwclib expects.
+def _to_naive(value) -> datetime:
+    """Parse a From/To answer into the naive datetime dwclib/pymssql expects.
 
-    The web sends a naive local ISO string and the desktop a naive datetime; both
-    are interpreted as local time and localized, so the query range matches what
-    the user entered (and the data comes back in the same zone, not UTC).
+    Both callers are already naive -- the web sends a naive ISO string and the
+    desktop a naive ``QDateTime.toPython()`` -- so this only parses the web string
+    into a real datetime. That matters: a parsed datetime makes pymssql 2.3.2 emit
+    the canonical ``'2026-06-06 09:37:47.000'`` literal. (A tz-aware datetime would
+    instead emit the broken ``'2026-06-06 09:37:47.000000T'`` -- stray ``T``,
+    six-digit microseconds, offset dropped -- which SQL Server cannot convert; the
+    reason we never localise here.) Against a ``DATETIMEOFFSET`` column SQL Server
+    reads an offset-less literal as UTC and compares on the UTC instant, matching
+    the naive-UTC axis the data comes back on.
     """
-    ts = pd.Timestamp(value)
-    if ts.tz is None:
-        ts = ts.tz_localize(_local_tz())
-    return ts.to_pydatetime()
+    return pd.Timestamp(value).to_pydatetime()
 
 
 class DwcReader(BaseReader):
@@ -105,8 +104,8 @@ class DwcReader(BaseReader):
         if isinstance(items, str):
             items = [s.strip() for s in items.split(",") if s.strip()]
 
-        dtbegin = _to_aware(self.userdata["from"])
-        dtend = _to_aware(self.userdata["to"])
+        dtbegin = _to_naive(self.userdata["from"])
+        dtend = _to_naive(self.userdata["to"])
 
         if self.userdata["type"] == "numerics":
             df = dwclib.read_numerics(
