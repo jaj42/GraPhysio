@@ -45,6 +45,7 @@ all = [
 server = [
     "fastapi>=0.136.3",
     "pyarrow>=21.0.0",
+    "python-multipart>=0.0.9",
     "uvicorn[standard]>=0.49.0",
 ]
 
@@ -63,5 +64,7 @@ dev = [
 
 [tool.poe.tasks]
 graphysio = "uv run --extra=all graphysio"
-web-back = "uv run --extra server uvicorn graphysio.server.app:app --reload"
+# --extra all brings the optional source readers (DWC, Iceberg) so they appear in
+# the web "New Plot" menu; --extra server adds FastAPI/uvicorn/multipart.
+web-back = "uv run --extra all --extra server uvicorn graphysio.server.app:app --reload"
 web-front = "sh -c 'cd web && npm run dev'"

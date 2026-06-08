@@ -9,6 +9,7 @@ created they ride the existing ``POST /files/{id}`` answer flow.
 Each source declares a ``kind`` that tells the frontend how to start it:
 
 * ``"file"``      -- pick a file in the server-side browser (handled by ``/files``).
+* ``"upload"``    -- upload a local file from the browser (handled by ``/upload``).
 * ``"directory"`` -- pick a folder in the browser; the path seeds the reader.
 * ``"params"``    -- no path at all; go straight to the parameter form.
 """
@@ -51,8 +52,8 @@ class Source:
 
 
 def available_sources() -> list[Source]:
-    """The selectable sources: always 'file', plus any installed live sources."""
-    sources = [Source("file", "File", "file")]
+    """The selectable sources: always 'file'/'upload', plus any live sources."""
+    sources = [Source("file", "File", "file"), Source("upload", "Upload", "upload")]
     sources += [
         Source(sid, d.label, d.kind)
         for sid, d in _SOURCES.items()

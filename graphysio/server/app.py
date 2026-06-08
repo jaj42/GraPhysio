@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query, Response
+from fastapi import FastAPI, File, HTTPException, Query, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -31,6 +31,7 @@ from graphysio.server.browse import list_dir
 from graphysio.server.loaders import SUPPORTED_SUFFIXES, UnsupportedFormatError
 from graphysio.server.session import STORE, CurveMeta
 from graphysio.server.sources import UnknownSourceError, available_sources
+from graphysio.server.uploads import clear_uploads, save_upload
 
 app = FastAPI(title="GraPhysio", version="0.1.0")
 
@@ -140,6 +141,26 @@ def open_file(req: LoadRequest) -> OpenResponse:
     )
 
 
+@app.post("/upload", response_model=OpenResponse)
+def upload(file: UploadFile = File(...)) -> OpenResponse:
+    """Accept a browser-uploaded local file; return the reader's param schema.
+
+    The bytes are stored server-side, then the saved path joins the same staged
+    answer flow as a server-side file (``POST /files/{id}``).
+    """
+    session = STORE.get()
+    try:
+        path = save_upload(file.filename or "upload", file.file)
+    except UnsupportedFormatError as e:
+        raise HTTPException(status_code=415, detail=str(e)) from e
+    file_id, params = session.open_file(path)
+    return OpenResponse(
+        file_id=file_id,
+        ready=not params,
+        params=[p.to_dict() for p in params],
+    )
+
+
 @app.post("/files/{file_id}", response_model=OpenResponse)
 def answer_file(file_id: str, req: AnswerRequest) -> OpenResponse:
     """Supply answers for a pending file; returns the next stage or the loaded curves."""
@@ -166,6 +187,7 @@ def list_curves() -> list[CurveMeta]:
 @app.delete("/session", status_code=204)
 def clear_session() -> Response:
     STORE.reset()
+    clear_uploads()
     return Response(status_code=204)
 
 

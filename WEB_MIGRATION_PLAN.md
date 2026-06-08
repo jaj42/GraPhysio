@@ -323,8 +323,21 @@ the rest is wiring; if not, we learn it on day one.
   once the encoding is known, reads the header and offers the columns/time setup. The
   desktop is unaffected (it uses the bespoke `DlgNewPlotCsv`, which `drive_reader_qt`
   special-cases and which bypasses `get_params`).
-- DEFERRED: browser file *upload* (for ad-hoc local files not on the server); a
-  per-curve y-axis / stacked option if shared-y overlay proves unreadable in practice.
+- **Browser file upload** (`POST /upload`, `graphysio/server/uploads.py` +
+  `web/src/FileUpload.tsx`): the server browser covers data already on the box; this
+  is the other case — an ad-hoc file on the *user's* machine. It's a fourth "New
+  Plot" source (`upload` kind). The multipart bytes are streamed to a managed temp
+  dir (`GRAPHYSIO_UPLOAD_DIR`, default the system tempdir), **keeping the original
+  suffix** so the reader dispatch-by-extension still selects the right reader; the
+  saved path then rides the *exact same* staged `POST /files/{id}` answer flow as a
+  server-side file (so CSV/parquet param forms, multi-stage prompting, etc. all work
+  unchanged). Unsupported extensions → 415. Uploads are cleared on `DELETE /session`.
+  Needs `python-multipart` (added to the `server` extra). The uploader UI supports
+  click-to-pick and drag-drop, with `accept` driven by `GET /health`'s
+  `supported_formats`. Tests in `tests/test_server.py` (upload→stage→load, 415,
+  source listed, cleanup-on-clear); 48 backend tests pass, `npm run build` green.
+- DEFERRED: a per-curve y-axis / stacked option if shared-y overlay proves
+  unreadable in practice.
 
 ### Phase 4 — Filters / transforms / export
 

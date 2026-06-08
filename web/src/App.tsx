@@ -16,6 +16,7 @@ import {
   listSources,
   openFile,
   openSource,
+  uploadFile,
   withSeconds,
   type Curve,
   type OpenResponse,
@@ -24,9 +25,10 @@ import {
 } from './api';
 import Chart from './Chart';
 import FileBrowser from './FileBrowser';
+import FileUpload from './FileUpload';
 import ParamForm from './ParamForm';
 
-type Step = 'source' | 'browse' | 'params' | 'viewing';
+type Step = 'source' | 'browse' | 'upload' | 'params' | 'viewing';
 
 export default function App() {
   const [step, setStep] = useState<Step>('source');
@@ -97,9 +99,23 @@ export default function App() {
         setError((e as Error).message);
         setBusy(false);
       }
+    } else if (source.kind === 'upload') {
+      setStep('upload'); // send a local file from the browser
     } else {
       setPicking(source); // 'file' or 'directory' -> browse for a path
       setStep('browse');
+    }
+  }
+
+  /** A local file was chosen in the uploader. */
+  async function onUpload(file: File) {
+    setBusy(true);
+    setError(null);
+    try {
+      await afterOpen(await uploadFile(file), file.name);
+    } catch (e) {
+      setError((e as Error).message);
+      setBusy(false);
     }
   }
 
@@ -160,6 +176,8 @@ export default function App() {
           onCancel={reset}
         />
       )}
+
+      {step === 'upload' && <FileUpload onUpload={onUpload} onCancel={reset} busy={busy} />}
 
       {step === 'params' && pending && (
         <ParamForm

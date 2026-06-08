@@ -68,8 +68,11 @@ export interface OpenResponse {
 export interface Source {
   id: string;
   label: string;
-  /** 'file' & 'directory' need a path from the browser; 'params' goes to the form. */
-  kind: 'file' | 'directory' | 'params';
+  /**
+   * 'file' & 'directory' need a path from the server browser; 'upload' sends a
+   * local file from the browser; 'params' goes straight to the form.
+   */
+  kind: 'file' | 'directory' | 'upload' | 'params';
 }
 
 /** A directory entry from the server-side file browser. */
@@ -115,6 +118,12 @@ async function postJSON<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/** Supported file extensions (with leading dot), from `GET /health`. */
+export async function supportedFormats(): Promise<string[]> {
+  const body = await getJSON<{ supported_formats: string[] }>('/health');
+  return body.supported_formats ?? [];
+}
+
 /** List server-side directory contents (sub-dirs + loadable files). */
 export function browse(path?: string | null): Promise<BrowseListing> {
   const q = path ? `?path=${encodeURIComponent(path)}` : '';
@@ -134,6 +143,15 @@ export function openFile(path: string): Promise<OpenResponse> {
 /** Start a non-file source (DWC/Iceberg/parquet dir); returns its first schema. */
 export function openSource(sourceId: string, path?: string | null): Promise<OpenResponse> {
   return postJSON<OpenResponse>(`/sources/${encodeURIComponent(sourceId)}`, { path: path ?? null });
+}
+
+/** Upload a local file from the browser; returns its first param schema (or ready). */
+export async function uploadFile(file: File): Promise<OpenResponse> {
+  const form = new FormData();
+  form.append('file', file, file.name);
+  const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: form });
+  if (!res.ok) await failOn(res);
+  return res.json() as Promise<OpenResponse>;
 }
 
 /** Feed answers to a pending file; returns the next stage or the loaded curves. */

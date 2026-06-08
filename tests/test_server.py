@@ -181,6 +181,51 @@ def test_clear_session(client, parquet_file):
     assert client.get("/curves").json() == []
 
 
+# --- Browser file upload ---
+
+
+@pytest.fixture(autouse=True)
+def _upload_dir(tmp_path, monkeypatch):
+    """Keep uploads out of the shared temp dir, and cleaned up per test."""
+    monkeypatch.setenv("GRAPHYSIO_UPLOAD_DIR", str(tmp_path / "uploads"))
+
+
+def test_upload_stages_like_a_file(client, parquet_file):
+    # Upload the bytes; the reader's param schema comes back, same as /files.
+    with parquet_file.open("rb") as fh:
+        r = client.post("/upload", files={"file": ("signals.parquet", fh, "application/octet-stream")})
+    assert r.status_code == 200
+    data = r.json()
+    assert {"columns", "index"} <= {p["name"] for p in data["params"]}
+
+    # The returned file_id rides the normal answer flow to load curves.
+    answers = _answers_from_params(data["params"])
+    r2 = client.post(f"/files/{data['file_id']}", json={"answers": answers})
+    assert r2.status_code == 200
+    assert {"abp", "ecg"} <= {c["name"] for c in r2.json()["curves"]}
+    assert {"abp", "ecg"} <= {c["name"] for c in client.get("/curves").json()}
+
+
+def test_upload_unsupported_format_415(client):
+    r = client.post("/upload", files={"file": ("data.xyz", b"nope", "application/octet-stream")})
+    assert r.status_code == 415
+
+
+def test_upload_source_listed(client):
+    sources = {s["id"]: s for s in client.get("/sources").json()}
+    assert sources["upload"]["kind"] == "upload"
+
+
+def test_clear_session_removes_uploads(client, parquet_file):
+    with parquet_file.open("rb") as fh:
+        client.post("/upload", files={"file": ("signals.parquet", fh, "application/octet-stream")})
+    from graphysio.server.uploads import upload_root
+
+    assert any(upload_root().iterdir())
+    client.delete("/session")
+    assert not any(upload_root().iterdir())
+
+
 # --- Server-side file browser ---
 
 
