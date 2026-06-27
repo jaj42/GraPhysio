@@ -70,6 +70,7 @@ class CurveItem(pg.PlotDataItem):
 
 class POIItem(pg.ScatterPlotItem):
     sym = {
+        "point": "+",
         "start": "star",
         "stop": "s",
         "diastole": "t1",
@@ -92,10 +93,11 @@ class POIItem(pg.ScatterPlotItem):
         self.render()
 
     def addPointsByLocation(self, key, locations) -> None:
-        if key not in self.indices:
-            self.indices[key] = pd.Index([])
-        oldidx = self.indices[key]
-        newidx = oldidx.append(pd.Index(locations))
+        newlocs = pd.Index(locations)
+        oldidx = self.indices.get(key)
+        # Avoid concatenating onto an empty object-dtype Index (deprecated, and it
+        # would clobber the real index dtype).
+        newidx = newlocs if oldidx is None or len(oldidx) == 0 else oldidx.append(newlocs)
         self.indices[key] = newidx.unique().sort_values()
         self.render()
 

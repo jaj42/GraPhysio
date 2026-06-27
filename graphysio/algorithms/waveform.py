@@ -171,7 +171,7 @@ def findPOI(soi, interval, kind, windowsize, forcesign=True):
 def findPOIGreedy(soi, start, kind):
     if kind not in ["min", "max"]:
         raise ValueError(kind)
-    loc = soi.index.get_loc(start, method="nearest")
+    loc = soi.index.get_indexer([start], method="nearest")[0]
     # Find direction
     try:
         finddir = soi.iloc[[loc - 1, loc, loc + 1]]

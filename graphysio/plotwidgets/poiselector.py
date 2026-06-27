@@ -3,7 +3,7 @@ from functools import partial
 
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph import QtWidgets
+from pyqtgraph import QtWidgets, QtCore
 
 from graphysio import ui
 from graphysio.algorithms.filters import savgol
@@ -98,10 +98,10 @@ class POISelectorPlot(PlotWidget):
     def clicked(self, evt) -> None:
         button = evt.button()
         pos = self.vLine.value()
-        if button == 1:
+        if button == QtCore.Qt.MouseButton.LeftButton:
             correctedpos = self.fixpos(pos)
             self.curve.feetitem.addPointsByLocation(self.pointkey, [correctedpos])
-        elif button == 2:
+        elif button == QtCore.Qt.MouseButton.RightButton:
             self.curve.feetitem.removePointsByLocation(self.pointkey, [pos])
 
     def __init__(self, series, parent, properties=None) -> None:
@@ -132,18 +132,18 @@ class POISelectorPlot(PlotWidget):
         if self.fixvalue is FixIndex.minimum:
             s = self.curve.series.loc[xmin:xmax]
             posprop = findPOIGreedy(s, pos, "min")
-            fixedposloc = s.index.get_loc(posprop, method="nearest")
+            fixedposloc = s.index.get_indexer([posprop], method="nearest")[0]
         elif self.fixvalue is FixIndex.maximum:
             s = self.curve.series.loc[xmin:xmax]
             posprop = findPOIGreedy(s, pos, "max")
-            fixedposloc = s.index.get_loc(posprop, method="nearest")
+            fixedposloc = s.index.get_indexer([posprop], method="nearest")[0]
         elif self.fixvalue is FixIndex.sndderiv:
             s = self.sndderiv.loc[xmin:xmax]
             posprop = findPOIGreedy(s, pos, "max")
-            fixedposloc = s.index.get_loc(posprop, method="nearest")
+            fixedposloc = s.index.get_indexer([posprop], method="nearest")[0]
         else:
             s = self.curve.series.loc[xmin:xmax]
-            fixedposloc = s.index.get_loc(pos, method="nearest")
+            fixedposloc = s.index.get_indexer([pos], method="nearest")[0]
         return s.index[fixedposloc]
 
     @property
