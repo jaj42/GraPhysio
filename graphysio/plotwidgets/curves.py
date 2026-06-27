@@ -185,6 +185,21 @@ class CurveItemWithPOI(CurveItem):
         self.visible.connect(self.__becameVisible)
         self.invisible.connect(self.__becameInvisible)
 
+    def replace_data(self, newdata) -> None:
+        oldindex = self.series.index
+        super().replace_data(newdata)
+        newindex = self.series.index
+        # If the data was uniformly translated in time (e.g. lag, set date/time),
+        # move the feet by the same delta so they stay on the same points.
+        if len(oldindex) == len(newindex) and len(newindex) > 0:
+            deltas = newindex.to_numpy() - oldindex.to_numpy()
+            if (deltas == deltas[0]).all() and deltas[0] != 0:
+                self.feetitem.indices = {
+                    key: idx + deltas[0]
+                    for key, idx in self.feetitem.indices.items()
+                }
+        self.feetitem.render()
+
     def __becameVisible(self) -> None:
         if self.feetitem not in self.parent.listDataItems():
             self.parent.addItem(self.feetitem)

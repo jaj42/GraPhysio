@@ -127,8 +127,9 @@ class TSWidget(PlotWidget):
             return
         offset = newtimestamp - curtimestamp
         for curve in self.curves.values():
-            curve.series.index += offset
-            curve.render()
+            shifted = curve.series.copy()
+            shifted.index = shifted.index + offset
+            curve.replace_data(shifted)
 
     def launchTransformation(self) -> None:
         param = Parameter(
