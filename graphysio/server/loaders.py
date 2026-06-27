@@ -16,7 +16,12 @@ from graphysio.readdata import file_readers
 from graphysio.readdata.baseclass import BaseReader
 from graphysio.structures import PlotData
 
-__all__ = ["UnsupportedFormatError", "make_reader", "plotdata_to_curves", "SUPPORTED_SUFFIXES"]
+__all__ = [
+    "UnsupportedFormatError",
+    "make_reader",
+    "plotdata_to_curves",
+    "SUPPORTED_SUFFIXES",
+]
 
 SUPPORTED_SUFFIXES = tuple(f".{ext}" for ext in file_readers)
 
@@ -43,7 +48,9 @@ def make_reader(path: Path) -> BaseReader:
     return reader
 
 
-def plotdata_to_curves(result: PlotData | list[PlotData] | None) -> dict[str, pd.Series]:
+def plotdata_to_curves(
+    result: PlotData | list[PlotData] | None,
+) -> dict[str, pd.Series]:
     """Flatten reader output into sanitized ``name -> Series`` curves.
 
     Mirrors ``CurveItem.sanitize_data``: drop NaNs, unique sorted timestamps

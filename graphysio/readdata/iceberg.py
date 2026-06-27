@@ -24,6 +24,7 @@ def _credentials_from_config() -> dict:
         "s3.secret-access-key": section.get("secretkey", ""),
     }
 
+
 class IcebergReader(BaseReader):
     is_available = is_available
 
@@ -48,10 +49,16 @@ class IcebergReader(BaseReader):
         if "columns" not in self.userdata:
             colnames = [f.name for f in self._load_table().schema().fields]
             return [
-                ParamSpec("columns", "Choose columns to load", "multichoice",
-                          choices=colnames, default=colnames),
-                ParamSpec("index", "Choose index", "choice", choices=colnames,
-                          required=False),
+                ParamSpec(
+                    "columns",
+                    "Choose columns to load",
+                    "multichoice",
+                    choices=colnames,
+                    default=colnames,
+                ),
+                ParamSpec(
+                    "index", "Choose index", "choice", choices=colnames, required=False
+                ),
             ]
         return []
 

@@ -67,8 +67,13 @@ class DwcReader(BaseReader):
         # Stage 1: who and what kind of data. Needed before we can query the patient.
         if "patientid" not in u:
             return [
-                ParamSpec("type", "Data type", "choice",
-                          choices=["numerics", "waves"], default="numerics"),
+                ParamSpec(
+                    "type",
+                    "Data type",
+                    "choice",
+                    choices=["numerics", "waves"],
+                    default="numerics",
+                ),
                 ParamSpec("patientid", "Patient id", "str"),
             ]
 
@@ -89,12 +94,13 @@ class DwcReader(BaseReader):
         kind = "Labels" if is_waves else "Sublabels"
 
         return [
-            ParamSpec("from", "From", "datetime",
-                      default=_fmt_dt(patient["data_begin"])),
-            ParamSpec("to", "To", "datetime",
-                      default=_fmt_dt(patient["data_end"])),
-            ParamSpec("items", f"{kind} (comma-separated)", "str",
-                      default=", ".join(labels)),
+            ParamSpec(
+                "from", "From", "datetime", default=_fmt_dt(patient["data_begin"])
+            ),
+            ParamSpec("to", "To", "datetime", default=_fmt_dt(patient["data_end"])),
+            ParamSpec(
+                "items", f"{kind} (comma-separated)", "str", default=", ".join(labels)
+            ),
         ]
 
     def __call__(self) -> list[PlotData]:

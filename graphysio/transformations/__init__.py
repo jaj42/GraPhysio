@@ -1,9 +1,9 @@
+from .curve_to_feet import get_curve_to_feet
 from .feet_time_interval import get_feet_time_interval
 from .feet_to_curve import get_feet_to_curve
 from .perfusion_index import get_perfusion_index
 from .precise_feet import get_precise_feet
 from .pulse_transit import get_pat, get_tt
-from .curve_to_feet import get_curve_to_feet
 
 Transformations = {
     "Precise POIs": get_precise_feet,

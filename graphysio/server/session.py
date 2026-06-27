@@ -72,7 +72,9 @@ class Session:
         """Register a reader for ``path`` and return its first param schema."""
         return self._register(make_reader(Path(path)))
 
-    def open_source(self, source_id: str, path: str | None = None) -> tuple[str, list[ParamSpec]]:
+    def open_source(
+        self, source_id: str, path: str | None = None
+    ) -> tuple[str, list[ParamSpec]]:
         """Register a non-file source reader and return its first param schema."""
         return self._register(make_source_reader(source_id, path))
 

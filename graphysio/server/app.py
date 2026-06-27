@@ -90,11 +90,15 @@ def open_source(source_id: str, req: SourceRequest) -> OpenResponse:
         raise HTTPException(status_code=404, detail=str(e)) from e
     except ValueError as e:  # directory source missing its path
         raise HTTPException(status_code=422, detail=str(e)) from e
-    return OpenResponse(file_id=file_id, ready=not params, params=[p.to_dict() for p in params])
+    return OpenResponse(
+        file_id=file_id, ready=not params, params=[p.to_dict() for p in params]
+    )
 
 
 @app.get("/browse")
-def browse(path: Optional[str] = Query(None, description="directory to list; default root")) -> dict:
+def browse(
+    path: Optional[str] = Query(None, description="directory to list; default root"),
+) -> dict:
     """List sub-directories and loadable files for the server-side file picker."""
     try:
         listing = list_dir(path)

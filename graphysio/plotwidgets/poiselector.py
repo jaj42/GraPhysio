@@ -3,7 +3,7 @@ from functools import partial
 
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph import QtWidgets, QtCore
+from pyqtgraph import QtCore, QtWidgets
 
 from graphysio import ui
 from graphysio.algorithms.filters import savgol
@@ -43,7 +43,31 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
         buttonClicked = partial(self.buttonClicked, self)
         self.buttonGroup.buttonClicked.connect(buttonClicked)
 
-    def loadPOI(self, plotdata) -> None:
+    def list_plotdatas(self, datahandler) -> PlotData:
+        tabWidget = self.parent.tabWidget
+        ntabs = tabWidget.count()
+        tabdict = {
+            tabWidget.tabText(idx): idx
+            for idx in range(ntabs)
+            if isinstance(tabWidget.widget(idx), PlotWidget)
+        }
+        desttabname, ok = QtWidgets.QInputDialog.getItem(
+            self,
+            "Select Source Plot",
+            "Source Plot",
+            list(tabdict.keys()),
+            editable=False,
+        )
+        if not ok:
+            return
+        destidx = tabdict[desttabname]
+        plotwidget = tabWidget.widget(destidx)
+        sers = [c.series for c in plotwidget.curves.values()]
+        df = pd.concat(sers, axis=1, keys=[s.name for s in sers])
+        plotdata = PlotData(data=df, name=f"{desttabname}")
+        datahandler(plotdata)
+
+    def loadPOI(self, plotdata: PlotData) -> None:
         columnname, ok = QtWidgets.QInputDialog.getItem(
             self,
             "Select POI series",
@@ -74,8 +98,12 @@ class POISelectorWidget(ui.Ui_POISelectorWidget, QtWidgets.QWidget):
     def menu(self):
         return {
             "Plot": {
-                "Import POIs": partial(
+                "Import POIs from file": partial(
                     self.parent.launchOpenFile,
+                    datahandler=self.loadPOI,
+                ),
+                "Import POIs from curve": partial(
+                    self.list_plotdatas,
                     datahandler=self.loadPOI,
                 ),
                 "POIs to New Plot": self.launchNewPlotFromPOIs,

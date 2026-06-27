@@ -1,8 +1,8 @@
 import string
 from functools import partial
 
-import numpy as np
 import numexpr as ne
+import numpy as np
 import pandas as pd
 from pyqtgraph.Qt import QtCore, QtWidgets
 

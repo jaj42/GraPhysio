@@ -6,8 +6,8 @@ import pandas as pd
 
 from graphysio import writedata
 from graphysio.dialogs import DlgPeriodExport, askDirPath, askSaveFilePath, askUserValue
-from graphysio.utils import sanitize_filename
 from graphysio.structures import Parameter
+from graphysio.utils import sanitize_filename
 
 file_filters = ";;".join(
     [f"{ext.upper()} files (*.{ext})" for ext in writedata.curve_writers],

@@ -89,4 +89,6 @@ def list_dir(path: str | None = None) -> BrowseListing:
 
     entries.sort(key=lambda e: (not e.is_dir, e.name.lower()))
     parent = None if target == root else str(target.parent)
-    return BrowseListing(root=str(root), path=str(target), parent=parent, entries=entries)
+    return BrowseListing(
+        root=str(root), path=str(target), parent=parent, entries=entries
+    )

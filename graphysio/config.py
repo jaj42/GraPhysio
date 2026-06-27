@@ -3,7 +3,9 @@ from pathlib import Path
 
 from platformdirs import user_config_dir
 
-config_dir = Path(user_config_dir(appname="larib-data", appauthor="larib-data", roaming=True))
+config_dir = Path(
+    user_config_dir(appname="larib-data", appauthor="larib-data", roaming=True)
+)
 configfile = config_dir / "config.ini"
 
 

@@ -97,7 +97,9 @@ class POIItem(pg.ScatterPlotItem):
         oldidx = self.indices.get(key)
         # Avoid concatenating onto an empty object-dtype Index (deprecated, and it
         # would clobber the real index dtype).
-        newidx = newlocs if oldidx is None or len(oldidx) == 0 else oldidx.append(newlocs)
+        newidx = (
+            newlocs if oldidx is None or len(oldidx) == 0 else oldidx.append(newlocs)
+        )
         self.indices[key] = newidx.unique().sort_values()
         self.render()
 
@@ -195,8 +197,7 @@ class CurveItemWithPOI(CurveItem):
             deltas = newindex.to_numpy() - oldindex.to_numpy()
             if (deltas == deltas[0]).all() and deltas[0] != 0:
                 self.feetitem.indices = {
-                    key: idx + deltas[0]
-                    for key, idx in self.feetitem.indices.items()
+                    key: idx + deltas[0] for key, idx in self.feetitem.indices.items()
                 }
         self.feetitem.render()
 

@@ -49,7 +49,9 @@ class MainUi(ui.Ui_MainWindow, QtWidgets.QMainWindow):
             )
 
         if readdata.IcebergReader.is_available:
-            launchNewIcebergPlot = partial(self.launchOpenIceberg, self.createNewPlotWithData)
+            launchNewIcebergPlot = partial(
+                self.launchOpenIceberg, self.createNewPlotWithData
+            )
             self.menuFile.addAction("New Plot from Iceberg", launchNewIcebergPlot)
 
         self.menuFile.addSeparator()

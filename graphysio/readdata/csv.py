@@ -75,12 +75,27 @@ class CsvReader(BaseReader):
             sep, decimal = self._safe_guess()
             return [
                 ParamSpec("encoding", "File encoding", "str", default="utf-8"),
-                ParamSpec("seperator", "Field separator", "choice",
-                          choices=list(SEP_TOKENS), default=sep),
-                ParamSpec("decimal", "Decimal separator", "choice",
-                          choices=[".", ","], default=decimal),
-                ParamSpec("droplines", "Header lines to skip", "int", default=0,
-                          required=False),
+                ParamSpec(
+                    "seperator",
+                    "Field separator",
+                    "choice",
+                    choices=list(SEP_TOKENS),
+                    default=sep,
+                ),
+                ParamSpec(
+                    "decimal",
+                    "Decimal separator",
+                    "choice",
+                    choices=[".", ","],
+                    default=decimal,
+                ),
+                ParamSpec(
+                    "droplines",
+                    "Header lines to skip",
+                    "int",
+                    default=0,
+                    required=False,
+                ),
             ]
 
         # Stage 2: now we can read the header with the chosen encoding/separator.
@@ -89,14 +104,35 @@ class CsvReader(BaseReader):
         droplines = int(u.get("droplines") or 0)
         columns = self._header(sep, droplines, encoding)
         return [
-            ParamSpec("yfields", "Curves to load", "multichoice",
-                      choices=columns, default=columns),
-            ParamSpec("dtfield", "Time column (leave empty to generate from rate)",
-                      "choice", choices=columns, required=False),
-            ParamSpec("datetime_format", "Time column format", "choice",
-                      choices=DT_FORMAT_TOKENS, default="<infer>", required=False),
-            ParamSpec("samplerate", "Sampling rate (Hz), if generating time", "int",
-                      default=0, required=False),
+            ParamSpec(
+                "yfields",
+                "Curves to load",
+                "multichoice",
+                choices=columns,
+                default=columns,
+            ),
+            ParamSpec(
+                "dtfield",
+                "Time column (leave empty to generate from rate)",
+                "choice",
+                choices=columns,
+                required=False,
+            ),
+            ParamSpec(
+                "datetime_format",
+                "Time column format",
+                "choice",
+                choices=DT_FORMAT_TOKENS,
+                default="<infer>",
+                required=False,
+            ),
+            ParamSpec(
+                "samplerate",
+                "Sampling rate (Hz), if generating time",
+                "int",
+                default=0,
+                required=False,
+            ),
             ParamSpec("timezone", "Timezone", "str", default="UTC", required=False),
             ParamSpec("filterexpr", "Row filter expression", "str", required=False),
         ]

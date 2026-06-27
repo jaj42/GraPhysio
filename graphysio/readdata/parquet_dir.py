@@ -36,7 +36,9 @@ class ParquetDirReader(BaseReader):
                 choices=columns,
                 default=columns,
             ),
-            ParamSpec("index", "Choose index", "choice", choices=columns, required=False),
+            ParamSpec(
+                "index", "Choose index", "choice", choices=columns, required=False
+            ),
         ]
 
     def __call__(self) -> list[PlotData]:
