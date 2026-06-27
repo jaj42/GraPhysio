@@ -59,7 +59,7 @@ class ParquetDirReader(BaseReader):
 
             if is_datetime64_any_dtype(data.index):
                 data.index = data.index.tz_localize(None)
-            data.index = data.index.astype("datetime64[ns]").astype("int")
+            data.index = data.index.astype("datetime64[ns]").astype("int64")
 
             plotdatas.append(PlotData(data=data, filepath=filepath))
         return plotdatas

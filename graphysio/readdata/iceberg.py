@@ -75,7 +75,7 @@ class IcebergReader(BaseReader):
 
         if is_datetime64_any_dtype(df.index):
             df.index = df.index.tz_localize(None)
-        df.index = df.index.astype("datetime64[ns]").astype("int")
+        df.index = df.index.astype("datetime64[ns]").astype("int64")
 
         name = f"{self.userdata['namespace']}.{self.userdata['table']}"
         return [PlotData(data=df, name=name)]

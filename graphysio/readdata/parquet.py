@@ -43,7 +43,15 @@ class ParquetReader(BaseReader):
     def get_params(self) -> list[ParamSpec]:
         # Stage 1: which curves to load and which column is the index.
         if "columns" not in self.userdata:
-            colnames = pa.read_schema(self.userdata["filepath"]).names
+            schema = pa.read_schema(self.userdata["filepath"])
+            colnames = schema.names
+            # A timestamp column is the natural index; default to the first one (an
+            # unnamed pandas datetime index is written as ``__index_level_0__``). A
+            # selected index column is moved out of the curves by ``set_index`` in
+            # __call__, so it is harmless to leave it among the curve choices.
+            index_default = next(
+                (f.name for f in schema if patypes.is_timestamp(f.type)), None
+            )
             return [
                 ParamSpec(
                     "columns",
@@ -57,6 +65,7 @@ class ParquetReader(BaseReader):
                     "Choose index",
                     "choice",
                     choices=colnames,
+                    default=index_default,
                     required=False,
                 ),
             ]
@@ -89,9 +98,9 @@ class ParquetReader(BaseReader):
 
         if is_datetime64_any_dtype(data.index):
             data.index = data.index.tz_localize(None)
-            data.index = data.index.astype("datetime64[ns]").astype("int")
+            data.index = data.index.astype("datetime64[ns]").astype("int64")
         else:
             factor = TIME_UNIT_NS[self.userdata.get("timeunit") or "<nanoseconds>"]
-            data.index = (data.index.to_numpy() * factor).astype("int")
+            data.index = (data.index.to_numpy() * factor).astype("int64")
 
         return PlotData(data=data, filepath=filepath)

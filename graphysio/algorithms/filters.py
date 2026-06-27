@@ -136,8 +136,10 @@ def expression(series, samplerate, parameters):
 def setdatetime(series, samplerate, parameters):
     (timestamp,) = parameters
     newseries = series.copy()
-    diff = timestamp - newseries.index[0]
-    newseries.index += diff
+    # Keep the offset integral so the int64 epoch-ns index stays int64; adding a
+    # float would promote it to float64 and lose sub-microsecond precision.
+    offset = int(round(timestamp)) - int(newseries.index[0])
+    newseries.index = newseries.index + offset
     newseries = newseries.rename(f"{series.name}-{timestamp}")
     return (newseries, None)
 
@@ -165,10 +167,10 @@ def reduction(series, samplerate, parameters):
     try:
         f = getattr(series, reduct_type)
     except AttributeError:
-        return (pd.Series(), None)
+        return (pd.Series(dtype="float64"), None)
     result = f()
     if not is_scalar(result):
-        return (pd.Series(), None)
+        return (pd.Series(dtype="float64"), None)
     newname = f"{series.name}-{reduct_type}"
     newseries = pd.Series(
         np.full_like(series.to_numpy(), result), index=series.index, name=newname

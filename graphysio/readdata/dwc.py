@@ -126,6 +126,6 @@ class DwcReader(BaseReader):
 
         if is_datetime64_any_dtype(df.index):
             df.index = df.index.tz_localize(None)
-        df.index = df.index.astype("datetime64[ns]").astype("int")
+        df.index = df.index.astype("datetime64[ns]").astype("int64")
 
         return [PlotData(data=df, name=str(self.userdata["patientid"]))]
